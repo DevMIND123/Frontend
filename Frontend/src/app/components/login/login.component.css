@@ -129,6 +129,17 @@
     flex-shrink: 0;
     border-color: rgba(229, 231, 235, 1);
     background-color: rgba(0, 0, 0, 0);
+    
+  }
+   
+  .login-nav span {
+    cursor: pointer;
+    color: black; 
+    transition: color 0.3s ease-in-out; 
+  }
+  
+  .login-nav span:hover {
+    color: #ff6600; 
   }
    
   .login-text11 {
