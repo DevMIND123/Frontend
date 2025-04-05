@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { UsuarioService } from '../../services/usuario.service';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
@@ -8,33 +9,31 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  nombre: string = '';
   email: string = '';
   password: string = '';
+  rememberMe: boolean = false;
+  showPassword: boolean = false;
+  isLoading: boolean = false;
+  errorMessage: string = '';
 
-  constructor(
-    private usuarioService: UsuarioService,
-    private router: Router
-  ) {}
+  constructor(private router: Router) {}
 
-  registrar() {
-    const nuevoUsuario = {
-      nombre: this.nombre,
-      email: this.email,
-      password: this.password,
-      rol: 'CLIENTE' // lo convierte al enum Rol.CLIENTE automáticamente
-    };
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
 
-    this.usuarioService.registrarUsuario(nuevoUsuario).subscribe({
-      next: (res) => {
-        console.log('✅ Usuario registrado:', res);
-        alert('¡Te has registrado exitosamente!');
-        this.router.navigate(['/home']); // 👈 redirección automática
-      },
-      error: (err) => {
-        console.error('❌ Error al registrar:', err);
-        alert('El correo ya está en uso o hubo un problema.');
+  onSubmit() {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    // Simulación de autenticación (reemplaza esto por tu lógica real)
+    setTimeout(() => {
+      if (this.email === 'admin@admin.com' && this.password === 'admin') {
+        this.router.navigate(['/dashboard']);
+      } else {
+        this.errorMessage = 'Credenciales incorrectas';
       }
-    });
+      this.isLoading = false;
+    }, 1000);
   }
 }
