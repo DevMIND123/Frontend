@@ -1,0 +1,38 @@
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top" [class.navbar-scrolled]="isScrolled">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/">
+      <img src="assets/images/Logos/Horizontal.png" alt="RetoChimba Logo" class="navbar-logo">
+    </a>
+    <button 
+      class="navbar-toggler" 
+      type="button" 
+      data-bs-toggle="collapse" 
+      data-bs-target="#navbarNav" 
+      aria-controls="navbarNav" 
+      aria-expanded="false" 
+      aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/about" routerLinkActive="active">About</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Auth Container -->
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-header">
+      <img src="assets/images/Logos/Horizontal.png" alt="RetoChimba Logo" class="auth-logo">
+    </div>
+    <ng-content></ng-content>
+  </div>
+</div>

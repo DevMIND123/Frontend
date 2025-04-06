@@ -2,17 +2,17 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../services/auth.service';
-import { AuthLayoutComponent } from '../shared/auth-layout/auth-layout.component';
+import { AuthService } from '../../../services/auth.service';
+import { AuthLayoutComponent } from '../../shared/auth-layout/auth-layout.component';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-client-login',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, AuthLayoutComponent],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  templateUrl: './client-login.component.html',
+  styleUrls: ['./client-login.component.css']
 })
-export class LoginComponent {
+export class ClientLoginComponent {
   email = '';
   password = '';
   showPassword = false;

@@ -1,0 +1,44 @@
+<app-auth-layout>
+  <div class="auth-form">
+    <h2 class="text-center mb-5 fade-in">Selecciona tipo de registro</h2>
+    
+    <div class="row g-4 slide-up">
+      <!-- Client Registration Option -->
+      <div class="col-md-6">
+        <div class="registration-card" routerLink="/register/client">
+          <div class="card-icon">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <h3>Cliente</h3>
+          <p>Únete como cliente y descubre una nueva forma de mejorar tus hábitos y alcanzar tus metas personales.</p>
+          <button class="btn btn-primary w-100">
+            Registrarse como Cliente
+            <i class="bi bi-arrow-right ms-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Company Registration Option -->
+      <div class="col-md-6">
+        <div class="registration-card" routerLink="/register/company">
+          <div class="card-icon company">
+            <i class="bi bi-building"></i>
+          </div>
+          <h3>Empresa</h3>
+          <p>Forma parte de nuestra red de proveedores y conecta con clientes que buscan servicios de calidad.</p>
+          <button class="btn btn-primary w-100">
+            Registrarse como Empresa
+            <i class="bi bi-arrow-right ms-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-5 slide-up-delay">
+      <p class="mb-3">¿Ya tienes una cuenta?</p>
+      <a routerLink="/login" class="btn btn-outline-primary w-100">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+      </a>
+    </div>
+  </div>
+</app-auth-layout>

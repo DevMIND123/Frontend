@@ -1,7 +1,21 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { Component } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from './app/components/shared/navbar/navbar.component';
+import { appConfig } from './app/app.config';
 
-import { AppModule } from './app/app.module';
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, NavbarComponent],
+  template: `
+    <app-navbar></app-navbar>
+    <main>
+      <router-outlet></router-outlet>
+    </main>
+  `
+})
+export class App {
+}
 
-
-platformBrowserDynamic().bootstrapModule(AppModule)
-  .catch(err => console.error(err));
+bootstrapApplication(App, appConfig).catch(err => console.error(err));
