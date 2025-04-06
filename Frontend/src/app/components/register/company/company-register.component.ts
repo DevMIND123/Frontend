@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthLayoutComponent } from '../../shared/auth-layout/auth-layout.component';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-company-register',
@@ -20,6 +21,14 @@ export class CompanyRegisterComponent {
   address = '';
   phone = '';
   acceptTerms = false;
+  errorMessage = '';
+  isLoading = false;
+  representativeName = '';
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
@@ -27,19 +36,32 @@ export class CompanyRegisterComponent {
 
   onSubmit() {
     if (this.password !== this.confirmPassword) {
+      this.errorMessage = 'Las contraseñas no coinciden';
       return;
     }
 
+    this.isLoading = true;
+    this.errorMessage = '';
+
     const companyData = {
-      companyName: this.companyName,
-      nit: this.nit,
+      tipoDocumento: {
+        id: 'NIT'
+      },
+      numeroDocumento: this.nit,
+      nombreEmpresa: this.companyName,
+      nombreRepresentante: this.representativeName,
       email: this.email,
-      password: this.password,
-      address: this.address,
-      phone: this.phone,
-      type: 'company'
+      password: this.password
     };
-    
-    console.log('Company Registration:', companyData);
+
+    this.authService.registerCompany(companyData).subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        this.errorMessage = error.message || 'Error al registrar. Por favor, inténtalo de nuevo.';
+        this.isLoading = false;
+      }
+    });
   }
 }

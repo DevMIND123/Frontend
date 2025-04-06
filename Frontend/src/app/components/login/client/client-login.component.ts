@@ -29,21 +29,18 @@ export class ClientLoginComponent {
     this.showPassword = !this.showPassword;
   }
 
-  async onSubmit() {
+  onSubmit() {
     this.isLoading = true;
     this.errorMessage = '';
 
-    try {
-      const success = await this.authService.login(this.email, this.password);
-      if (success) {
+    this.authService.login(this.email, this.password).subscribe({
+      next: () => {
         this.router.navigate(['/profile']);
-      } else {
+      },
+      error: (error) => {
         this.errorMessage = 'Credenciales incorrectas. Por favor, inténtalo de nuevo.';
+        this.isLoading = false;
       }
-    } catch (error) {
-      this.errorMessage = 'Ha ocurrido un error. Por favor, inténtalo de nuevo.';
-    } finally {
-      this.isLoading = false;
-    }
+    });
   }
 }

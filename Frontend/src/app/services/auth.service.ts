@@ -2,37 +2,81 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
+import { User, Company } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,
     private router: Router
   ) {}
 
-  login(email: string, password: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      // Simular una demora de red
-      setTimeout(() => {
-        if (email === 'Maikol01990' && password === '123456') {
+  registerClient(userData: User): Observable<any> {
+    const clientData = {
+      ...userData,
+      rol: 'CLIENTE'
+    };
+    return this.http.post(`${this.apiUrl}/usuarios`, clientData).pipe(
+      tap((response: any) => {
+        // Handle successful registration
+        console.log('Client registered successfully:', response);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  registerCompany(companyData: Company): Observable<any> {
+    return this.http.post(`${this.apiUrl}/empresas`, companyData).pipe(
+      tap((response: any) => {
+        // Handle successful registration
+        console.log('Company registered successfully:', response);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  login(email: string, password: string): Observable<any> {
+    // First try to login as a user
+    return this.http.get(`${this.apiUrl}/usuarios/email/${email}`).pipe(
+      tap((response: any) => {
+        if (response.password === password) {
           localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('userName', 'Maikol');
-          resolve(true);
+          localStorage.setItem('userName', response.nombre);
+          localStorage.setItem('userRole', response.rol);
+          localStorage.setItem('userEmail', response.email);
         } else {
-          resolve(false);
+          throw new Error('Invalid credentials');
         }
-      }, 1000);
-    });
+      }),
+      catchError((error) => {
+        // If user not found, try company login
+        return this.http.get(`${this.apiUrl}/empresas/email/${email}`).pipe(
+          tap((response: any) => {
+            if (response.password === password) {
+              localStorage.setItem('isLoggedIn', 'true');
+              localStorage.setItem('userName', response.nombreEmpresa);
+              localStorage.setItem('userRole', 'EMPRESA');
+              localStorage.setItem('userEmail', response.email);
+            } else {
+              throw new Error('Invalid credentials');
+            }
+          }),
+          catchError((error) => {
+            console.error('Login error:', error);
+            return throwError(() => new Error('Unable to connect to the server. Please check your connection and try again.'));
+          })
+        );
+      })
+    );
   }
 
   logout(): void {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userName');
+    localStorage.clear();
     this.router.navigate(['/login']);
   }
 
@@ -40,35 +84,8 @@ export class AuthService {
     return localStorage.getItem('isLoggedIn') === 'true';
   }
 
-  // Nuevos métodos para interactuar con el backend
-  loginWithApi(credentials: { email: string; password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
-      tap((response: any) => {
-        if (response.token) {
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('userName', response.user.name);
-        }
-      })
-    );
-  }
-
-  registerWithApi(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData);
-  }
-
-  forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
-  }
-
-  resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset-password`, {
-      token,
-      newPassword
-    });
-  }
-
-  getAuthToken(): string | null {
-    return localStorage.getItem('token');
+  private handleError(error: any) {
+    console.error('An error occurred:', error);
+    return throwError(() => new Error('Unable to connect to the server. Please check your connection and try again.'));
   }
 }
