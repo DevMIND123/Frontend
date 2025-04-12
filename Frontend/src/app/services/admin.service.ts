@@ -2,45 +2,40 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
-import { retry, catchError } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { ErrorHandlingService } from './error-handling.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class UsuarioService {
-  private apiUrl = `${environment.apiUrl}/usuarios`;
+export class AdminService {
+  private apiUrl = `${environment.apiUrl}/administradores`;
 
   constructor(
     private http: HttpClient,
     private errorHandler: ErrorHandlingService
   ) {}
 
-  registrarUsuario(usuario: any): Observable<any> {
-    return this.http.post(this.apiUrl, usuario).pipe(
-      retry(3),
+  crearAdministrador(adminData: any): Observable<any> {
+    return this.http.post(this.apiUrl, adminData).pipe(
       catchError(this.errorHandler.handleError)
     );
   }
 
-  obtenerUsuarioPorEmail(email: string): Observable<any> {
+  obtenerAdminPorEmail(email: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/email/${email}`).pipe(
-      retry(3),
       catchError(this.errorHandler.handleError)
     );
   }
 
-  actualizarUsuario(usuario: any): Observable<any> {
-    const userId = localStorage.getItem('userId');
-    return this.http.patch(`${this.apiUrl}/actualizar/${userId}`, usuario).pipe(
-      retry(3),
+  actualizarAdmin(id: string, adminData: any): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/actualizar/${id}`, adminData).pipe(
       catchError(this.errorHandler.handleError)
     );
   }
 
-  eliminarUsuario(id: string): Observable<any> {
+  eliminarAdmin(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/eliminar/${id}`).pipe(
-      retry(3),
       catchError(this.errorHandler.handleError)
     );
   }
@@ -50,7 +45,6 @@ export class UsuarioService {
       email,
       nuevaPassword
     }).pipe(
-      retry(3),
       catchError(this.errorHandler.handleError)
     );
   }

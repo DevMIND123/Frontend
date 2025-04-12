@@ -1,83 +1,98 @@
-<div class="auth-form">
-  <h2 class="text-center mb-4 fade-in">Iniciar Sesión</h2>
-  
-  <form (ngSubmit)="onSubmit()" class="slide-up" #loginForm="ngForm">
-    <div class="mb-4 form-floating">
-      <input 
-        type="email" 
-        class="form-control" 
-        id="email" 
-        [(ngModel)]="email"
-        name="email"
-        placeholder="nombre@ejemplo.com"
-        required
-        #emailInput="ngModel">
-      <label for="email">Correo electrónico</label>
-      <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="text-danger small mt-1">
-        <div *ngIf="emailInput.errors?.['required']">El correo electrónico es requerido</div>
+<app-auth-layout>
+  <div class="auth-form">
+    <h2 class="text-center mb-4 fade-in">Iniciar Sesión</h2>
+    
+    <form (ngSubmit)="onSubmit()" class="slide-up" #loginForm="ngForm">
+      <div class="mb-4 form-floating">
+        <input 
+          type="email" 
+          class="form-control" 
+          id="email" 
+          [(ngModel)]="email"
+          name="email"
+          placeholder="nombre@ejemplo.com"
+          required
+          #emailInput="ngModel">
+        <label for="email">Correo electrónico</label>
+        <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="text-danger small mt-1">
+          <div *ngIf="emailInput.errors?.['required']">El correo electrónico es requerido</div>
+        </div>
       </div>
-    </div>
 
-    <div class="mb-4 form-floating">
-      <input 
-        [type]="showPassword ? 'text' : 'password'"
-        class="form-control" 
-        id="password"
-        [(ngModel)]="password"
-        name="password"
-        placeholder="Contraseña"
-        required
-        #passwordInput="ngModel">
-      <label for="password">Contraseña</label>
+      <div class="mb-4 form-floating">
+        <input 
+          [type]="showPassword ? 'text' : 'password'"
+          class="form-control" 
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Contraseña"
+          required
+          #passwordInput="ngModel">
+        <label for="password">Contraseña</label>
+        <button 
+          type="button"
+          class="btn btn-link password-toggle"
+          (click)="togglePasswordVisibility()">
+          <i class="bi" [class]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+        </button>
+        <div *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)" class="text-danger small mt-1">
+          <div *ngIf="passwordInput.errors?.['required']">La contraseña es requerida</div>
+        </div>
+      </div>
+
+      <div class="mb-4 form-check fade-in-delay">
+        <input type="checkbox" class="form-check-input" id="remember" [(ngModel)]="rememberMe" name="remember">
+        <label class="form-check-label" for="remember">Recordarme</label>
+      </div>
+
+      <!-- Test Users Section (Development Only) -->
+      <div *ngIf="isDevelopment" class="test-users-section mb-4">
+        <div class="text-center mb-3">
+          <p class="text-muted">Usuarios de prueba</p>
+          <hr>
+        </div>
+        <div class="d-grid gap-2">
+          <button 
+            *ngFor="let user of testUsers"
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            (click)="loginAsTestUser(user)">
+            <i class="bi bi-person-fill me-2"></i>
+            Ingresar como {{user.label}}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger mb-4 fade-in">
+        {{ errorMessage }}
+      </div>
+
       <button 
-        type="button"
-        class="btn btn-link password-toggle"
-        (click)="togglePasswordVisibility()">
-        <i class="bi" [class]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+        type="submit" 
+        class="btn btn-primary w-100 mb-4 btn-scale"
+        [disabled]="loginForm.invalid || isLoading">
+        <span *ngIf="!isLoading">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+        </span>
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        <span *ngIf="isLoading">Iniciando sesión...</span>
       </button>
-      <div *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)" class="text-danger small mt-1">
-        <div *ngIf="passwordInput.errors?.['required']">La contraseña es requerida</div>
-      </div>
-    </div>
 
-    <div class="mb-4 form-check fade-in-delay">
-      <input type="checkbox" class="form-check-input" id="remember" [(ngModel)]="rememberMe" name="remember">
-      <label class="form-check-label" for="remember">Recordarme</label>
-    </div>
-
-    <div *ngIf="errorMessage" class="alert alert-danger mb-4 fade-in">
-      {{ errorMessage }}
-    </div>
-
-    <button 
-      type="submit" 
-      class="btn btn-primary w-100 mb-4 btn-scale"
-      [disabled]="loginForm.invalid || isLoading">
-      <span *ngIf="!isLoading">
-        <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
-      </span>
-      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-      <span *ngIf="isLoading">Iniciando sesión...</span>
-    </button>
-
-    <div class="text-center mb-4 fade-in-delay">
-      <a routerLink="/auth/forgot-password" class="text-decoration-none hover-link">
-        ¿Olvidaste tu contraseña?
-      </a>
-    </div>
-
-    <hr class="my-4">
-
-    <div class="text-center slide-up-delay">
-      <p class="mb-3">¿No tienes una cuenta?</p>
-      <div class="d-grid gap-3">
-        <a routerLink="/auth/register/user" class="btn btn-outline-primary btn-scale">
-          <i class="bi bi-person-plus me-2"></i>Registrarse como Usuario
-        </a>
-        <a routerLink="/auth/register/company" class="btn btn-outline-secondary btn-scale">
-          <i class="bi bi-building me-2"></i>Registrarse como Empresa
+      <div class="text-center mb-4 fade-in-delay">
+        <a routerLink="/forgot-password" class="text-decoration-none hover-link">
+          ¿Olvidaste tu contraseña?
         </a>
       </div>
-    </div>
-  </form>
-</div>
+
+      <hr class="my-4">
+
+      <div class="text-center slide-up-delay">
+        <p class="mb-3">¿No tienes una cuenta?</p>
+        <a routerLink="/register" class="btn btn-outline-primary w-100 btn-scale">
+          <i class="bi bi-person-plus me-2"></i>Registrarse
+        </a>
+      </div>
+    </form>
+  </div>
+</app-auth-layout>

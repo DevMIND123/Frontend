@@ -51,7 +51,7 @@ export class ClientRegisterComponent {
       next: () => {
         this.router.navigate(['/login']);
       },
-      error: (error) => {
+      error: (error: Error) => {
         this.errorMessage = error.message || 'Error al registrar. Por favor, inténtalo de nuevo.';
         this.isLoading = false;
       }

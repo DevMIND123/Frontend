@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AuthService } from '../../services/auth.service';
+import { of } from 'rxjs';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -37,7 +38,7 @@ describe('LoginComponent', () => {
   });
 
   it('should handle successful login', async () => {
-    authService.login.and.returnValue(Promise.resolve(true));
+    authService.login.and.returnValue(of(true));
     
     component.email = 'test@example.com';
     component.password = 'password';
@@ -49,7 +50,7 @@ describe('LoginComponent', () => {
   });
 
   it('should handle failed login', async () => {
-    authService.login.and.returnValue(Promise.resolve(false));
+    authService.login.and.returnValue(of(false));
     
     component.email = 'test@example.com';
     component.password = 'wrong-password';

@@ -6,16 +6,12 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <footer class="bg-gray-800 text-white py-6 mt-auto">
-      <div class="container mx-auto px-4">
-        <p class="text-center">© 2024 Your Company. All rights reserved.</p>
+    <footer class="footer mt-auto py-3 bg-light">
+      <div class="container">
+        <span class="text-muted">© 2024 Your App. All rights reserved.</span>
       </div>
     </footer>
   `,
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
+  styles: []
 })
 export class FooterComponent {}

@@ -1,0 +1,291 @@
+<app-navbar></app-navbar>
+
+<!-- Page Title -->
+<div class="bg-success text-white py-4 mb-4">
+  <div class="container">
+    <h1 class="h3 mb-0">Mi Dashboard</h1>
+  </div>
+</div>
+
+<div class="container-fluid py-4">
+  <div class="row">
+    <!-- Left Column - User Info Panel -->
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="card-header">
+            <div class="card-icon bg-primary">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <h3 class="card-title">Mi Perfil</h3>
+          </div>
+
+          <!-- Success/Error Messages -->
+          <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ successMessage }}
+            <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+          </div>
+
+          <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ errorMessage }}
+            <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+          </div>
+
+          <!-- Profile Form -->
+          <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
+            <div class="mb-3">
+              <label class="form-label">Nombre completo</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="userData.nombre"
+                name="nombre"
+                [readonly]="!isEditing">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Correo electrónico</label>
+              <input
+                type="email"
+                class="form-control"
+                [(ngModel)]="userData.email"
+                name="email"
+                [readonly]="!isEditing">
+            </div>
+
+            <div class="d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-primary flex-grow-1"
+                (click)="toggleEdit()">
+                <i class="bi" [class]="isEditing ? 'bi-x-lg' : 'bi-pencil'"></i>
+                {{ isEditing ? 'Cancelar' : 'Editar' }}
+              </button>
+              <button
+                *ngIf="isEditing"
+                type="submit"
+                class="btn btn-primary flex-grow-1">
+                <i class="bi bi-save"></i>
+                Guardar
+              </button>
+            </div>
+          </form>
+
+          <hr>
+
+          <!-- Settings Section -->
+          <h4 class="mb-3">Configuración</h4>
+          <div class="form-check form-switch mb-3">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              [(ngModel)]="darkMode"
+              (change)="toggleTheme()">
+            <label class="form-check-label">Modo Oscuro</label>
+          </div>
+          <div class="form-check form-switch mb-4">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              [(ngModel)]="notificationsEnabled">
+            <label class="form-check-label">Notificaciones</label>
+          </div>
+
+          <!-- Account Actions -->
+          <h4 class="mb-3">Seguridad</h4>
+          <div class="d-grid gap-2">
+            <button 
+              class="btn btn-outline-primary"
+              (click)="showPasswordModal = true">
+              <i class="bi bi-key me-2"></i>
+              Cambiar Contraseña
+            </button>
+            <button 
+              class="btn btn-outline-danger"
+              (click)="deleteAccount()">
+              <i class="bi bi-trash me-2"></i>
+              Eliminar Cuenta
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Progress and Habits -->
+    <div class="col-md-8">
+      <!-- Active Challenges -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+              <div class="card-icon bg-success me-3">
+                <i class="bi bi-trophy"></i>
+              </div>
+              <h3 class="card-title mb-0">Retos Activos</h3>
+            </div>
+            <button class="btn btn-success" (click)="createChallenge()">
+              <i class="bi bi-plus-lg me-2"></i>Nuevo Reto
+            </button>
+          </div>
+
+          <div class="row g-4">
+            <!-- Challenge Card 1 -->
+            <div class="col-md-6">
+              <div class="challenge-card">
+                <div class="challenge-header">
+                  <h4>30 Días Sin Azúcar</h4>
+                  <span class="badge bg-success">Día 19</span>
+                </div>
+                <div class="progress-info">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Progreso</span>
+                    <span class="text-success">65%</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 65%"></div>
+                  </div>
+                </div>
+                <div class="challenge-stats">
+                  <div class="stat-item">
+                    <i class="bi bi-calendar-check text-success"></i>
+                    <span>11 días restantes</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="bi bi-lightning-charge text-warning"></i>
+                    <span>Racha: 19 días</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Challenge Card 2 -->
+            <div class="col-md-6">
+              <div class="challenge-card">
+                <div class="challenge-header">
+                  <h4>Madrugador</h4>
+                  <span class="badge bg-warning">Día 8</span>
+                </div>
+                <div class="progress-info">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Progreso</span>
+                    <span class="text-warning">40%</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"></div>
+                  </div>
+                </div>
+                <div class="challenge-stats">
+                  <div class="stat-item">
+                    <i class="bi bi-calendar-check text-warning"></i>
+                    <span>12 días restantes</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="bi bi-lightning-charge text-warning"></i>
+                    <span>Racha: 8 días</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Habits Section -->
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+              <div class="card-icon bg-primary me-3">
+                <i class="bi bi-check2-circle"></i>
+              </div>
+              <h3 class="card-title mb-0">Mis Hábitos</h3>
+            </div>
+            <button class="btn btn-primary" (click)="createHabit()">
+              <i class="bi bi-plus-lg me-2"></i>Nuevo Hábito
+            </button>
+          </div>
+
+          <div class="row g-4">
+            <!-- Habit Card - Alimentación -->
+            <div class="col-md-4">
+              <div class="habit-card">
+                <div class="habit-icon food-icon">
+                  <i class="bi bi-apple"></i>
+                </div>
+                <h5>Alimentación</h5>
+                <div class="habit-progress">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Progreso</span>
+                    <span class="text-success">75%</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                  </div>
+                </div>
+                <div class="habit-streak">
+                  <i class="bi bi-lightning-charge-fill text-warning"></i>
+                  <span>12 días consecutivos</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Habit Card - Tiempo -->
+            <div class="col-md-4">
+              <div class="habit-card">
+                <div class="habit-icon time-icon">
+                  <i class="bi bi-clock"></i>
+                </div>
+                <h5>Tiempo</h5>
+                <div class="habit-progress">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Progreso</span>
+                    <span class="text-info">60%</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: 60%"></div>
+                  </div>
+                </div>
+                <div class="habit-streak">
+                  <i class="bi bi-lightning-charge-fill text-warning"></i>
+                  <span>8 días consecutivos</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Habit Card - Finanzas -->
+            <div class="col-md-4">
+              <div class="habit-card">
+                <div class="habit-icon finance-icon">
+                  <i class="bi bi-piggy-bank"></i>
+                </div>
+                <h5>Finanzas</h5>
+                <div class="habit-progress">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Progreso</span>
+                    <span class="text-warning">45%</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 45%"></div>
+                  </div>
+                </div>
+                <div class="habit-streak">
+                  <i class="bi bi-lightning-charge-fill text-warning"></i>
+                  <span>5 días consecutivos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Change Modal -->
+<app-password-change-modal
+  [show]="showPasswordModal"
+  (close)="showPasswordModal = false"
+  (submit)="onPasswordChange($event)">
+</app-password-change-modal>
+
+<app-footer></app-footer>

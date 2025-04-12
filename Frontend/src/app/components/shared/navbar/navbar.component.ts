@@ -1,7 +1,8 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService, UserInfo } from '../../../services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -34,7 +35,7 @@ import { AuthService } from '../../../services/auth.service';
           </ul>
 
           <!-- Guest Menu -->
-          <div class="d-flex gap-2" *ngIf="!isLoggedIn">
+          <div class="d-flex gap-2" *ngIf="!currentUser">
             <a routerLink="/login" class="btn btn-outline-primary">
               <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
             </a>
@@ -44,7 +45,7 @@ import { AuthService } from '../../../services/auth.service';
           </div>
 
           <!-- User Menu -->
-          <div class="nav-item dropdown" *ngIf="isLoggedIn">
+          <div class="nav-item dropdown" *ngIf="currentUser">
             <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" 
                role="button" 
                data-bs-toggle="dropdown" 
@@ -54,11 +55,16 @@ import { AuthService } from '../../../services/auth.service';
                    class="rounded-circle profile-image"
                    width="32" 
                    height="32">
-              <span class="d-none d-md-inline">{{ userName }}</span>
+              <span class="d-none d-md-inline">{{ currentUser.name }} ({{ currentUser.role }})</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end animate slideIn">
               <li>
-                <a class="dropdown-item d-flex align-items-center" routerLink="/profile">
+                <a class="dropdown-item d-flex align-items-center" [routerLink]="['/home', currentUser.role.toLowerCase()]">
+                  <i class="bi bi-house me-2"></i>Dashboard
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center" [routerLink]="['/home', currentUser.role.toLowerCase()]">
                   <i class="bi bi-person me-2"></i>Mi Perfil
                 </a>
               </li>
@@ -91,14 +97,24 @@ import { AuthService } from '../../../services/auth.service';
   `,
   styleUrls: ['./navbar.component.css']
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit, OnDestroy {
   isScrolled = false;
-  isLoggedIn = false;
-  userName = '';
+  currentUser: UserInfo | null = null;
   userProfileImage = 'assets/images/profile-placeholder.jpg';
+  private userSubscription?: Subscription;
 
-  constructor(private authService: AuthService) {
-    this.checkLoginStatus();
+  constructor(private authService: AuthService) {}
+
+  ngOnInit() {
+    this.userSubscription = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
   }
 
   @HostListener('window:scroll', [])
@@ -106,14 +122,7 @@ export class NavbarComponent {
     this.isScrolled = window.scrollY > 50;
   }
 
-  checkLoginStatus() {
-    this.isLoggedIn = this.authService.isAuthenticated();
-    this.userName = localStorage.getItem('userName') || '';
-  }
-
   logout() {
     this.authService.logout();
-    this.isLoggedIn = false;
-    this.userName = '';
   }
 }

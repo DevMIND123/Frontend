@@ -3,30 +3,32 @@
   "private": true,
   "scripts": {
     "ng": "ng",
-    "start": "npx ng serve",
-    "build": "npx ng build",
+    "start": "node_modules/.bin/ng serve",
+    "build": "node_modules/.bin/ng build",
     "dev": "npm run start"
   },
   "dependencies": {
-    "@angular/animations": "~17.2.0",
-    "@angular/common": "~17.2.0",
-    "@angular/compiler": "~17.2.0",
-    "@angular/core": "~17.2.0",
-    "@angular/forms": "~17.2.0",
-    "@angular/platform-browser": "~17.2.0",
-    "@angular/platform-browser-dynamic": "~17.2.0",
-    "@angular/router": "~17.2.0",
+    "@angular/animations": "~16.2.0",
+    "@angular/common": "~16.2.0",
+    "@angular/compiler": "~16.2.0",
+    "@angular/core": "~16.2.0",
+    "@angular/forms": "~16.2.0",
+    "@angular/platform-browser": "~16.2.0",
+    "@angular/platform-browser-dynamic": "~16.2.0",
+    "@angular/router": "~16.2.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "rxjs": "~7.8.1",
     "tslib": "^2.5.0",
-    "zone.js": "~0.14.0"
+    "zone.js": "~0.13.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~17.2.0",
-    "@angular/cli": "~17.2.0",
-    "@angular/compiler-cli": "~17.2.0",
-    "typescript": "~5.2.2"
+    "@angular-devkit/build-angular": "~16.2.0",
+    "@angular/cli": "~16.2.0",
+    "@angular/compiler-cli": "~16.2.0",
+    "@types/jasmine": "~5.1.0",
+    "@types/node": "^20.11.24",
+    "typescript": "~5.1.6"
   }
 }
