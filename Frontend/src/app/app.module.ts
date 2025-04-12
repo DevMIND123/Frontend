@@ -15,8 +15,6 @@ import { FormsModule } from '@angular/forms';
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
-    HomeComponent,
     NotFoundComponent
   ],
   imports: [
@@ -24,7 +22,9 @@ import { FormsModule } from '@angular/forms';
     HttpClientModule,
     FormsModule,
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    LoginComponent,
+    HomeComponent,
   ],
   providers: [
     provideClientHydration()
