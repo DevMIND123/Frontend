@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule, provideClientHydration, withEventReplay } from '@angular/platform-browser';
-
+import { BrowserModule} from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
@@ -19,6 +19,8 @@ import { FooterComponent } from './components/shared/footer/footer.component';
 import { NavbarComponent } from './components/shared/navbar/navbar.component';
 import { PasswordChangeModalComponent } from './components/shared/password-change-modal/password-change-modal.component';
 import { UserInfoPanelComponent } from './components/shared/user-info-panel/user-info-panel.component';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { HTTP_INTERCEPTORS, provideHttpClient, withFetch } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -42,10 +44,11 @@ import { UserInfoPanelComponent } from './components/shared/user-info-panel/user
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule,
   ],
-  providers: [
-    provideClientHydration(withEventReplay())
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    provideHttpClient(withFetch())
   ],
   bootstrap: [AppComponent]
 })

@@ -1,0 +1,60 @@
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-image: url('https://images.unsplash.com/photo-1533113354171-490d836238e3?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    background-color: #292b2c;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    width: 300px; /* Ajusta el ancho según sea necesario */
+    max-width: 90%; /* Asegura que no se desborde en pantallas más pequeñas */
+    margin: 20px auto; /* Centra el contenedor horizontalmente */
+    text-align: center; /* Centra el texto dentro del contenedor */
+}
+ 
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+ 
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra los elementos dentro del formulario */
+}
+ 
+label {
+    font-size: 18px;
+    margin-bottom: 8px;
+    width: 100%; /* Asegura que las etiquetas ocupen todo el ancho disponible */
+    text-align: left; /* Alinea el texto de las etiquetas a la izquierda */
+}
+ 
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 16px;
+    box-sizing: border-box; /* Asegura que el padding y el borde se incluyan en el ancho total */
+}
+ 
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: center; /* Centra el botón dentro del formulario */
+}
+ 
+button:hover {
+    background-color: #0056b3;
+}
