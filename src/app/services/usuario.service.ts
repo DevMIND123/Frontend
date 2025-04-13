@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -19,9 +19,20 @@ export class UsuarioService {
     { "Content-Type": "application/json" }
   )
 
-  obtenerUsuario(Email:String): Observable<number> {
-    console.log("DTO:", Email);
-    return this.http.get<number>(`${environment.apiUrl}/clientes/email/${Email}`)
+  obtenerUsuario(Email: String, rol: String): Observable<number> {
+    console.log("Rol:", rol);
+    if (rol == "CLIENTE") {
+      return this.http.get<number>(`${environment.apiUrl}/clientes/email/${Email}`)
+    }
+    else if (rol == "ADMINISTRADOR" || rol == "MARKETING" || rol == "SOPORTE") {
+      return this.http.get<number>(`${environment.apiUrl}/administradores/email/${Email}`)
+    }
+    else if (rol == "EMPRESA") {
+      return this.http.get<number>(`${environment.apiUrl}/empresas/email/${Email}`)
+    }
+    else {
+      return throwError(() => new Error("Rol no válido"));
+    }
   }
 
   setRol(value: String) {
