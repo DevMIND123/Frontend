@@ -17,13 +17,15 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   login(loginDto: LoginDto): Observable<JwtAuthenticationResponse> {
+    console.log("DTO:", loginDto);
     return this.http.post<JwtAuthenticationResponse>(`http://localhost:8080/api.retochimba.com/auth/login`, loginDto)
       .pipe(map(jwt => {
         // Importante: https://stackoverflow.com/questions/27067251/where-to-store-jwt-in-browser-how-to-protect-against-csrf
         if (this.isBrowser()) {
           sessionStorage.setItem(JWT_TOKEN, jwt.token);
-          sessionStorage.setItem(USER, jwt.user);
-          sessionStorage.setItem(ROLE, jwt.role);
+          sessionStorage.setItem(USER, jwt.email);
+          sessionStorage.setItem(ROLE, jwt.rol);
+    
         }
         return jwt;
       }));

@@ -20,7 +20,8 @@ export class UsuarioService {
   )
 
   obtenerUsuario(Email:String): Observable<number> {
-    return this.http.get<number>(`${environment.apiUrl}/usuarios/email/${Email}`)
+    console.log("DTO:", Email);
+    return this.http.get<number>(`${environment.apiUrl}/clientes/email/${Email}`)
   }
 
   setRol(value: String) {
