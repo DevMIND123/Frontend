@@ -22,20 +22,22 @@ import { UserInfoPanelComponent } from './components/shared/user-info-panel/user
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { HTTP_INTERCEPTORS, provideHttpClient, withFetch } from '@angular/common/http';
 import { LandingPageComponent } from './components/landing-page/landing-page.component';
+import { AuthService } from './services/auth.service';
+import { HttpClientModule } from '@angular/common/http';
+
+
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     AboutComponent,
-    ClientComponent,
     EmpresaComponent,
     MarketingComponent,
     SoporteComponent,
     SuperadminComponent,
     NotFoundComponent,
     ProfileComponent,
-    CompanyComponent,
     RegisterViewComponent,
     AuthLayoutComponent,
     PasswordChangeModalComponent,
@@ -47,9 +49,12 @@ import { LandingPageComponent } from './components/landing-page/landing-page.com
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    FooterComponent
+    FooterComponent,
+    HttpClientModule
   ],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+  providers: [
+    AuthService,
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideHttpClient(withFetch())
   ],
   bootstrap: [AppComponent]

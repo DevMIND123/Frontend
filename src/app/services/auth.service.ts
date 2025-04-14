@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { JwtAuthenticationResponse } from '../dto/jwt-authentication-response';
 import { map } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { UsuarioService } from './usuario.service';
 
 const JWT_TOKEN = "jwt-token";
 const USER = "user";
@@ -54,5 +55,15 @@ export class AuthService {
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof sessionStorage !== 'undefined';
   }
-
+  registerClient(usuario: any): Observable<any> {
+    return this.http.post<any>(`http://localhost:8080/api.retochimba.com/auth/register/client`, usuario);
+  }
+  registerCompany(empresa: any): Observable<any> {
+    return this.http.post<any>(`http://localhost:8080/api.retochimba.com/auth/empresa/register`, empresa);
+  }
+  changePassword(data: { email: string; nuevaPassword: string }): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/auth/change-password`, data, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
 }

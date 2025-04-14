@@ -1,1 +1,55 @@
-<p>register-view works!</p>
+<app-navbar></app-navbar>
+
+<!-- Contenedor del fondo y el contenido -->
+<div class="register-page-container position-relative">
+
+    <!-- Imagen de fondo como elemento HTML -->
+    <img src="assets/images/Registro-fondo.jpg" alt="Fondo de Registro" class="bg-image">
+
+    <!-- Capa oscura -->
+    <div class="overlay"></div>
+
+    <!-- Contenido principal -->
+    <div class="register-content container d-flex flex-column justify-content-center align-items-center text-center">
+        <h2 class="text-white mb-5 fade-in">El Comienzo de tu Aventura Saludable</h2>
+
+        <div class="row g-4 w-100 slide-up">
+            <!-- Cliente -->
+            <div class="col-md-6">
+                <div class="registration-card" routerLink="/register/client">
+                    <div class="card-icon">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <h3>Cliente</h3>
+                    <p>Empieza a mejorar tus hábitos y bienestar de manera divertida.</p>
+                    <button class="btn btn-primary w-100">
+                        Registrarse como Cliente <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empresa -->
+            <div class="col-md-6">
+                <div class="registration-card" routerLink="/register/company">
+                    <div class="card-icon company">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h3>Empresa</h3>
+                    <p>Conéctate con usuarios y descubre datos útiles sobre hábitos.</p>
+                    <button class="btn btn-primary w-100">
+                        Registrarse como Empresa <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 slide-up-delay">
+            <p class="mb-3 text-white">¿Ya tienes una cuenta?</p>
+            <a routerLink="/login" class="btn btn-outline-light">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+            </a>
+        </div>
+    </div>
+</div>
+
+<app-footer></app-footer>

@@ -19,18 +19,15 @@ export class UsuarioService {
     { "Content-Type": "application/json" }
   )
 
-  obtenerUsuario(Email: String, rol: String): Observable<number> {
+  obtenerUsuario(email: string, rol: string): Observable<number> {
     console.log("Rol:", rol);
-    if (rol == "CLIENTE") {
-      return this.http.get<number>(`${environment.apiUrl}/clientes/email/${Email}`)
-    }
-    else if (rol == "ADMINISTRADOR" || rol == "MARKETING" || rol == "SOPORTE") {
-      return this.http.get<number>(`${environment.apiUrl}/administradores/email/${Email}`)
-    }
-    else if (rol == "EMPRESA") {
-      return this.http.get<number>(`${environment.apiUrl}/empresas/email/${Email}`)
-    }
-    else {
+    if (rol === "CLIENTE") {
+      return this.http.get<number>(`${environment.apiUrl}/clientes/email/${email}`);
+    } else if (rol === "ADMINISTRADOR" || rol === "MARKETING" || rol === "SOPORTE") {
+      return this.http.get<number>(`${environment.apiUrl}/administradores/email/${email}`);
+    } else if (rol === "EMPRESA") {
+      return this.http.get<number>(`${environment.apiUrl}/empresas/email/${email}`);
+    } else {
       return throwError(() => new Error("Rol no válido"));
     }
   }
@@ -43,4 +40,42 @@ export class UsuarioService {
     return this.rol.asObservable();
   }
 
+  obtenerUsuarioPorId(id: number, rol: String): Observable<any> {
+    if (rol === "CLIENTE") {
+      return this.http.get<any>(`${environment.apiUrl}/clientes/${id}`);
+    } else if (rol === "EMPRESA") {
+      return this.http.get<any>(`${environment.apiUrl}/empresas/${id}`);
+    } else if (rol === "ADMINISTRADOR" || rol === "MARKETING" || rol === "SOPORTE") {
+      return this.http.get<any>(`${environment.apiUrl}/administradores/${id}`);
+    } else {
+      return throwError(() => new Error("Rol no válido"));
+    }
+  }
+
+  actualizarUsuarioPorRol(id: number, data: any, rol: String): Observable<any> {
+    if (rol === "CLIENTE") {
+      return this.http.put(`${environment.apiUrl}/clientes/${id}`, data, { headers: this.headers });
+    } else if (rol === "EMPRESA") {
+      return this.http.put(`${environment.apiUrl}/empresas/${id}`, data, { headers: this.headers });
+    } else if (rol === "ADMINISTRADOR" || rol === "MARKETING" || rol === "SOPORTE") {
+      return this.http.put(`${environment.apiUrl}/administradores/${id}`, data, { headers: this.headers });
+    } else {
+      return throwError(() => new Error("Rol no válido"));
+    }
+  }
+
+  eliminarUsuarioPorRol(id: number, rol: String): Observable<any> {
+    if (rol === "CLIENTE") {
+      return this.http.delete(`${environment.apiUrl}/clientes/${id}`);
+    } else if (rol === "EMPRESA") {
+      return this.http.delete(`${environment.apiUrl}/empresas/${id}`);
+    } else if (rol === "ADMINISTRADOR" || rol === "MARKETING" || rol === "SOPORTE") {
+      return this.http.delete(`${environment.apiUrl}/administradores/${id}`);
+    } else {
+      return throwError(() => new Error("Rol no válido"));
+    }
+  }
+
 }
+
+
