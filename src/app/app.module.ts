@@ -43,6 +43,7 @@ import { HttpClientModule } from '@angular/common/http';
     PasswordChangeModalComponent,
     UserInfoPanelComponent,
     LandingPageComponent
+    
   ],
   imports: [
     NavbarComponent,
@@ -50,7 +51,8 @@ import { HttpClientModule } from '@angular/common/http';
     AppRoutingModule,
     FormsModule,
     FooterComponent,
-    HttpClientModule
+    HttpClientModule,
+    ClientComponent
   ],
   providers: [
     AuthService,
