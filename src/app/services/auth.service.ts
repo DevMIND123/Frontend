@@ -5,11 +5,13 @@ import { Observable } from 'rxjs';
 import { JwtAuthenticationResponse } from '../dto/jwt-authentication-response';
 import { map } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { UsuarioService } from './usuario.service';
 
-const JWT_TOKEN = "jwt-token";
-const USER = "user";
-const ROLE = "user-role";
+const JWT_TOKEN = 'jwt-token';
+const USER = 'user';
+const ROLE = 'user-role';
+const USER_ID = 'userId';
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,49 +20,62 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   login(loginDto: LoginDto): Observable<JwtAuthenticationResponse> {
-    console.log("DTO:", loginDto);
-    return this.http.post<JwtAuthenticationResponse>(`http://localhost:8080/api.retochimba.com/auth/login`, loginDto)
+    return this.http.post<JwtAuthenticationResponse>(`${environment.apiUrl}/auth/login`, loginDto)
       .pipe(map(jwt => {
-        // Importante: https://stackoverflow.com/questions/27067251/where-to-store-jwt-in-browser-how-to-protect-against-csrf
         if (this.isBrowser()) {
           sessionStorage.setItem(JWT_TOKEN, jwt.token);
           sessionStorage.setItem(USER, jwt.email);
           sessionStorage.setItem(ROLE, jwt.rol);
-    
+          if (jwt.userId) {
+            sessionStorage.setItem(USER_ID, jwt.userId.toString());
+          }
         }
         return jwt;
       }));
   }
 
-  logout() {
+  logout(): void {
     if (this.isBrowser()) {
       sessionStorage.removeItem(JWT_TOKEN);
       sessionStorage.removeItem(USER);
       sessionStorage.removeItem(ROLE);
+      sessionStorage.removeItem(USER_ID);
     }
   }
 
-  isAuthenticated() {
+  isAuthenticated(): boolean {
     return this.isBrowser() && sessionStorage.getItem(JWT_TOKEN) != null;
   }
 
-  token() {
-    return this.isBrowser() ? sessionStorage.getItem(JWT_TOKEN) : null;
+  // filepath: auth.service.ts
+  token(): string | null {
+    return this.isBrowser() ? sessionStorage.getItem('jwt-token') : null;
   }
 
-  role() {
+  getRole(): string | null {
     return this.isBrowser() ? sessionStorage.getItem(ROLE) : null;
+  }
+
+  getEmail(): string | null {
+    return this.isBrowser() ? sessionStorage.getItem(USER) : null;
+  }
+
+  getUserId(): string | null {
+    return this.isBrowser() ? sessionStorage.getItem(USER_ID) : null;
   }
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof sessionStorage !== 'undefined';
   }
+
   registerClient(usuario: any): Observable<any> {
-    return this.http.post<any>(`http://localhost:8080/api.retochimba.com/clientes`, usuario);
+    return this.http.post<any>(`${environment.apiUrl}/clientes`, usuario);
   }
+
   registerCompany(empresa: any): Observable<any> {
-    return this.http.post<any>(`http://localhost:8080/api.retochimba.com/empresas`, empresa);
+    return this.http.post<any>(`${environment.apiUrl}/empresas`, empresa);
   }
+
   changePassword(data: { email: string; nuevaPassword: string }): Observable<any> {
     return this.http.put(`${environment.apiUrl}/auth/change-password`, data, {
       headers: { 'Content-Type': 'application/json' }

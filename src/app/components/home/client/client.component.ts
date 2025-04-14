@@ -1,10 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
+import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
+import { FooterComponent } from '../../shared/footer/footer.component';
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-client',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    NavbarComponent,
+    FooterComponent, // Agrega FooterComponent aquí si es standalon
+  ],
   templateUrl: './client.component.html',
   styleUrls: ['./client.component.css']
 })

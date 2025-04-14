@@ -7,6 +7,9 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class UsuarioService {
+  actualizarUsuario(userData: { nombre: string; email: string; departamento: string; especialidad: string; currentPassword: string; newPassword: string; confirmPassword: string; }) {
+    throw new Error('Method not implemented.');
+  }
 
   private rol = new BehaviorSubject<String>('');
 
@@ -75,6 +78,8 @@ export class UsuarioService {
       return throwError(() => new Error("Rol no válido"));
     }
   }
+
+  
 
 }
 

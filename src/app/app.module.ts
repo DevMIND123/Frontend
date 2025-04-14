@@ -7,7 +7,7 @@ import { LoginComponent } from './components/login/login.component';
 import { AboutComponent } from './components/about/about.component';
 import { ClientComponent } from './components/home/client/client.component';
 import { MarketingComponent } from './components/home/marketing/marketing.component';
-import { SoporteComponent } from './components/home/soporte/soporte.component';
+import { SoporteHomeComponent } from './components/home/soporte/soporte.component';
 import { SuperadminComponent } from './components/home/superadmin/superadmin.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { ProfileComponent } from './components/profile/profile.component';
@@ -32,9 +32,6 @@ import { EmpresaHomeComponent } from './components/home/empresa/empresa.componen
     AppComponent,
     LoginComponent,
     AboutComponent,
-    MarketingComponent,
-    SoporteComponent,
-    SuperadminComponent,
     NotFoundComponent,
     ProfileComponent,
     RegisterViewComponent,
@@ -46,12 +43,16 @@ import { EmpresaHomeComponent } from './components/home/empresa/empresa.componen
     
   ],
   imports: [
-    NavbarComponent,
+    
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    FooterComponent,
     HttpClientModule,
+    MarketingComponent,
+    SoporteHomeComponent,
+    SuperadminComponent,
+    NavbarComponent,
+    FooterComponent,
     ClientComponent
     
   ],

@@ -7,7 +7,7 @@ import { CompanyComponent } from './components/register/company/company.componen
 import { ClientComponent } from './components/home/client/client.component';
 import { AboutComponent } from './components/about/about.component';
 import { MarketingComponent } from './components/home/marketing/marketing.component';
-import { SoporteComponent } from './components/home/soporte/soporte.component';
+import { SoporteHomeComponent } from './components/home/soporte/soporte.component';
 import { SuperadminComponent } from './components/home/superadmin/superadmin.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PasswordChangeModalComponent } from './components/shared/password-change-modal/password-change-modal.component';
@@ -20,9 +20,9 @@ const routes: Routes = [
   { path: 'register', component: RegisterViewComponent },
   { path: 'register/company', loadComponent: () => import('./components/register/company/company.component').then(m => m.CompanyComponent) },
   { path: 'register/client', loadComponent: () => import('./components/register/client/client.component').then(m => m.ClientComponent) }, 
-  { path: 'home/superadmin', component: SuperadminComponent },
-  { path: 'home/marketing', component: MarketingComponent },
-  { path: 'home/soporte', component: SoporteComponent },
+  { path: 'home/superadmin', loadComponent: () => import('./components/home/superadmin/superadmin.component').then(m => m.SuperadminComponent) },
+  { path: 'home/marketing', loadComponent: () => import('./components/home/marketing/marketing.component').then(m => m.MarketingComponent) },
+  { path: 'home/soporte', component: SoporteHomeComponent }, // Cambiado aquí
   { path: 'home/empresa', component: EmpresaHomeComponent },
   { path: 'home/client', component: ClientComponent },
   { path: 'about', component: AboutComponent },

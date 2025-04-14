@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SoporteComponent } from './soporte.component';
+import { SoporteHomeComponent } from './soporte.component';
 
 describe('SoporteComponent', () => {
-  let component: SoporteComponent;
-  let fixture: ComponentFixture<SoporteComponent>;
+  let component: SoporteHomeComponent;
+  let fixture: ComponentFixture<SoporteHomeComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SoporteComponent]
+      declarations: [SoporteHomeComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SoporteComponent);
+    fixture = TestBed.createComponent(SoporteHomeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
