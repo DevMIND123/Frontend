@@ -3,14 +3,20 @@
 <div
     class="register-container d-flex align-items-center justify-content-center"
     style="background-image: url('assets/images/Registro-fondo.jpg'); background-size: cover; background-position: center; min-height: 100vh; padding: 2rem;">
-
     <div class="auth-form bg-white p-4 rounded shadow-lg" style="max-width: 480px; width: 100%;">
         <h2 class="text-center mb-4">Registro de Empresa</h2>
 
         <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+            <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
             <div class="mb-3 form-floating">
                 <input type="text" class="form-control" id="nombre" [(ngModel)]="nombre" name="nombre" placeholder="Nombre de la Empresa" required>
                 <label for="nombre">Nombre de la Empresa</label>
+            </div>
+
+            <div class="mb-3 form-floating">
+                <input type="text" class="form-control" id="nombreRepresentante" [(ngModel)]="nombreRepresentante" name="nombreRepresentante" placeholder="Nombre del Representante Legal" required>
+                <label for="nombreRepresentante">Representante Legal</label>
             </div>
 
             <div class="mb-3 form-floating">
@@ -18,7 +24,7 @@
                 <label for="email">Correo electrónico</label>
             </div>
 
-            <div class="mb-3 form-floating">
+            <div class="mb-3 form-floating position-relative">
                 <input [type]="showPassword ? 'text' : 'password'" class="form-control" id="password" [(ngModel)]="password" name="password" placeholder="Contraseña" required>
                 <label for="password">Contraseña</label>
                 <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-3" (click)="togglePasswordVisibility()" style="z-index: 2;">
@@ -53,8 +59,9 @@
                 </label>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mb-3" [disabled]="!registerForm.form.valid || !acceptTerms">
-                <i class="bi bi-building me-2"></i>Registrarse como Empresa
+            <button type="submit" class="btn btn-primary w-100 mb-3" [disabled]="!registerForm.form.valid || !acceptTerms || isLoading">
+                <i class="bi bi-building me-2"></i>
+                {{ isLoading ? 'Registrando...' : 'Registrarse como Empresa' }}
             </button>
 
             <div class="text-center">

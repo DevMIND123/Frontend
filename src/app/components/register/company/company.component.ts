@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { Empresa } from '../../../models/empresa';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
-
 
 @Component({
   selector: 'app-company-register',
@@ -18,6 +17,7 @@ import { FooterComponent } from '../../shared/footer/footer.component';
 export class CompanyComponent {
   showPassword = false;
   nombre = '';
+  nombreRepresentante = '';
   email = '';
   password = '';
   confirmPassword = '';
@@ -41,7 +41,7 @@ export class CompanyComponent {
     }
 
     if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Las contraseñas no coinciden';
+      this.errorMessage = 'Las contraseñas no coinciden.';
       return;
     }
 
@@ -50,6 +50,7 @@ export class CompanyComponent {
 
     const empresaData: Empresa = {
       nombre: this.nombre,
+      nombreRepresentante: this.nombreRepresentante,
       email: this.email,
       password: this.password,
       telefono: this.telefono,

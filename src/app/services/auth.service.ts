@@ -56,10 +56,10 @@ export class AuthService {
     return typeof window !== 'undefined' && typeof sessionStorage !== 'undefined';
   }
   registerClient(usuario: any): Observable<any> {
-    return this.http.post<any>(`http://localhost:8080/api.retochimba.com/auth/register/client`, usuario);
+    return this.http.post<any>(`http://localhost:8080/api.retochimba.com/clientes`, usuario);
   }
   registerCompany(empresa: any): Observable<any> {
-    return this.http.post<any>(`http://localhost:8080/api.retochimba.com/auth/empresa/register`, empresa);
+    return this.http.post<any>(`http://localhost:8080/api.retochimba.com/empresas`, empresa);
   }
   changePassword(data: { email: string; nuevaPassword: string }): Observable<any> {
     return this.http.put(`${environment.apiUrl}/auth/change-password`, data, {

@@ -2,6 +2,7 @@ export class Empresa {
     constructor(
         public id?: string, // ID único de la empresa (opcional)
         public nombre?: string, // Nombre de la empresa
+        public nombreRepresentante?: string, // Nombre del representante 
         public email?: string, // Correo electrónico
         public password?: string, // Contraseña
         public telefono?: string, // Teléfono de contacto
