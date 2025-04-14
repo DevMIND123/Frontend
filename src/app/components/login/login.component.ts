@@ -40,25 +40,24 @@ export class LoginComponent implements OnInit {
       next: jwt => {
         console.log("Login exitoso. JWT:", jwt);
         console.log("JWT.user:", jwt.email);
-        this.usuarioService.obtenerUsuario(jwt.email).subscribe({
+        this.usuarioService.obtenerUsuario(jwt.email, jwt.rol).subscribe({
           next: usuario => {
             this.usuarioService.setRol(jwt.rol);
-            console.log("Rol del usuario:", jwt.rol);
             switch (jwt.rol) {
               case 'ADMINISTRADOR':
-                this.router.navigate(['/admin/dashboard']);
+                this.router.navigate(['/login']);
                 break;
               case 'CLIENTE':
                 this.router.navigate(['/login']);
                 break;
               case 'EMPRESA':
-                this.router.navigate(['/empresa/panel']);
+                this.router.navigate(['/login']);
                 break;
               case 'MARKETING':
-                this.router.navigate(['/marketing/estrategias']);
+                this.router.navigate(['/login']);
                 break;
               case 'SOPORTE':
-                this.router.navigate(['/soporte/tickets']);
+                this.router.navigate(['/login']);
                 break;
               default:
                 console.warn("Rol no reconocido:", jwt.rol);
