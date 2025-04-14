@@ -6,12 +6,12 @@ import { RegisterViewComponent } from './components/register/register-view/regis
 import { CompanyComponent } from './components/register/company/company.component';
 import { ClientComponent } from './components/home/client/client.component';
 import { AboutComponent } from './components/about/about.component';
-import { EmpresaComponent } from './components/home/empresa/empresa.component';
 import { MarketingComponent } from './components/home/marketing/marketing.component';
 import { SoporteComponent } from './components/home/soporte/soporte.component';
 import { SuperadminComponent } from './components/home/superadmin/superadmin.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PasswordChangeModalComponent } from './components/shared/password-change-modal/password-change-modal.component';
+import { EmpresaHomeComponent } from './components/home/empresa/empresa.component';
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'landing-page' },
@@ -23,7 +23,7 @@ const routes: Routes = [
   { path: 'home/superadmin', component: SuperadminComponent },
   { path: 'home/marketing', component: MarketingComponent },
   { path: 'home/soporte', component: SoporteComponent },
-  { path: 'home/empresa', component: EmpresaComponent },
+  { path: 'home/empresa', component: EmpresaHomeComponent },
   { path: 'home/client', component: ClientComponent },
   { path: 'about', component: AboutComponent },
   { path: 'password-change', component: PasswordChangeModalComponent },

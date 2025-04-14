@@ -6,7 +6,6 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
 import { AboutComponent } from './components/about/about.component';
 import { ClientComponent } from './components/home/client/client.component';
-import { EmpresaComponent } from './components/home/empresa/empresa.component';
 import { MarketingComponent } from './components/home/marketing/marketing.component';
 import { SoporteComponent } from './components/home/soporte/soporte.component';
 import { SuperadminComponent } from './components/home/superadmin/superadmin.component';
@@ -24,6 +23,7 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withFetch } from '@angular/common
 import { LandingPageComponent } from './components/landing-page/landing-page.component';
 import { AuthService } from './services/auth.service';
 import { HttpClientModule } from '@angular/common/http';
+import { EmpresaHomeComponent } from './components/home/empresa/empresa.component';
 
 
 
@@ -32,7 +32,6 @@ import { HttpClientModule } from '@angular/common/http';
     AppComponent,
     LoginComponent,
     AboutComponent,
-    EmpresaComponent,
     MarketingComponent,
     SoporteComponent,
     SuperadminComponent,
@@ -42,7 +41,8 @@ import { HttpClientModule } from '@angular/common/http';
     AuthLayoutComponent,
     PasswordChangeModalComponent,
     UserInfoPanelComponent,
-    LandingPageComponent
+    LandingPageComponent,
+    EmpresaHomeComponent
     
   ],
   imports: [
@@ -53,6 +53,7 @@ import { HttpClientModule } from '@angular/common/http';
     FooterComponent,
     HttpClientModule,
     ClientComponent
+    
   ],
   providers: [
     AuthService,

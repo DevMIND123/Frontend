@@ -1,1 +1,250 @@
-<p>empresa works!</p>
+<app-navbar></app-navbar>
+
+<!-- Page Title -->
+<div class="bg-primary text-white py-4 mb-4">
+    <div class="container">
+        <h1 class="h3 mb-0">Panel de Empresa</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Company Information Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="card-header">
+                        <div class="card-icon bg-primary">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <h3 class="card-title">Información de la Empresa</h3>
+                    </div>
+
+                    <!-- Success/Error Messages -->
+                    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ successMessage }}
+                        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+                    </div>
+
+                    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ errorMessage }}
+                        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+                    </div>
+
+                    <form (ngSubmit)="onSubmit()" #companyForm="ngForm">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la Empresa</label>
+                            <input type="text" class="form-control" [(ngModel)]="companyData.nombreEmpresa"
+                                name="nombreEmpresa" [readonly]="!isEditing">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Representante Legal</label>
+                            <input type="text" class="form-control" [(ngModel)]="companyData.nombreRepresentante"
+                                name="nombreRepresentante" [readonly]="!isEditing">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">NIT</label>
+                            <input type="text" class="form-control" [(ngModel)]="companyData.numeroDocumento"
+                                name="numeroDocumento" [readonly]="!isEditing">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" [(ngModel)]="companyData.email" name="email"
+                                [readonly]="!isEditing">
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="toggleEdit()">
+                                <i class="bi" [class]="isEditing ? 'bi-x-lg' : 'bi-pencil'"></i>
+                                {{ isEditing ? 'Cancelar' : 'Editar' }}
+                            </button>
+                            <button *ngIf="isEditing" type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-save"></i>
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr>
+
+                    <!-- Settings Section -->
+                    <h4 class="mb-3">Configuración</h4>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="preferences.darkMode"
+                            (change)="toggleTheme()">
+                        <label class="form-check-label">Modo Oscuro</label>
+                    </div>
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="preferences.notifications">
+                        <label class="form-check-label">Notificaciones</label>
+                    </div>
+
+                    <!-- Security Section -->
+                    <h4 class="mb-3">Seguridad</h4>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" (click)="togglePasswordForm()">
+                            <i class="bi bi-key me-2"></i>
+                            Cambiar Contraseña
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="deleteAccount()">
+                            <i class="bi bi-trash me-2"></i>
+                            Eliminar Cuenta
+                        </button>
+                    </div>
+
+                    <!-- Password Change Form -->
+                    <div *ngIf="showPasswordForm" class="password-form mt-4">
+                        <h5 class="mb-3">Cambiar Contraseña</h5>
+                        <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña Actual</label>
+                                <input type="password" class="form-control" [(ngModel)]="companyData.currentPassword"
+                                    name="currentPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nueva Contraseña</label>
+                                <input type="password" class="form-control" [(ngModel)]="companyData.newPassword"
+                                    name="newPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Confirmar Nueva Contraseña</label>
+                                <input type="password" class="form-control" [(ngModel)]="companyData.confirmPassword"
+                                    name="confirmPassword" required>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary flex-grow-1"
+                                    (click)="togglePasswordForm()">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-primary flex-grow-1"
+                                    [disabled]="!passwordForm.form.valid">
+                                    Actualizar Contraseña
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Dashboard -->
+        <div class="col-md-8">
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card bg-primary text-white">
+                        <h5>Servicios Activos</h5>
+                        <h3>{{ services.length }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card bg-success text-white">
+                        <h5>Clientes Activos</h5>
+                        <h3>{{ clients.length }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card bg-info text-white">
+                        <h5>Ingresos Mensuales</h5>
+                        <h3>{{ getTotalIncome() | currency:'COP':'symbol-narrow':'1.0-0' }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Section -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="card-title mb-0">Servicios</h3>
+                        <button class="btn btn-primary" (click)="addService()">
+                            <i class="bi bi-plus-lg me-2"></i>Nuevo Servicio
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Precio</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let service of services">
+                                    <td>{{ service.name }}</td>
+                                    <td>{{ service.description }}</td>
+                                    <td>{{ service.price | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                                    <td>
+                                        <span class="badge"
+                                            [class]="'bg-' + (service.status === 'active' ? 'success' : 'secondary')">
+                                            {{ service.status === 'active' ? 'Activo' : 'Inactivo' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                (click)="editService(service)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                (click)="deleteService(service)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients Section -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="card-title mb-0">Clientes</h3>
+                        <div class="search-box">
+                            <input type="text" class="form-control" placeholder="Buscar clientes..."
+                                [(ngModel)]="searchTerm" (ngModelChange)="filterClients()">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Fecha de Suscripción</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let client of filteredClients">
+                                    <td>{{ client.name }}</td>
+                                    <td>{{ client.email }}</td>
+                                    <td>{{ client.subscriptionDate | date }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"
+                                            (click)="viewClientDetails(client)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-footer></app-footer>
