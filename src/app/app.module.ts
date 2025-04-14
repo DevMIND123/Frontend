@@ -21,6 +21,7 @@ import { PasswordChangeModalComponent } from './components/shared/password-chang
 import { UserInfoPanelComponent } from './components/shared/user-info-panel/user-info-panel.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { HTTP_INTERCEPTORS, provideHttpClient, withFetch } from '@angular/common/http';
+import { LandingPageComponent } from './components/landing-page/landing-page.component';
 
 @NgModule({
   declarations: [
@@ -37,15 +38,16 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withFetch } from '@angular/common
     CompanyComponent,
     RegisterViewComponent,
     AuthLayoutComponent,
-    FooterComponent,
-    NavbarComponent,
     PasswordChangeModalComponent,
-    UserInfoPanelComponent
+    UserInfoPanelComponent,
+    LandingPageComponent
   ],
   imports: [
+    NavbarComponent,
     BrowserModule,
     AppRoutingModule,
     FormsModule,
+    FooterComponent
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideHttpClient(withFetch())

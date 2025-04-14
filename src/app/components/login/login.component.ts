@@ -13,6 +13,14 @@ import { UsuarioService } from '../../services/usuario.service'; // Asegúrate q
 export class LoginComponent implements OnInit {
 
   loginDto: LoginDto = new LoginDto("", "");
+  showPassword: boolean = false;
+  rememberMe: boolean = false;
+  errorMessage: string | null = null;
+  isLoading: boolean = false;
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   constructor(
     private auth: AuthService,
@@ -25,6 +33,8 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
+    this.isLoading = true;
+    this.errorMessage = null;
     console.log("DTO:", this.loginDto);
     this.auth.login(this.loginDto).subscribe({
       next: jwt => {
@@ -52,16 +62,19 @@ export class LoginComponent implements OnInit {
                 break;
               default:
                 console.warn("Rol no reconocido:", jwt.rol);
+                this.isLoading = false;
                 break;
             }
           },
           error: err => {
             console.error("Error al obtener usuario por email:", err);
+            this.isLoading = false;
           }
         });
       },
       error: err => {
         console.error("Error de login:", err);
+        this.isLoading = false;
       }
     });
   }

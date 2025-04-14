@@ -1,1 +1,39 @@
-<p>navbar works!</p>
+<nav class="navbar navbar-expand-lg fixed-top" [class.navbar-scrolled]="isScrolled">
+    <div class="container">
+        <!-- Logo -->
+        <a class="navbar-brand" routerLink="/">
+            <img src="assets/images/Logos/Horizontal.png" alt="RetoChimba Logo" class="navbar-logo" />
+        </a>
+
+        <!-- Botón responsive -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Enlaces -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" routerLink="/home" routerLinkActive="active">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" routerLink="/about" routerLinkActive="active">Acerca de</a>
+                </li>
+            </ul>
+
+            <!-- Botones visibles sin login -->
+            <div class="d-flex gap-2">
+                <!-- Botón para iniciar sesión -->
+                <button class="btn btn-primary" (click)="goToLogin()">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+                </button>
+
+                <!-- Botón para registrarse -->
+                <button class="btn btn-primary" (click)="goToRegister()">
+                    <i class="bi bi-person-plus me-2"></i>Registrarse
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>

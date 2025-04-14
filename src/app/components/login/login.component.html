@@ -1,11 +1,81 @@
-<div class="login-container">
-    <h2>Login</h2>
-    <form (ngSubmit)="login()">
-        <label for="txtEmail">Email</label>
-        <input type="text" name="email" id="txtUsuario" [(ngModel)]="loginDto.email">
-        <label for="txtPassword">Password</label>
-        <input type="password" name="password" id="txtPassword" [(ngModel)]="loginDto.password">
-        <button type="submit" id="btnLogin">Login</button>
-    </form>
+<app-navbar></app-navbar>
+
+<div class="login-container" [ngStyle]="{ 'background-image': 'url(assets/images/deporte-fondo.jpg)' }">
+    <!-- Capa de oscurecimiento -->
+    <div class="overlay"></div>
+
+    <!-- Formulario flotante -->
+    <div class="login-box position-relative">
+        <h2 class="text-center mb-4 fade-in">Iniciar Sesión</h2>
+
+        <form (ngSubmit)="login()" class="slide-up" #loginForm="ngForm">
+            <!-- Correo -->
+            <div class="mb-4 form-floating">
+                <input type="email" class="form-control" id="email" name="email" [(ngModel)]="loginDto.email"
+                    placeholder="Correo electrónico" required #emailInput="ngModel">
+                <label for="email">Correo electrónico</label>
+                <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="text-danger small mt-1">
+                    <div *ngIf="emailInput.errors?.['required']">El correo electrónico es requerido</div>
+                </div>
+            </div>
+
+            <!-- Contraseña -->
+            <div class="mb-4 form-floating position-relative">
+                <input [type]="showPassword ? 'text' : 'password'" class="form-control pe-5" id="password" name="password"
+                    [(ngModel)]="loginDto.password" placeholder="Contraseña" required #passwordInput="ngModel">
+                <label for="password">Contraseña</label>
+
+                <button type="button"
+                    class="btn btn-link password-toggle position-absolute top-50 end-0 translate-middle-y me-2"
+                    (click)="togglePasswordVisibility()" tabindex="-1">
+                    <i class="bi" [class]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                </button>
+
+                <div *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)"
+                    class="text-danger small mt-1">
+                    <div *ngIf="passwordInput.errors?.['required']">La contraseña es requerida</div>
+                </div>
+            </div>
+
+            <!-- Recordarme -->
+            <div class="mb-4 form-check fade-in-delay">
+                <input type="checkbox" class="form-check-input" id="remember" [(ngModel)]="rememberMe" name="remember">
+                <label class="form-check-label" for="remember">Recordarme</label>
+            </div>
+
+            <!-- Error -->
+            <div *ngIf="errorMessage" class="alert alert-danger mb-4 fade-in">
+                {{ errorMessage }}
+            </div>
+
+            <!-- Botón de Login -->
+            <button type="submit" class="btn btn-primary w-100 mb-4 btn-scale"
+                [disabled]="loginForm.invalid || isLoading">
+                <span *ngIf="!isLoading">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+                </span>
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span *ngIf="isLoading">Iniciando sesión...</span>
+            </button>
+
+            <!-- ¿Olvidaste tu contraseña? -->
+            <div class="text-center mb-4 fade-in-delay">
+                <a routerLink="/forgot-password" class="text-decoration-none hover-link">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Registro -->
+            <div class="text-center slide-up-delay">
+                <p class="mb-3">¿No tienes una cuenta?</p>
+                <a routerLink="/register" class="btn btn-outline-primary w-100 btn-scale">
+                    <i class="bi bi-person-plus me-2"></i>Registrarse
+                </a>
+            </div>
+        </form>
     </div>
-    
+</div>
+
+<app-footer></app-footer>
