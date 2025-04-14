@@ -49,15 +49,14 @@ export class CompanyComponent {
     this.errorMessage = '';
 
     const empresaData: Empresa = {
-      nombre: this.nombre,
+      nombreEmpresa: this.nombre,
+      nit: this.nit,
       nombreRepresentante: this.nombreRepresentante,
       email: this.email,
-      password: this.password,
-      telefono: this.telefono,
       direccion: this.direccion,
-      nit: this.nit,
-      fechaRegistro: new Date(),
-      estadoCuenta: 'ACTIVO'
+      telefono: this.telefono,
+      password: this.password,
+      rol: 'EMPRESA'
     };
 
     this.authService.registerCompany(empresaData).subscribe({
