@@ -1,0 +1,46 @@
+.footer {
+    background-color: #003893;
+    color: #fff;
+}
+
+.footer a {
+    color: #FFE800;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: #FDB347;
+}
+
+.footer-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.footer-social a {
+    color: white;
+    font-size: 1.3rem;
+    margin-right: 12px;
+    transition: transform 0.2s ease;
+}
+
+.footer-social a:hover {
+    transform: scale(1.2);
+    color: #CE1126;
+}
+
+.footer-bottom {
+    background-color: #001C4A;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.footer ul {
+    padding-left: 0;
+    list-style: none;
+}
+
+.footer ul li {
+    margin-bottom: 0.5rem;
+}

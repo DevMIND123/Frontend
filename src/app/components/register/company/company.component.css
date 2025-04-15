@@ -1,0 +1,34 @@
+.auth-form {
+    animation: fadeIn 0.5s ease-in-out;
+    backdrop-filter: blur(4px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.btn-scale {
+    transition: transform 0.2s ease;
+}
+
+.btn-scale:hover {
+    transform: scale(1.05);
+}
+
+.fade-in {
+    animation: fadeIn 0.8s ease-in;
+}
+
+.register-container {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}

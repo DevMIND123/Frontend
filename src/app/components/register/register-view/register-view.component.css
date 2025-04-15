@@ -1,0 +1,84 @@
+/* Imagen como fondo visual (dentro del HTML) */
+.bg-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+/* Capa oscura encima de la imagen */
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, rgba(0, 56, 147, 0.6), rgba(206, 17, 38, 0.5));
+    z-index: 1;
+}
+
+/* Contenido sobre la imagen y overlay */
+.register-content {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    padding: 3rem 1rem;
+}
+
+/* Tarjetas */
+.registration-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.registration-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    color: #003893;
+    margin-bottom: 1rem;
+}
+
+.card-icon.company {
+    color: #CE1126;
+}
+
+/* Animaciones */
+.fade-in {
+    animation: fadeIn 1s ease-in-out;
+}
+
+.slide-up {
+    animation: slideUp 0.8s ease-out;
+}
+
+.slide-up-delay {
+    animation: slideUp 0.8s ease-out 0.3s both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
