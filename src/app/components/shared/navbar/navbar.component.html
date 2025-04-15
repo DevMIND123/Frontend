@@ -11,29 +11,78 @@
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Enlaces -->
+        <!-- Enlaces y botones -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" routerLink="/landing" routerLinkActive="active">Inicio</a>
+                    <a class="nav-link" routerLink="/landing-page" routerLinkActive="active">Inicio</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" routerLink="/about" routerLinkActive="active">Acerca de</a>
                 </li>
             </ul>
 
-            <!-- Botones visibles sin login -->
-            <div class="d-flex gap-2">
-                <!-- Botón para iniciar sesión -->
-                <button class="btn btn-primary" (click)="goToLogin()">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
-                </button>
+            <!-- Usuario autenticado -->
+            <div *ngIf="isAuthenticated; else guestButtons" class="d-flex align-items-center gap-3">
+                <!-- Notificaciones -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary position-relative dropdown-toggle" type="button"
+                        id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ unreadNotifications.length }}
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end animate slideIn" aria-labelledby="notificationDropdown">
+                        <li *ngIf="unreadNotifications.length === 0">
+                            <span class="dropdown-item">Sin notificaciones nuevas</span>
+                        </li>
+                        <li *ngFor="let notif of unreadNotifications">
+                            <div class="dropdown-item d-flex flex-column">
+                                <span>{{ notif.mensaje }}</span>
+                                <small class="text-muted">{{ notif.fecha }}</small>
+                            </div>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li class="dropdown-header">Atendidas</li>
+                        <li *ngFor="let notif of readNotifications">
+                            <div class="dropdown-item d-flex flex-column text-muted">
+                                <span>{{ notif.mensaje }}</span>
+                                <small>{{ notif.fecha }}</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
 
-                <!-- Botón para registrarse -->
-                <button class="btn btn-primary" (click)="goToRegister()">
-                    <i class="bi bi-person-plus me-2"></i>Registrarse
-                </button>
+                <!-- Menú de perfil -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                        id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        🧑
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end animate slideIn" aria-labelledby="profileDropdown">
+                        <li><a class="dropdown-item" routerLink="/profile"><i class="bi bi-person me-2"></i>Perfil</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</a></li>
+                    </ul>
+                </div>
             </div>
+
+            <!-- Usuario no autenticado -->
+            <ng-template #guestButtons>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" (click)="goToLogin()">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+                    </button>
+                    <button class="btn btn-primary" (click)="goToRegister()">
+                        <i class="bi bi-person-plus me-2"></i>Registrarse
+                    </button>
+                </div>
+            </ng-template>
         </div>
     </div>
 </nav>

@@ -16,6 +16,7 @@ const USER_ID = 'userId';
   providedIn: 'root'
 })
 export class AuthService {
+  user$: any;
 
   constructor(private http: HttpClient) { }
 
