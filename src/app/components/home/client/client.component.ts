@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
-import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { FooterComponent } from '../../shared/footer/footer.component';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { CommonModule } from '@angular/common';
@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
     RouterModule,
     FormsModule,
     NavbarComponent,
-    FooterComponent, // Agrega FooterComponent aquí si es standalon
+    FooterComponent,
   ],
   templateUrl: './client.component.html',
   styleUrls: ['./client.component.css']
@@ -25,14 +25,15 @@ export class ClientComponent implements OnInit {
   showPasswordModal = false;
   userData = {
     nombre: '',
-    email: ''
+    email: '',
+    departamento: '',
+    especialidad: ''
   };
 
   successMessage = '';
   errorMessage = '';
   darkMode = false;
   notificationsEnabled = true;
-  userId: number | null = null;
 
   constructor(
     private router: Router,
@@ -55,28 +56,19 @@ export class ClientComponent implements OnInit {
       return;
     }
 
-    this.usuarioService.obtenerUsuario(email, rol).subscribe({
-      next: (id: number) => {
-        this.userId = id;
-        sessionStorage.setItem('userId', id.toString());
-        this.userData.email = email;
-        this.loadNombreUsuario(id, rol);
+    this.usuarioService.obtenerUsuarioPorEmail(email, rol).subscribe({
+      next: (data: any) => {
+        this.userData = {
+          nombre: data.nombre || '',
+          email: data.email || '',
+          departamento: data.departamento || '',
+          especialidad: data.especialidad || ''
+        };
+        localStorage.setItem('userName', this.userData.nombre);
       },
       error: (error: any) => {
-        this.errorMessage = error.message || 'Error al cargar los datos del usuario.';
-        console.error('Error al obtener ID del usuario:', error);
-      }
-    });
-  }
-
-  loadNombreUsuario(id: number, rol: string) {
-    this.usuarioService.obtenerUsuarioPorId(id, rol).subscribe({
-      next: (data) => {
-        this.userData.nombre = data.nombre;
-      },
-      error: (error) => {
-        this.errorMessage = 'No se pudo cargar el nombre del usuario.';
-        console.error('Error al obtener nombre:', error);
+        this.errorMessage = 'Error al cargar los datos del usuario.';
+        console.error('Error:', error);
       }
     });
   }
@@ -89,23 +81,21 @@ export class ClientComponent implements OnInit {
   }
 
   updateProfile() {
-    if (this.userId == null) return;
     const rol = sessionStorage.getItem('user-role');
-    if (!rol) return;
+    if (!rol || !this.userData.email) return;
 
-    this.usuarioService.actualizarUsuarioPorRol(this.userId, this.userData, rol).subscribe({
+    this.usuarioService.actualizarUsuario(this.userData).subscribe({
       next: () => {
         this.successMessage = 'Perfil actualizado exitosamente';
         this.isEditing = false;
         localStorage.setItem('userName', this.userData.nombre);
       },
-      error: (error) => {
+      error: (error: any) => {
         this.errorMessage = 'Error al actualizar el perfil';
         console.error('Error updating profile:', error);
       }
     });
   }
-
 
   onPasswordChange(newPassword: string) {
     const email = sessionStorage.getItem('user');
@@ -130,16 +120,16 @@ export class ClientComponent implements OnInit {
 
   deleteAccount() {
     if (confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      if (!this.userId) return;
+      const email = sessionStorage.getItem('user');
       const rol = sessionStorage.getItem('user-role');
-      if (!rol) return;
+      if (!email || !rol) return;
 
-      this.usuarioService.eliminarUsuarioPorRol(this.userId, rol).subscribe({
+      this.usuarioService.eliminarUsuarioPorEmail(email, rol).subscribe({
         next: () => {
           this.authService.logout();
           this.router.navigate(['/login']);
         },
-        error: (error) => {
+        error: (error: any) => {
           this.errorMessage = 'Error al eliminar la cuenta.';
           console.error('Delete account error:', error);
         }

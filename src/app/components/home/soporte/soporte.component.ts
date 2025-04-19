@@ -6,6 +6,7 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
+import { UsuarioUpdateDTO } from '../../../models/usuario'; // ✅ Importa el DTO correcto
 
 interface Ticket {
   id: string;
@@ -43,7 +44,10 @@ export class SoporteHomeComponent implements OnInit {
     nombre: '',
     email: '',
     departamento: 'Soporte Técnico',
-    especialidad: 'Atención al Cliente',
+    especialidad: 'Atención al Cliente'
+  };
+
+  passwordData = {
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -92,35 +96,71 @@ export class SoporteHomeComponent implements OnInit {
   loadUserData() {
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
-    const userId = this.authService.getUserId();
 
-    if (email && rol && userId) {
-      this.usuarioService.obtenerUsuarioPorId(+userId, rol).subscribe({
-        next: (data) => {
-          this.userData = {
-            ...this.userData,
-            ...data
-          };
-          this.errorMessage = '';
+    if (!email || !rol) {
+      this.errorMessage = 'No se encontró información del usuario.';
+      return;
+    }
+
+    this.usuarioService.obtenerUsuarioPorEmail(email, rol).subscribe({
+      next: (data: any) => {
+        this.userData = {
+          nombre: data.nombre || '',
+          email: data.email || '',
+          departamento: data.departamento || 'Soporte Técnico',
+          especialidad: data.especialidad || 'Atención al Cliente'
+        };
+        this.errorMessage = '';
+      },
+      error: (error: any) => {
+        console.error('Error loading user data:', error);
+        this.errorMessage = 'Error al cargar los datos del usuario';
+      }
+    });
+  }
+
+  updateProfile() {
+    const rol = this.authService.getRole();
+    if (!this.userData.email || !rol) return;
+
+    const updateData: UsuarioUpdateDTO = {
+      nombre: this.userData.nombre,
+      email: this.userData.email,
+      departamento: this.userData.departamento,
+      especialidad: this.userData.especialidad
+    };
+
+    this.usuarioService.actualizarUsuario(updateData).subscribe({
+      next: () => {
+        this.successMessage = 'Perfil actualizado exitosamente';
+        this.isEditing = false;
+        localStorage.setItem('userName', this.userData.nombre);
+      },
+      error: (error: any) => {
+        console.error('Error updating profile:', error);
+        this.errorMessage = 'Error al actualizar el perfil';
+      }
+    });
+  }
+
+  deleteAccount() {
+    const email = this.userData.email;
+    const rol = this.authService.getRole();
+
+    if (!email || !rol) return;
+
+    if (confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+      this.usuarioService.eliminarUsuarioPorEmail(email, rol).subscribe({
+        next: () => {
+          this.authService.logout();
+          this.router.navigate(['/login']);
         },
-        error: (error) => {
-          console.error('Error loading user data:', error);
-          this.errorMessage = 'Error al cargar los datos del usuario';
+        error: (error: any) => {
+          console.error('Error deleting account:', error);
+          this.errorMessage = 'Error al eliminar la cuenta';
         }
       });
     }
-  }
-
-  loadThemePreference() {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    this.preferences.darkMode = darkMode;
-    this.applyTheme();
-  }
-
-  calculateStats() {
-    this.activeTickets = this.tickets.filter(t => t.status === 'open').length;
-    this.inProgressTickets = this.tickets.filter(t => t.status === 'in_progress').length;
-    this.resolvedTickets = this.tickets.filter(t => t.status === 'resolved').length;
   }
 
   toggleEdit() {
@@ -132,79 +172,46 @@ export class SoporteHomeComponent implements OnInit {
     this.errorMessage = '';
   }
 
-  updateProfile() {
-    const userId = this.authService.getUserId();
-    const rol = this.authService.getRole();
-
-    if (userId && rol) {
-      this.usuarioService.actualizarUsuarioPorRol(+userId, this.userData, rol).subscribe({
-        next: () => {
-          this.successMessage = 'Perfil actualizado exitosamente';
-          this.isEditing = false;
-          if (this.userData.nombre !== localStorage.getItem('userName')) {
-            localStorage.setItem('userName', this.userData.nombre);
-          }
-        },
-        error: (error) => {
-          console.error('Error updating profile:', error);
-          this.errorMessage = 'Error al actualizar el perfil';
-        }
-      });
-    }
-  }
-
   togglePasswordForm() {
     this.showPasswordForm = !this.showPasswordForm;
-    if (!this.showPasswordForm) {
-      this.userData.currentPassword = '';
-      this.userData.newPassword = '';
-      this.userData.confirmPassword = '';
-    }
+    this.passwordData = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    };
   }
 
   changePassword() {
-    if (this.userData.newPassword !== this.userData.confirmPassword) {
+    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
       this.errorMessage = 'Las contraseñas nuevas no coinciden';
       return;
     }
 
-    const email = this.authService.getEmail();
+    const email = this.userData.email;
     if (!email) {
       this.errorMessage = 'No se encontró correo en sesión';
       return;
     }
 
     this.authService.changePassword({
-      email: email,
-      nuevaPassword: this.userData.newPassword
+      email,
+      nuevaPassword: this.passwordData.newPassword
     }).subscribe({
       next: () => {
         this.successMessage = 'Contraseña actualizada exitosamente';
         this.togglePasswordForm();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error changing password:', error);
         this.errorMessage = 'Error al cambiar la contraseña';
       }
     });
   }
 
-  deleteAccount() {
-    const userId = this.authService.getUserId();
-    const rol = this.authService.getRole();
-
-    if (userId && rol && confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      this.usuarioService.eliminarUsuarioPorRol(+userId, rol).subscribe({
-        next: () => {
-          this.authService.logout();
-          this.router.navigate(['/login']);
-        },
-        error: (error) => {
-          console.error('Error deleting account:', error);
-          this.errorMessage = 'Error al eliminar la cuenta';
-        }
-      });
-    }
+  loadThemePreference() {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    this.preferences.darkMode = darkMode;
+    this.applyTheme();
   }
 
   toggleTheme() {
@@ -215,6 +222,12 @@ export class SoporteHomeComponent implements OnInit {
 
   private applyTheme() {
     document.body.classList.toggle('dark-mode', this.preferences.darkMode);
+  }
+
+  calculateStats() {
+    this.activeTickets = this.tickets.filter(t => t.status === 'open').length;
+    this.inProgressTickets = this.tickets.filter(t => t.status === 'in_progress').length;
+    this.resolvedTickets = this.tickets.filter(t => t.status === 'resolved').length;
   }
 
   getStatusClass(status: string): string {

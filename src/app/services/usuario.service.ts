@@ -1,86 +1,86 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError, switchMap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsuarioService {
-  actualizarUsuario(userData: { nombre: string; email: string; departamento: string; especialidad: string; currentPassword: string; newPassword: string; confirmPassword: string; }) {
-    throw new Error('Method not implemented.');
+  private rol = new BehaviorSubject<string>('');
+
+  constructor(private http: HttpClient) { }
+
+  private headers = new HttpHeaders({
+    "Content-Type": "application/json"
+  });
+
+  // ✅ NUEVO: Actualizar usuario por ID
+  actualizarUsuarioPorId(
+    id: string,
+    userData: {
+      nombre: string;
+      email: string;
+      departamento: string;
+      especialidad: string;
+    },
+    rol: string
+  ): Observable<any> {
+    const ruta = this.getRutaPorRol(rol);
+    return this.http.patch(`${environment.apiUrl}/${ruta}/actualizar/${id}`, userData, {
+      headers: this.headers
+    });
   }
 
-  private rol = new BehaviorSubject<String>('');
+  // ✅ Modificado: Obtener el ID por email y luego usarlo para actualizar
+  actualizarUsuario(userData: {
+    nombre: string;
+    email: string;
+    departamento: string;
+    especialidad: string;
+  }): Observable<any> {
+    const rol = sessionStorage.getItem('user-role');
+    const email = userData.email;
 
-  constructor(
-    private http: HttpClient
-  ) {
+    if (!rol) return throwError(() => new Error('Rol no encontrado en sesión'));
+    if (!email) return throwError(() => new Error('Email no proporcionado'));
+
+    return this.obtenerUsuarioPorEmail(email, rol).pipe(
+      switchMap((id: number) => this.actualizarUsuarioPorId(id.toString(), userData, rol))
+    );
   }
 
-  private headers = new HttpHeaders(
-    { "Content-Type": "application/json" }
-  )
+  // ✅ Obtener ID por email
+  obtenerUsuarioPorEmail(email: string, rol: string): Observable<any> {
+    const ruta = this.getRutaPorRol(rol);
+    return this.http.get<any>(`${environment.apiUrl}/${ruta}/email/${email}`);
+  }
 
-  obtenerUsuario(email: string, rol: string): Observable<number> {
-    console.log("Rol:", rol);
-    if (rol === "CLIENTE") {
-      return this.http.get<number>(`${environment.apiUrl}/clientes/email/${email}`);
-    } else if (rol === "ADMINISTRADOR" || rol === "MARKETING" || rol === "SOPORTE") {
-      return this.http.get<number>(`${environment.apiUrl}/administradores/email/${email}`);
-    } else if (rol === "EMPRESA") {
-      return this.http.get<number>(`${environment.apiUrl}/empresas/email/${email}`);
-    } else {
-      return throwError(() => new Error("Rol no válido"));
+  // ✅ Eliminar usuario por email
+  eliminarUsuarioPorEmail(email: string, rol: string): Observable<any> {
+    const ruta = this.getRutaPorRol(rol);
+    return this.http.delete(`${environment.apiUrl}/${ruta}/email/${email}`);
+  }
+
+  // ✅ Auxiliar para rutas por rol
+  private getRutaPorRol(rol: string): string {
+    switch (rol) {
+      case "CLIENTE": return "clientes";
+      case "EMPRESA": return "empresas";
+      case "ADMINISTRADOR":
+      case "MARKETING":
+      case "SOPORTE":
+        return "administradores";
+      default:
+        throw new Error("Rol no válido");
     }
   }
 
-  setRol(value: String) {
+  setRol(value: string) {
     this.rol.next(value);
   }
 
   getRol() {
     return this.rol.asObservable();
   }
-
-  obtenerUsuarioPorId(id: number, rol: String): Observable<any> {
-    if (rol === "CLIENTE") {
-      return this.http.get<any>(`${environment.apiUrl}/clientes/${id}`);
-    } else if (rol === "EMPRESA") {
-      return this.http.get<any>(`${environment.apiUrl}/empresas/${id}`);
-    } else if (rol === "ADMINISTRADOR" || rol === "MARKETING" || rol === "SOPORTE") {
-      return this.http.get<any>(`${environment.apiUrl}/administradores/${id}`);
-    } else {
-      return throwError(() => new Error("Rol no válido"));
-    }
-  }
-
-  actualizarUsuarioPorRol(id: number, data: any, rol: String): Observable<any> {
-    if (rol === "CLIENTE") {
-      return this.http.put(`${environment.apiUrl}/clientes/${id}`, data, { headers: this.headers });
-    } else if (rol === "EMPRESA") {
-      return this.http.put(`${environment.apiUrl}/empresas/${id}`, data, { headers: this.headers });
-    } else if (rol === "ADMINISTRADOR" || rol === "MARKETING" || rol === "SOPORTE") {
-      return this.http.put(`${environment.apiUrl}/administradores/${id}`, data, { headers: this.headers });
-    } else {
-      return throwError(() => new Error("Rol no válido"));
-    }
-  }
-
-  eliminarUsuarioPorRol(id: number, rol: String): Observable<any> {
-    if (rol === "CLIENTE") {
-      return this.http.delete(`${environment.apiUrl}/clientes/${id}`);
-    } else if (rol === "EMPRESA") {
-      return this.http.delete(`${environment.apiUrl}/empresas/${id}`);
-    } else if (rol === "ADMINISTRADOR" || rol === "MARKETING" || rol === "SOPORTE") {
-      return this.http.delete(`${environment.apiUrl}/administradores/${id}`);
-    } else {
-      return throwError(() => new Error("Rol no válido"));
-    }
-  }
-
-  
-
 }
-
-

@@ -6,6 +6,7 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
+import { UsuarioUpdateDTO } from '../../../models/usuario'; // 👈 NUEVO
 
 interface Campaign {
   id: string;
@@ -28,7 +29,7 @@ interface Campaign {
     FooterComponent
   ],
   templateUrl: './marketing.component.html',
-  styleUrl: './marketing.component.css'
+  styleUrls: ['./marketing.component.css']
 })
 export class MarketingComponent implements OnInit {
   activeCampaigns = 0;
@@ -43,7 +44,10 @@ export class MarketingComponent implements OnInit {
     nombre: '',
     email: '',
     departamento: 'Marketing',
-    especialidad: 'Marketing Digital',
+    especialidad: 'Marketing Digital'
+  };
+
+  passwordData = {
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -88,118 +92,115 @@ export class MarketingComponent implements OnInit {
   }
 
   loadUserData() {
-    const userId = Number(localStorage.getItem('userId'));
-    if (!isNaN(userId)) {
-      const rol = 'MARKETING'; // Replace with the appropriate role
-      this.usuarioService.obtenerUsuarioPorId(userId, rol).subscribe({
-        next: (data: { nombre: string; email: string; departamento: string; especialidad: string; }) => {
-          this.userData = {
-            ...this.userData,
-            ...data
-          };
-          this.errorMessage = '';
-        },
-        error: (error: any) => {
-          console.error('Error loading user data:', error);
-          this.errorMessage = 'Error al cargar los datos del usuario';
-        }
-      });
-    }
-  }
+    const email = this.authService.getEmail();
+    const rol = this.authService.getRole();
 
-  loadThemePreference() {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    this.preferences.darkMode = darkMode;
-    this.applyTheme();
-  }
-
-  calculateStats() {
-    this.activeCampaigns = this.campaigns.filter(c => c.status === 'active').length;
-    this.totalReach = this.campaigns.reduce((sum, c) => sum + c.reach, 0);
-    this.totalBudget = this.campaigns.reduce((sum, c) => sum + c.budget, 0);
-  }
-
-  toggleEdit() {
-    this.isEditing = !this.isEditing;
-    if (!this.isEditing) {
-      this.loadUserData();
-    }
-    this.successMessage = '';
-    this.errorMessage = '';
-  }
-
-  updateProfile() {
-    const userId = localStorage.getItem('userId');
-    const rol = 'MARKETING'; // Asegúrate de usar el rol correcto
-
-    if (userId && rol) {
-      this.usuarioService.actualizarUsuarioPorRol(Number(userId), this.userData, rol).subscribe({
-        next: () => {
-          this.successMessage = 'Perfil actualizado exitosamente';
-          this.isEditing = false;
-          if (this.userData.nombre !== localStorage.getItem('userName')) {
-            localStorage.setItem('userName', this.userData.nombre);
-          }
-        },
-        error: (error) => {
-          console.error('Error updating profile:', error);
-          this.errorMessage = 'Error al actualizar el perfil';
-        }
-      });
-    } else {
-      this.errorMessage = 'No se pudo actualizar el perfil. Falta información del usuario.';
-    }
-  }
-
-  togglePasswordForm() {
-    this.showPasswordForm = !this.showPasswordForm;
-    if (!this.showPasswordForm) {
-      this.userData.currentPassword = '';
-      this.userData.newPassword = '';
-      this.userData.confirmPassword = '';
-    }
-  }
-
-  changePassword() {
-    if (this.userData.newPassword !== this.userData.confirmPassword) {
-      this.errorMessage = 'Las contraseñas nuevas no coinciden';
+    if (!email || !rol) {
+      this.errorMessage = 'No se encontró información del usuario.';
       return;
     }
 
-    const email = this.userData.email;
-
-    this.authService.changePassword({ email, nuevaPassword: this.userData.newPassword }).subscribe({
-      next: () => {
-        this.successMessage = 'Contraseña actualizada exitosamente';
-        this.togglePasswordForm();
+    this.usuarioService.obtenerUsuarioPorEmail(email, rol).subscribe({
+      next: (data: any) => {
+        this.userData = {
+          nombre: data.nombre || '',
+          email: data.email || '',
+          departamento: data.departamento || 'Marketing',
+          especialidad: data.especialidad || 'Marketing Digital'
+        };
+        this.errorMessage = '';
       },
-      error: (error) => {
-        console.error('Error changing password:', error);
-        this.errorMessage = 'Error al cambiar la contraseña';
+      error: (error: any) => {
+        console.error('Error loading user data:', error);
+        this.errorMessage = 'Error al cargar los datos del usuario';
+      }
+    });
+  }
+
+  updateProfile() {
+    const rol = this.authService.getRole();
+    if (!this.userData.email || !rol) return;
+
+    const updateData: UsuarioUpdateDTO = {
+      nombre: this.userData.nombre,
+      email: this.userData.email,
+      departamento: this.userData.departamento,
+      especialidad: this.userData.especialidad
+    };
+
+    this.usuarioService.actualizarUsuario(updateData).subscribe({
+      next: () => {
+        this.successMessage = 'Perfil actualizado exitosamente';
+        this.isEditing = false;
+        localStorage.setItem('userName', this.userData.nombre);
+      },
+      error: (error: any) => {
+        console.error('Error updating profile:', error);
+        this.errorMessage = 'Error al actualizar el perfil';
       }
     });
   }
 
   deleteAccount() {
     if (confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      const userId = localStorage.getItem('userId');
-      const rol = 'MARKETING'; // Asegúrate de usar el rol correcto
+      const email = this.userData.email;
+      const rol = this.authService.getRole();
 
-      if (userId && rol) {
-        this.usuarioService.eliminarUsuarioPorRol(Number(userId), rol).subscribe({
-          next: () => {
-            this.authService.logout();
-            this.router.navigate(['/login']);
-          },
-          error: (error) => {
-            console.error('Error deleting account:', error);
-            this.errorMessage = 'Error al eliminar la cuenta';
-          }
-        });
-      } else {
-        this.errorMessage = 'No se pudo eliminar la cuenta. Falta información del usuario.';
-      }
+      if (!email || !rol) return;
+
+      this.usuarioService.eliminarUsuarioPorEmail(email, rol).subscribe({
+        next: () => {
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        },
+        error: (error: any) => {
+          console.error('Error deleting account:', error);
+          this.errorMessage = 'Error al eliminar la cuenta';
+        }
+      });
     }
+  }
+
+  changePassword() {
+    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
+      this.errorMessage = 'Las contraseñas nuevas no coinciden';
+      return;
+    }
+
+    const email = this.userData.email;
+
+    this.authService.changePassword({ email, nuevaPassword: this.passwordData.newPassword }).subscribe({
+      next: () => {
+        this.successMessage = 'Contraseña actualizada exitosamente';
+        this.togglePasswordForm();
+      },
+      error: (error: any) => {
+        console.error('Error changing password:', error);
+        this.errorMessage = 'Error al cambiar la contraseña';
+      }
+    });
+  }
+
+  toggleEdit() {
+    this.isEditing = !this.isEditing;
+    if (!this.isEditing) this.loadUserData();
+    this.successMessage = '';
+    this.errorMessage = '';
+  }
+
+  togglePasswordForm() {
+    this.showPasswordForm = !this.showPasswordForm;
+    this.passwordData = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    };
+  }
+
+  loadThemePreference() {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    this.preferences.darkMode = darkMode;
+    this.applyTheme();
   }
 
   toggleTheme() {
@@ -210,6 +211,12 @@ export class MarketingComponent implements OnInit {
 
   private applyTheme() {
     document.body.classList.toggle('dark-mode', this.preferences.darkMode);
+  }
+
+  calculateStats() {
+    this.activeCampaigns = this.campaigns.filter(c => c.status === 'active').length;
+    this.totalReach = this.campaigns.reduce((sum, c) => sum + c.reach, 0);
+    this.totalBudget = this.campaigns.reduce((sum, c) => sum + c.budget, 0);
   }
 
   getStatusClass(status: string): string {

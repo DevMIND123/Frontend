@@ -25,15 +25,17 @@
             <!-- Usuario autenticado -->
             <div *ngIf="isAuthenticated; else guestButtons" class="d-flex align-items-center gap-3">
                 <!-- Notificaciones -->
-                <div class="dropdown">
+                <div class="dropdown" [class.show]="mostrarDropdown">
                     <button class="btn btn-outline-primary position-relative dropdown-toggle" type="button"
-                        id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        (click)="toggleDropdown()" id="notificationDropdown" aria-expanded="mostrarDropdown">
                         <i class="bi bi-bell"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        <span *ngIf="unreadNotifications.length > 0"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             {{ unreadNotifications.length }}
                         </span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end animate slideIn" aria-labelledby="notificationDropdown">
+                    <ul class="dropdown-menu dropdown-menu-end animate slideIn"
+                        [class.show]="mostrarDropdown" aria-labelledby="notificationDropdown">
                         <li *ngIf="unreadNotifications.length === 0">
                             <span class="dropdown-item">Sin notificaciones nuevas</span>
                         </li>

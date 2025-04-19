@@ -8,7 +8,7 @@ import { UsuarioService } from '../../services/usuario.service';
   selector: 'app-login',
   standalone: false,
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'] // 🔧 CORREGIDO: era styleUrl
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
 
@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.auth.logout(); // limpiar cualquier sesión anterior
+    this.auth.logout(); // Limpiar sesión anterior
   }
 
   togglePasswordVisibility(): void {
@@ -36,30 +36,26 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
-    console.log('DTO:', this.loginDto);
-
     this.auth.login(this.loginDto).subscribe({
-      next: jwt => {
+      next: (jwt: any) => {
         console.log('Login exitoso. JWT:', jwt);
         localStorage.setItem('token', jwt.token); // ✅ Guarda token
 
-        // Si necesitas obtener info adicional del usuario, puedes mantener esto
-        this.usuarioService.obtenerUsuario(jwt.email, jwt.rol).subscribe({
-          next: usuario => {
+        this.usuarioService.obtenerUsuarioPorEmail(jwt.email, jwt.rol).subscribe({
+          next: (usuario: any) => {
             console.log('Rol:', jwt.rol);
             this.usuarioService.setRol(jwt.rol);
 
-            // ✅ Redirección limpia y clara
             this.redirigirPorRol(jwt.rol);
           },
-          error: err => {
+          error: (err: any) => {
             console.error('Error al obtener usuario por email:', err);
-            this.isLoading = false;
             this.errorMessage = 'No se pudo obtener información del usuario.';
+            this.isLoading = false;
           }
         });
       },
-      error: err => {
+      error: (err: any) => {
         console.error('Error de login:', err);
         this.errorMessage = 'Usuario o contraseña incorrectos';
         this.isLoading = false;
