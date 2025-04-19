@@ -42,6 +42,10 @@ El contenido de la carpeta `dist/` es utilizado dentro del `Dockerfile`. En este
 
 ## Ejecución en servidor
 
-La visualización del frontend se realiza a través de **NGINX**, configurado para funcionar como balanceador de carga y servidor estático.
+La visualización del frontend se realiza a través de **NGINX**, configurado para funcionar como balanceador de carga y servidor estático. Estos elementos de configuración se encuentran en el `Dockerfile` que se utiliza para levantar el contenedor.
 
-Una vez construido y desplegado el contenedor, NGINX servirá el contenido generado del frontend de manera continua en la URL configurada (por ejemplo, `http://ngx.com`).
+El acceso al frontend desplegado se realiza en la IP y puertos configurados para el contenedor, por defecto puede accederse mediante `http://localhost:80`.
+
+## Configuración del entorno
+
+Adicionalmente, es necesario modificar el archivo `environment.ts` para que el frontend apunte al servidor de **Kong**, que gestiona el enrutamiento hacia los servicios del backend.
