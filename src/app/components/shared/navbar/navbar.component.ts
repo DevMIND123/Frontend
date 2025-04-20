@@ -1,37 +1,41 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, Inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { NotificacionesService } from '../../../services/notificaciones.service';
+import { UsuarioService } from '../../../services/usuario.service';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
-  imports: [
-    CommonModule,
-    RouterModule
-  ]
+  imports: [CommonModule, RouterModule],
 })
 export class NavbarComponent implements OnInit {
   isScrolled = false;
   isAuthenticated = false;
   userEmail: string | null = null;
 
-  unreadNotifications = [
-    { mensaje: '¡Nuevo reto disponible!', fecha: '2025-04-14 08:30' },
-    { mensaje: 'Actualización de tu hábito', fecha: '2025-04-13 19:45' }
-  ];
+  unreadNotifications: any[] = [];
+  readNotifications: any[] = [];
+  mostrarDropdown = false;
+  idUsuario: number = 0; // Actualiza esto según el token si es necesario
 
-  readNotifications = [
-    { mensaje: 'Reto semanal completado', fecha: '2025-04-12 09:00' },
-    { mensaje: 'Recordatorio leído', fecha: '2025-04-11 17:15' }
-  ];
-
-  constructor(private readonly router: Router, private authService: AuthService) { }
+  constructor(
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    @Inject(NotificacionesService)
+    private readonly notificacionesService: NotificacionesService,
+    private readonly usuarioService: UsuarioService
+  ) {}
 
   ngOnInit(): void {
     this.checkAuthStatus();
+    if (this.isAuthenticated) {
+      this.obtenerIdUsuario();
+    }
   }
 
   private checkAuthStatus(): void {
@@ -39,9 +43,50 @@ export class NavbarComponent implements OnInit {
     this.userEmail = this.authService.getEmail();
   }
 
+  private obtenerIdUsuario(): void {
+    const correo = sessionStorage.getItem('user');
+    const rol = sessionStorage.getItem('user-role');
+
+    // Validar que los datos existan antes de llamar al servicio
+    if (correo && rol) {
+      this.usuarioService.obtenerUsuario(correo, rol).subscribe({
+        next: (usuario: any) => {
+          this.idUsuario = usuario; // Asegúrate de que el backend retorne un objeto con `.id`
+          console.log('ID del usuario:', this.idUsuario);
+          this.cargarNotificaciones();
+        },
+        error: (err) => {
+          console.error('Error al obtener el ID del usuario:', err);
+        },
+      });
+    } else {
+      console.warn('No se encontró correo o rol en el sessionStorage.');
+    }
+  }
+
+  private cargarNotificaciones(): void {
+    console.log('Cargando notificaciones para el usuario:', this.idUsuario);
+
+    this.notificacionesService
+      .getNotificacionesPorUsuario(this.idUsuario)
+      .subscribe({
+        next: (notificaciones: any[]) => {
+          // Suponiendo que cada notificación tiene un campo "leida"
+          this.unreadNotifications = notificaciones.filter((n) => !n.leida);
+          this.readNotifications = notificaciones.filter((n) => n.leida);
+        },
+        error: (err: any) =>
+          console.error('Error al cargar notificaciones', err),
+      });
+  }
+
   @HostListener('window:scroll', [])
   onWindowScroll() {
     this.isScrolled = window.scrollY > 50;
+  }
+
+  toggleDropdown() {
+    this.mostrarDropdown = !this.mostrarDropdown;
   }
 
   goToLogin() {
@@ -56,5 +101,44 @@ export class NavbarComponent implements OnInit {
     this.authService.logout();
     this.isAuthenticated = false;
     this.router.navigate(['/']);
+  }
+
+  marcarComoLeida(notificacion: any): void {
+    console.log('Marcando como leída:', notificacion);
+    // 1. Quitar de la lista de no leídas
+    this.unreadNotifications = this.unreadNotifications.filter(
+      (n) => n !== notificacion
+    );
+
+    // 2. Marcar como leída (solo en frontend)
+    notificacion.leida = true;
+
+    // 3. Agregar a la lista de leídas
+    this.readNotifications.unshift(notificacion);
+  }
+
+  home() {
+    const rol = this.authService.getRole();
+    const ruta = this.getRutaPorRol(rol);
+    console.log('Redirigiendo a:', ruta);
+    this.router.navigate([`/${ruta}`]);
+  }
+
+  /* ---------- util ---------- */
+  private getRutaPorRol(rol: any): string {
+    switch (rol.toUpperCase()) {
+      case 'CLIENTE':
+        return 'home/client';
+      case 'EMPRESA':
+        return 'home/empresa';
+      case 'ADMINISTRADOR':
+        return 'home/superadmin';
+      case 'MARKETING':
+        return 'home/marketing';
+      case 'SOPORTE':
+        return 'home/soporte';
+      default:
+        throw new Error(`Rol no válido: ${rol}`);
+    }
   }
 }

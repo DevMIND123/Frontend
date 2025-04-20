@@ -8,21 +8,22 @@ import {
 import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-// https://stackoverflow.com/questions/52468071/how-to-send-jwt-token-as-authorization-header-in-angular-6
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor(private auth: AuthService) { }
+  constructor(private readonly auth: AuthService) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    let token = this.auth.token();
+    const token = this.auth.token();
 
-    if (token == null) {
-      return next.handle(request);
-    } else {
-      return next.handle(request.clone({
-        headers: request.headers.set('Authorization', `Bearer ${token}`),
-      }));
-    }
+    /* Agregamos el header sólo si hay JWT */
+    const authReq = token
+      ? request.clone({
+        headers: request.headers.set('Authorization', `Bearer ${token}`)
+      })
+      : request;
+
+    return next.handle(authReq);
   }
 }
+//     email: string;

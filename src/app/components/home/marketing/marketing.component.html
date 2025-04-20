@@ -9,7 +9,7 @@
 
 <div class="container">
     <div class="row">
-        <!-- Personal Information Card -->
+        <!-- ========= Tarjeta de información personal ========= -->
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm">
                 <div class="card-body">
@@ -20,17 +20,30 @@
                         <h3 class="card-title">Información Personal</h3>
                     </div>
 
-                    <!-- Success/Error Messages -->
-                    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <!-- Mensajes de feedback -->
+                    <div
+                        *ngIf="successMessage"
+                        class="alert alert-success alert-dismissible fade show"
+                        role="alert">
                         {{ successMessage }}
-                        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            (click)="successMessage = ''"></button>
                     </div>
 
-                    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div
+                        *ngIf="errorMessage"
+                        class="alert alert-danger alert-dismissible fade show"
+                        role="alert">
                         {{ errorMessage }}
-                        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            (click)="errorMessage = ''"></button>
                     </div>
 
+                    <!-- ======= Formulario perfil ======= -->
                     <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
                         <div class="mb-3">
                             <label class="form-label">Nombre completo</label>
@@ -39,7 +52,8 @@
                                 class="form-control"
                                 [(ngModel)]="userData.nombre"
                                 name="nombre"
-                                [readonly]="!isEditing">
+                                [readonly]="!isEditing"
+                                required />
                         </div>
 
                         <div class="mb-3">
@@ -49,7 +63,8 @@
                                 class="form-control"
                                 [(ngModel)]="userData.email"
                                 name="email"
-                                [readonly]="!isEditing">
+                                [readonly]="!isEditing"
+                                required />
                         </div>
 
                         <div class="d-flex gap-2">
@@ -60,37 +75,44 @@
                                 <i class="bi" [class]="isEditing ? 'bi-x-lg' : 'bi-pencil'"></i>
                                 {{ isEditing ? 'Cancelar' : 'Editar' }}
                             </button>
+
                             <button
                                 *ngIf="isEditing"
                                 type="submit"
-                                class="btn btn-primary flex-grow-1">
+                                class="btn btn-primary flex-grow-1"
+                                [disabled]="!profileForm.form.valid">
                                 <i class="bi bi-save"></i>
                                 Guardar
                             </button>
                         </div>
                     </form>
 
-                    <hr>
+                    <hr />
 
-                    <!-- Settings Section -->
+                    <!-- ======= Configuración ======= -->
                     <h4 class="mb-3">Configuración</h4>
                     <div class="form-check form-switch mb-3">
                         <input
                             class="form-check-input"
                             type="checkbox"
                             [(ngModel)]="preferences.darkMode"
-                            (change)="toggleTheme()">
+                            name="darkMode"
+                            (change)="toggleTheme()"
+                            [ngModelOptions]="{ standalone: true }" />
                         <label class="form-check-label">Modo Oscuro</label>
                     </div>
+
                     <div class="form-check form-switch mb-4">
                         <input
                             class="form-check-input"
                             type="checkbox"
-                            [(ngModel)]="preferences.notifications">
+                            [(ngModel)]="preferences.notifications"
+                            name="notifications"
+                            [ngModelOptions]="{ standalone: true }" />
                         <label class="form-check-label">Notificaciones</label>
                     </div>
 
-                    <!-- Security Section -->
+                    <!-- ======= Seguridad ======= -->
                     <h4 class="mb-3">Seguridad</h4>
                     <div class="d-grid gap-2">
                         <button
@@ -107,37 +129,41 @@
                         </button>
                     </div>
 
-                    <!-- Password Change Form -->
+                    <!-- ======= Formulario cambio de contraseña ======= -->
                     <div *ngIf="showPasswordForm" class="password-form mt-4">
                         <h5 class="mb-3">Cambiar Contraseña</h5>
+
                         <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
                             <div class="mb-3">
                                 <label class="form-label">Contraseña Actual</label>
                                 <input
                                     type="password"
                                     class="form-control"
-                                    [(ngModel)]="userData.currentPassword"
+                                    [(ngModel)]="passwordData.currentPassword"
                                     name="currentPassword"
-                                    required>
+                                    required />
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Nueva Contraseña</label>
                                 <input
                                     type="password"
                                     class="form-control"
-                                    [(ngModel)]="userData.newPassword"
+                                    [(ngModel)]="passwordData.newPassword"
                                     name="newPassword"
-                                    required>
+                                    required />
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Confirmar Nueva Contraseña</label>
                                 <input
                                     type="password"
                                     class="form-control"
-                                    [(ngModel)]="userData.confirmPassword"
+                                    [(ngModel)]="passwordData.confirmPassword"
                                     name="confirmPassword"
-                                    required>
+                                    required />
                             </div>
+
                             <div class="d-flex gap-2">
                                 <button
                                     type="button"
@@ -158,9 +184,9 @@
             </div>
         </div>
 
-        <!-- Marketing Dashboard -->
+        <!-- ========= Dashboard de Marketing ========= -->
         <div class="col-md-8">
-            <!-- Stats Cards -->
+            <!-- Tarjetas resumen -->
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <div class="stat-card bg-purple text-white">
@@ -177,12 +203,12 @@
                 <div class="col-md-4">
                     <div class="stat-card bg-success text-white">
                         <h5>Presupuesto Total</h5>
-                        <h3>{{ totalBudget | currency:'COP':'symbol-narrow':'1.0-0' }}</h3>
+                        <h3>{{ totalBudget | currency : 'COP' : 'symbol-narrow' : '1.0-0' }}</h3>
                     </div>
                 </div>
             </div>
 
-            <!-- Campaigns List -->
+            <!-- Listado de campañas -->
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -193,31 +219,41 @@
                     </div>
 
                     <div class="campaigns-list">
-                        <div *ngFor="let campaign of campaigns" class="campaign-card shadow-sm">
+                        <div
+                            *ngFor="let campaign of campaigns"
+                            class="campaign-card shadow-sm mb-3 p-3 rounded">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4>{{ campaign.name }}</h4>
+                                    <h4 class="mb-1">{{ campaign.name }}</h4>
                                     <p class="text-muted mb-2">
-                                        {{ campaign.startDate | date }} - {{ campaign.endDate | date }}
+                                        {{ campaign.startDate | date }} – {{ campaign.endDate | date }}
                                     </p>
                                     <span class="badge" [class]="getStatusClass(campaign.status)">
                                         {{ getStatusLabel(campaign.status) }}
                                     </span>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-primary" (click)="editCampaign(campaign)">
+                                    <button
+                                        class="btn btn-sm btn-outline-primary"
+                                        (click)="editCampaign(campaign)">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" (click)="deleteCampaign(campaign)">
+                                    <button
+                                        class="btn btn-sm btn-outline-danger"
+                                        (click)="deleteCampaign(campaign)">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
                             </div>
-                            <hr>
+
+                            <hr />
+
                             <div class="row">
                                 <div class="col-6">
                                     <small class="text-muted">Presupuesto</small>
-                                    <p class="mb-0">{{ campaign.budget | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+                                    <p class="mb-0">
+                                        {{ campaign.budget | currency : 'COP' : 'symbol-narrow' : '1.0-0' }}
+                                    </p>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted">Alcance</small>

@@ -106,11 +106,15 @@
     transform: scale(1.1);
 }
 
+/* Estilos para el dropdown de notificaciones */
 .dropdown-menu {
     border: none;
     border-radius: 1rem;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     padding: 0.5rem;
+    min-width: 280px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .dropdown-item {
@@ -118,6 +122,7 @@
     padding: 0.5rem 1rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    white-space: normal;
 }
 
 .dropdown-item:hover {
@@ -133,6 +138,22 @@
     margin: 0.5rem 0;
 }
 
+.badge {
+    font-size: 0.7rem;
+    padding: 4px 6px;
+    font-weight: bold;
+}
+
+.dropdown-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #666;
+    padding-left: 1rem;
+    padding-top: 0.5rem;
+    text-transform: uppercase;
+}
+
+/* Animación */
 @keyframes slideIn {
     0% {
         transform: translateY(1rem);
