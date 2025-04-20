@@ -120,7 +120,7 @@ export class MarketingComponent implements OnInit {
       next: (dto) => {
         this.id = dto;
 
-        this.usuarioService.obtenerUsuario(email, rol).subscribe({
+        this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
           next: (dto) => {
             this.userData = {
               nombre: dto.nombre ?? '',

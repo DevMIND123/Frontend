@@ -142,7 +142,7 @@ export class EmpresaHomeComponent implements OnInit {
         this.id = dto;
 
         // ✅ Ya tienes this.id, ahora sí haces la segunda llamada
-        this.usuarioService.obtenerUsuarioById(this.id).subscribe({
+        this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
           next: (dto) => {
             this.companyData = {
               nombreEmpresa: dto.nombreEmpresa,
@@ -210,32 +210,34 @@ export class EmpresaHomeComponent implements OnInit {
         console.log('[Empresa] cambiarContrasena: éxito');
         this.successMessage = 'Contraseña actualizada correctamente';
         this.togglePasswordForm(); // ✅ coma agregada
-          Swal.fire({
-            icon: 'success',
-            title: 'Éxito',
-            text: 'Contraseña actualizada correctamente.',
-            confirmButtonText: 'Aceptar',
-          });
-        },
-        error: (err) => {
-          this.errorMessage = 'Error al cambiar la contraseña';
-          console.error('[Empresa] cambiarContrasena:', err);
-        },
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Contraseña actualizada correctamente.',
+          confirmButtonText: 'Aceptar',
+        });
+      },
+      error: (err) => {
+        this.errorMessage = 'Error al cambiar la contraseña';
+        console.error('[Empresa] cambiarContrasena:', err);
+      },
     });
   }
 
   onSubmit(): void {
     console.log('[Empresa] onSubmit:', this.companyData);
-    const dto: EmpresaUpdateDTO = {
-      nombre: this.companyData.nombreEmpresa,
-      email: this.companyData.email,
-      departamento: this.companyData.departamento,
-      especialidad: this.companyData.especialidad,
-    };
 
-    this.usuarioService.actualizarUsuario(dto).subscribe({
+    const dto = {
+      nombreEmpresa: this.companyData.nombreEmpresa,
+      nit: this.companyData.nit,
+      nombreRepresentante: this.companyData.nombreRepresentante,
+      email: this.companyData.email,
+    };
+    const rol = this.authService.getRole();
+
+    this.usuarioService.actualizarUsuarioPorId(this.id, dto, rol).subscribe({
       next: () => {
-        this.successMessage = 'Datos actualizads correctamente';
+        this.successMessage = 'Datos actualizados correctamente';
         this.isEditing = false;
         this.errorMessage = null;
       },

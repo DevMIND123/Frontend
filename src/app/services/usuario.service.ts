@@ -23,8 +23,9 @@ export class UsuarioService {
     return this.http.get<any>(`${BASE_URL}/${ruta}/email/${email}`);
   }
 
-  obtenerUsuarioById(id: number): Observable<any> {
-    return this.http.get<any>(`${BASE_URL}/empresas/${id}`);
+  obtenerUsuarioById(id: number, rol: string): Observable<any> {
+    const ruta = this.getRutaPorRol(rol);
+    return this.http.get<any>(`${BASE_URL}/${ruta}/${id}`);
   }
 
   obtenerIdPorEmail(email: string, rol: string): Observable<number> {
@@ -33,17 +34,12 @@ export class UsuarioService {
   }
 
   actualizarUsuarioPorId(
-    id: string,
-    userData: {
-      nombre: string;
-      email: string;
-      departamento: string;
-      especialidad: string;
-    },
-    rol: string
+    id: any,
+    dto:any,
+    rol: any
   ): Observable<any> {
     const ruta = this.getRutaPorRol(rol);
-    return this.http.patch(`${BASE_URL}/${ruta}/actualizar/${id}`, userData, {
+    return this.http.patch(`${BASE_URL}/${ruta}/actualizar/${id}`, dto, {
       headers: this.jsonHeaders,
     });
   }

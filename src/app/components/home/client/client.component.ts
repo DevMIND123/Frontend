@@ -86,8 +86,10 @@ export class ClientComponent implements OnInit {
         this.id = dto;
         /* Nuevo endpoint que devuelve el DTO completo                *
          * (internamente el Service llama a /datos/{email})           */
-        this.usuarioService.obtenerUsuario(email, rol).subscribe({
+        this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
           next: (dto) => {
+            console.log('User data:', dto);
+            
             this.userData = {
               nombre: dto.nombre ?? '',
               email: dto.email ?? '',
