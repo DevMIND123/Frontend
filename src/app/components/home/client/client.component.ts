@@ -9,7 +9,7 @@ import { FooterComponent } from '../../shared/footer/footer.component';
 
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-client',
   standalone: true,
@@ -30,6 +30,8 @@ export class ClientComponent implements OnInit {
   isEditing = false;
   showPasswordModal = false;
   id: number = 0;
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
 
   userData = {
     nombre: '',
@@ -39,18 +41,18 @@ export class ClientComponent implements OnInit {
   };
 
   /* ------------ feedback UI ------------ */
-  successMessage = '';
-  errorMessage = '';
+
 
   /* ------------ preferencias ------------ */
   darkMode = false;
   notificationsEnabled = true;
 
   /* ------------ password modal ------------ */
+  /** formulario de cambio de contraseña */
   passwordData = {
-    current: '',
-    nueva: '',
-    confirm: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   };
 
   constructor(
@@ -89,7 +91,7 @@ export class ClientComponent implements OnInit {
         this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
           next: (dto) => {
             console.log('User data:', dto);
-            
+
             this.userData = {
               nombre: dto.nombre ?? '',
               email: dto.email ?? '',
@@ -144,30 +146,6 @@ export class ClientComponent implements OnInit {
   /* =========================================================
    *  PASSWORD
    * ======================================================= */
-  onPasswordChange(): void {
-    if (this.passwordData.nueva !== this.passwordData.confirm) {
-      this.errorMessage = 'Las contraseñas no coinciden';
-      return;
-    }
-
-    const email = this.authService.getEmail();
-    if (!email) return;
-
-    this.authService
-      .changePassword({ email, nuevaPassword: this.passwordData.nueva })
-      .subscribe({
-        next: () => {
-          this.successMessage = 'Contraseña cambiada correctamente.';
-          this.showPasswordModal = false;
-          this.passwordData = { current: '', nueva: '', confirm: '' };
-        },
-        error: (err) => {
-          console.error('Error al cambiar contraseña:', err);
-          this.errorMessage =
-            err.error?.message || 'Ocurrió un error al cambiar la contraseña.';
-        },
-      });
-  }
 
   /* =========================================================
    *  ELIMINAR CUENTA
@@ -232,5 +210,61 @@ export class ClientComponent implements OnInit {
 
   createChallenge(): void {
     console.log('Crear nuevo reto');
+  }
+
+  cambiarContrasena(): void {
+    console.log('[Empresa] cambiarContrasena');
+    const user = sessionStorage.getItem('user');
+
+    if (!user) {
+      this.errorMessage = 'No se encontró información del usuario en sesión.';
+      return;
+    }
+
+    const email = user;
+
+    console.log('[Empresa] cambiarContrasena user:', email);
+    console.log(
+      '[Empresa] cambiarContrasena nueva contraseña:',
+      this.passwordData.newPassword
+    );
+
+    const payload = {
+      email: email,
+      nuevaPassword: this.passwordData.newPassword,
+    };
+
+    this.authService.changePasswordCli(payload).subscribe({
+      next: () => {
+        console.log('[Empresa] cambiarContrasena: éxito');
+        this.successMessage = 'Contraseña actualizada correctamente';
+        this.togglePasswordForm(); // ✅ coma agregada
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Contraseña actualizada correctamente.',
+          confirmButtonText: 'Aceptar',
+        });
+      },
+      error: (err) => {
+        this.errorMessage = 'Error al cambiar la contraseña';
+        console.error('[Empresa] cambiarContrasena:', err);
+      },
+    });
+  }
+  showPasswordForm = false;
+
+  /* ═══════════════════════════════════════════════════════
+   *  CAMBIO DE CONTRASEÑA
+   * ═════════════════════════════════════════════════════ */
+  togglePasswordForm(): void {
+    this.showPasswordForm = !this.showPasswordForm;
+    this.passwordData = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    };
+    this.errorMessage = null;
+    this.successMessage = null;
   }
 }
