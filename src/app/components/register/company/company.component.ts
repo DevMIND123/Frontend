@@ -39,11 +39,13 @@ export class CompanyComponent {
       this.errorMessage = 'Debes aceptar los términos y condiciones.';
       return;
     }
+    console.log(1)
 
     if (this.password !== this.confirmPassword) {
       this.errorMessage = 'Las contraseñas no coinciden.';
       return;
     }
+    console.log(2)
 
     this.isLoading = true;
     this.errorMessage = '';

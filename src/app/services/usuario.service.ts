@@ -1,21 +1,37 @@
+/* eslint‑disable @typescript-eslint/member-ordering */
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+/* ✅ Si gatewayUrl no existe, caemos en apiUrl para no romper nada */
+const BASE_URL: string = (environment as any).gatewayUrl || environment.apiUrl;
+
+@Injectable({ providedIn: 'root' })
 export class UsuarioService {
-  private rol = new BehaviorSubject<string>('');
+  private readonly rol$ = new BehaviorSubject<string>('');
 
-  constructor(private http: HttpClient) { }
-
-  private headers = new HttpHeaders({
-    "Content-Type": "application/json"
+  private readonly jsonHeaders = new HttpHeaders({
+    'Content-Type': 'application/json',
   });
 
-  // ✅ NUEVO: Actualizar usuario por ID
+  constructor(private readonly http: HttpClient) {}
+
+  /* ---------- endpoints ---------- */
+  obtenerUsuario(email: string, rol: string): Observable<any> {
+    const ruta = this.getRutaPorRol(rol);
+    return this.http.get<any>(`${BASE_URL}/${ruta}/email/${email}`);
+  }
+
+  obtenerUsuarioById(id: number): Observable<any> {
+    return this.http.get<any>(`${BASE_URL}/empresas/${id}`);
+  }
+
+  obtenerIdPorEmail(email: string, rol: string): Observable<number> {
+    const ruta = this.getRutaPorRol(rol);
+    return this.http.get<number>(`${BASE_URL}/${ruta}/email/${email}`);
+  }
+
   actualizarUsuarioPorId(
     id: string,
     userData: {
@@ -27,12 +43,11 @@ export class UsuarioService {
     rol: string
   ): Observable<any> {
     const ruta = this.getRutaPorRol(rol);
-    return this.http.patch(`${environment.apiUrl}/${ruta}/actualizar/${id}`, userData, {
-      headers: this.headers
+    return this.http.patch(`${BASE_URL}/${ruta}/actualizar/${id}`, userData, {
+      headers: this.jsonHeaders,
     });
   }
 
-  // ✅ Modificado: Obtener el ID por email y luego usarlo para actualizar
   actualizarUsuario(userData: {
     nombre: string;
     email: string;
@@ -45,42 +60,38 @@ export class UsuarioService {
     if (!rol) return throwError(() => new Error('Rol no encontrado en sesión'));
     if (!email) return throwError(() => new Error('Email no proporcionado'));
 
-    return this.obtenerUsuarioPorEmail(email, rol).pipe(
-      switchMap((id: number) => this.actualizarUsuarioPorId(id.toString(), userData, rol))
+    return this.obtenerIdPorEmail(email, rol).pipe(
+      switchMap((id) =>
+        this.actualizarUsuarioPorId(id.toString(), userData, rol)
+      )
     );
   }
 
-  // ✅ Obtener ID por email
-  obtenerUsuarioPorEmail(email: string, rol: string): Observable<any> {
+  eliminarUsuarioPorId(id: number, rol: string): Observable<any> {
     const ruta = this.getRutaPorRol(rol);
-    return this.http.get<any>(`${environment.apiUrl}/${ruta}/email/${email}`);
+    return this.http.delete(`${BASE_URL}/${ruta}/eliminar/${id}`);
   }
 
-  // ✅ Eliminar usuario por email
-  eliminarUsuarioPorEmail(email: string, rol: string): Observable<any> {
-    const ruta = this.getRutaPorRol(rol);
-    return this.http.delete(`${environment.apiUrl}/${ruta}/email/${email}`);
-  }
-
-  // ✅ Auxiliar para rutas por rol
+  /* ---------- util ---------- */
   private getRutaPorRol(rol: string): string {
-    switch (rol) {
-      case "CLIENTE": return "clientes";
-      case "EMPRESA": return "empresas";
-      case "ADMINISTRADOR":
-      case "MARKETING":
-      case "SOPORTE":
-        return "administradores";
+    switch (rol.toUpperCase()) {
+      case 'CLIENTE':
+        return 'clientes';
+      case 'EMPRESA':
+        return 'empresas';
+      case 'ADMINISTRADOR':
+      case 'MARKETING':
+      case 'SOPORTE':
+        return 'administradores';
       default:
-        throw new Error("Rol no válido");
+        throw new Error(`Rol no válido: ${rol}`);
     }
   }
 
   setRol(value: string) {
-    this.rol.next(value);
+    this.rol$.next(value);
   }
-
-  getRol() {
-    return this.rol.asObservable();
+  getRol(): Observable<string> {
+    return this.rol$.asObservable();
   }
 }

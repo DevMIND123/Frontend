@@ -13,26 +13,32 @@ const USER_ID = 'userId';
 
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   user$: any;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   login(loginDto: LoginDto): Observable<JwtAuthenticationResponse> {
-    return this.http.post<JwtAuthenticationResponse>(`${environment.apiUrl}/auth/login`, loginDto)
-      .pipe(map(jwt => {
-        if (this.isBrowser()) {
-          sessionStorage.setItem(JWT_TOKEN, jwt.token);
-          sessionStorage.setItem(USER, jwt.email);
-          sessionStorage.setItem(ROLE, jwt.rol);
-          if (jwt.userId) {
-            sessionStorage.setItem(USER_ID, jwt.userId.toString());
+    return this.http
+      .post<JwtAuthenticationResponse>(
+        `${environment.apiUrl}/auth/login`,
+        loginDto
+      )
+      .pipe(
+        map((jwt) => {
+          if (this.isBrowser()) {
+            sessionStorage.setItem(JWT_TOKEN, jwt.token);
+            sessionStorage.setItem(USER, jwt.email);
+            sessionStorage.setItem(ROLE, jwt.rol);
+            if (jwt.userId) {
+              sessionStorage.setItem(USER_ID, jwt.userId.toString());
+            }
           }
-        }
-        return jwt;
-      }));
+          return jwt;
+        })
+      );
   }
 
   logout(): void {
@@ -66,7 +72,9 @@ export class AuthService {
   }
 
   private isBrowser(): boolean {
-    return typeof window !== 'undefined' && typeof sessionStorage !== 'undefined';
+    return (
+      typeof window !== 'undefined' && typeof sessionStorage !== 'undefined'
+    );
   }
 
   registerClient(usuario: any): Observable<any> {
@@ -77,9 +85,18 @@ export class AuthService {
     return this.http.post<any>(`${environment.apiUrl}/empresas`, empresa);
   }
 
-  changePassword(data: { email: string; nuevaPassword: string }): Observable<any> {
-    return this.http.put(`${environment.apiUrl}/auth/change-password`, data, {
-      headers: { 'Content-Type': 'application/json' }
-    });
+  changePassword(data: {
+    email: string;
+    nuevaPassword: string;
+  }): Observable<string> {
+    return this.http.patch(
+      `${environment.apiUrl}/empresas/cambiar-password`,
+      data,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        responseType: 'text',
+      }
+    );
   }
+
 }

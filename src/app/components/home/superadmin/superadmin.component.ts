@@ -1,17 +1,21 @@
+/*  src/app/components/home/superadmin/superadmin.component.ts  */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
+
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth.service';
 
+/* --------------- Modelos auxiliares (mock) --------------- */
 interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'CLIENTE' | 'EMPRESA' | 'SOPORTE' | 'MARKETING' | 'SUPER_ADMIN';
   status: 'active' | 'inactive';
   createdAt: Date;
 }
@@ -24,28 +28,27 @@ interface User {
     FormsModule,
     RouterModule,
     NavbarComponent,
-    FooterComponent
+    FooterComponent,
   ],
   templateUrl: './superadmin.component.html',
-  styleUrls: ['./superadmin.component.css']
+  styleUrls: ['./superadmin.component.css'],
 })
 export class SuperadminComponent implements OnInit {
-  totalUsers = 0;
-  activeUsers = 0;
-  totalCompanies = 0;
-  newUsersThisMonth = 0;
-  searchTerm = '';
+  /* ------------ flags & feedback ------------- */
   isEditing = false;
-  successMessage = '';
-  errorMessage = '';
   darkMode = false;
   notificationsEnabled = true;
 
+  successMessage = '';
+  errorMessage = '';
+
+  /* ------------ datos del admin -------------- */
   adminData = {
     nombre: '',
-    email: ''
+    email: '',
   };
 
+  /* ------------ dashboard  mock -------------- */
   users: User[] = [
     {
       id: '1',
@@ -53,26 +56,34 @@ export class SuperadminComponent implements OnInit {
       email: 'juan@example.com',
       role: 'CLIENTE',
       status: 'active',
-      createdAt: new Date('2024-01-15')
+      createdAt: new Date('2024‑01‑15'),
     },
     {
       id: '2',
-      name: 'Tech Corp',
+      name: 'Tech Corp',
       email: 'tech@example.com',
       role: 'EMPRESA',
       status: 'active',
-      createdAt: new Date('2024-02-01')
+      createdAt: new Date('2024‑02‑01'),
     },
     {
       id: '3',
-      name: 'Ana López',
+      name: 'Ana López',
       email: 'ana@example.com',
       role: 'SOPORTE',
-      status: 'active',
-      createdAt: new Date('2024-03-01')
-    }
+      status: 'inactive',
+      createdAt: new Date('2024‑03‑01'),
+    },
   ];
 
+  /* ------------ dashboard métricas ----------- */
+  totalUsers = 0;
+  activeUsers = 0;
+  totalCompanies = 0;
+  newUsersThisMonth = 0;
+
+  /* ------------ búsqueda usuarios ------------ */
+  searchTerm = '';
   filteredUsers: User[] = [];
 
   constructor(
@@ -80,132 +91,151 @@ export class SuperadminComponent implements OnInit {
     private authService: AuthService
   ) { }
 
-  ngOnInit() {
+  /* =========================================================
+   *  CICLO DE VIDA
+   * ======================================================= */
+  ngOnInit(): void {
+    this.filteredUsers = this.users; // mock
     this.calculateStats();
-    this.filteredUsers = this.users;
-    this.loadAdminData();
     this.loadSettings();
+    this.loadAdminData();
   }
 
-  loadAdminData() {
+  /* =========================================================
+   *  CARGAR ADMIN
+   * ======================================================= */
+  private loadAdminData(): void {
     const email = this.authService.getEmail();
-    if (email) {
-      this.adminService.obtenerAdminPorEmail(email).subscribe({
-        next: (data) => {
-          this.adminData = {
-            nombre: data.nombre,
-            email: data.email
-          };
-          this.errorMessage = '';
-        },
-        error: (error) => {
-          console.error('Error loading admin data:', error);
-          this.errorMessage = 'Error al cargar los datos del administrador';
-        }
-      });
-    }
+    if (!email) return;
+
+    this.adminService.obtenerAdminPorEmail(email).subscribe({
+      next: (dto) => {
+        this.adminData = { nombre: dto.nombre, email: dto.email };
+        localStorage.setItem('userName', dto.nombre);
+        this.errorMessage = '';
+      },
+      error: (err) => {
+        console.error('Error loading admin:', err);
+        this.errorMessage = 'Error al cargar los datos del administrador';
+      },
+    });
   }
 
-  loadSettings() {
-    const darkModeSetting = localStorage.getItem('darkMode');
-    this.darkMode = darkModeSetting === 'true';
-    const notificationsSetting = localStorage.getItem('notifications');
-    this.notificationsEnabled = notificationsSetting !== 'false';
-    this.applyDarkMode();
-  }
-
-  calculateStats() {
-    this.totalUsers = this.users.length;
-    this.activeUsers = this.users.filter(u => u.status === 'active').length;
-    this.totalCompanies = this.users.filter(u => u.role === 'EMPRESA').length;
+  /* =========================================================
+   *  DASHBOARD MÉTRICAS
+   * ======================================================= */
+  private calculateStats(): void {
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    this.newUsersThisMonth = this.users.filter(u => u.createdAt >= firstDayOfMonth).length;
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    this.totalUsers = this.users.length;
+    this.activeUsers = this.users.filter((u) => u.status === 'active').length;
+    this.totalCompanies = this.users.filter((u) => u.role === 'EMPRESA').length;
+    this.newUsersThisMonth = this.users.filter(
+      (u) => u.createdAt >= firstDay
+    ).length;
   }
 
-  filterUsers() {
-    if (!this.searchTerm) {
+  /* =========================================================
+   *  BÚSQUEDA / FILTRO
+   * ======================================================= */
+  filterUsers(): void {
+    if (!this.searchTerm.trim()) {
       this.filteredUsers = this.users;
       return;
     }
+
     const term = this.searchTerm.toLowerCase();
-    this.filteredUsers = this.users.filter(user =>
-      user.name.toLowerCase().includes(term) ||
-      user.email.toLowerCase().includes(term) ||
-      user.role.toLowerCase().includes(term)
+    this.filteredUsers = this.users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(term) ||
+        u.email.toLowerCase().includes(term) ||
+        u.role.toLowerCase().includes(term)
     );
   }
 
-  getRoleBadgeClass(role: string): string {
-    const classes = {
-      'CLIENTE': 'bg-success',
-      'EMPRESA': 'bg-primary',
-      'SOPORTE': 'bg-info',
-      'MARKETING': 'bg-warning',
-      'SUPER_ADMIN': 'bg-danger'
-    };
-    return classes[role as keyof typeof classes] || 'bg-secondary';
-  }
-
-  getStatusBadgeClass(status: string): string {
-    return status === 'active' ? 'bg-success' : 'bg-secondary';
-  }
-
-  toggleEdit() {
+  /* =========================================================
+   *  EDICIÓN DE PERFIL
+   * ======================================================= */
+  toggleEdit(): void {
     this.isEditing = !this.isEditing;
-    if (!this.isEditing) {
-      this.loadAdminData();
-    }
+    if (!this.isEditing) this.loadAdminData();
     this.successMessage = '';
     this.errorMessage = '';
   }
 
-  updateProfile() {
-    const userId = this.authService.getUserId();
-    if (userId) {
-      this.adminService.actualizarAdmin(userId, this.adminData).subscribe({
-        next: () => {
-          this.successMessage = 'Perfil actualizado exitosamente';
-          this.isEditing = false;
-          if (this.adminData.nombre !== localStorage.getItem('userName')) {
-            localStorage.setItem('userName', this.adminData.nombre);
-          }
-        },
-        error: (error) => {
-          console.error('Error updating profile:', error);
-          this.errorMessage = 'Error al actualizar el perfil';
-        }
-      });
-    }
+  updateProfile(): void {
+    const id = this.authService.getUserId();
+    if (!id) return;
+
+    this.adminService.actualizarAdmin(id, this.adminData).subscribe({
+      next: () => {
+        this.successMessage = 'Perfil actualizado exitosamente';
+        this.isEditing = false;
+        localStorage.setItem('userName', this.adminData.nombre);
+      },
+      error: (err) => {
+        console.error('Error updating admin:', err);
+        this.errorMessage = 'Error al actualizar el perfil';
+      },
+    });
   }
 
-  toggleTheme() {
+  /* =========================================================
+   *  PREFS / DARK MODE / NOTIFICACIONES
+   * ======================================================= */
+  toggleTheme(): void {
     this.darkMode = !this.darkMode;
-    localStorage.setItem('darkMode', this.darkMode.toString());
+    localStorage.setItem('darkMode', String(this.darkMode));
     this.applyDarkMode();
   }
 
-  private applyDarkMode() {
-    if (this.darkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
+  toggleNotifications(): void {
+    localStorage.setItem(
+      'notifications',
+      String(this.notificationsEnabled)
+    );
   }
 
-  toggleNotifications() {
-    localStorage.setItem('notifications', this.notificationsEnabled.toString());
+  private loadSettings(): void {
+    this.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.notificationsEnabled =
+      localStorage.getItem('notifications') !== 'false';
+    this.applyDarkMode();
   }
 
-  createUser() {
+  private applyDarkMode(): void {
+    document.body.classList.toggle('dark-mode', this.darkMode);
+  }
+
+  /* =========================================================
+   *  ESTILOS BADGES (helpers view)
+   * ======================================================= */
+  getRoleBadgeClass(role: User['role']): string {
+    return (
+      {
+        CLIENTE: 'bg-success',
+        EMPRESA: 'bg-primary',
+        SOPORTE: 'bg-info',
+        MARKETING: 'bg-warning',
+        SUPER_ADMIN: 'bg-danger',
+      }[role] || 'bg-secondary'
+    );
+  }
+  getStatusBadgeClass(status: User['status']): string {
+    return status === 'active' ? 'bg-success' : 'bg-secondary';
+  }
+
+  /* =========================================================
+   *  ACCIONES MOCK SOBRE USUARIOS
+   * ======================================================= */
+  createUser(): void {
     console.log('Create new user');
   }
-
-  editUser(user: User) {
-    console.log('Edit user:', user);
+  editUser(u: User): void {
+    console.log('Edit user:', u);
   }
-
-  deleteUser(user: User) {
-    console.log('Delete user:', user);
+  deleteUser(u: User): void {
+    console.log('Delete user:', u);
   }
 }

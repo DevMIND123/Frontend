@@ -1,163 +1,234 @@
+/* src/app/components/home/client/client.component.ts */
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
+import { FooterComponent } from '../../shared/footer/footer.component';
+
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
-import { FormsModule } from '@angular/forms';
-import { FooterComponent } from '../../shared/footer/footer.component';
-import { NavbarComponent } from '../../shared/navbar/navbar.component';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-client',
   standalone: true,
   imports: [
+    /* Angular */
     CommonModule,
-    RouterModule,
     FormsModule,
+    RouterModule,
+    /* Layout */
     NavbarComponent,
     FooterComponent,
   ],
   templateUrl: './client.component.html',
-  styleUrls: ['./client.component.css']
+  styleUrls: ['./client.component.css'],
 })
 export class ClientComponent implements OnInit {
+  /* ------------ estado de formulario ------------ */
   isEditing = false;
   showPasswordModal = false;
+  id: number = 0;
+
   userData = {
     nombre: '',
     email: '',
     departamento: '',
-    especialidad: ''
+    especialidad: '',
   };
 
+  /* ------------ feedback UI ------------ */
   successMessage = '';
   errorMessage = '';
+
+  /* ------------ preferencias ------------ */
   darkMode = false;
   notificationsEnabled = true;
+
+  /* ------------ password modal ------------ */
+  passwordData = {
+    current: '',
+    nueva: '',
+    confirm: '',
+  };
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private usuarioService: UsuarioService
-  ) { }
+  ) {}
 
+  /* =========================================================
+   *  CICLO DE VIDA
+   * ======================================================= */
   ngOnInit(): void {
     this.loadUserData();
     this.loadThemePreference();
   }
 
-  loadUserData() {
-    const email = sessionStorage.getItem('user');
-    const rol = sessionStorage.getItem('user-role');
+  /* =========================================================
+   *  CARGA DE DATOS
+   * ======================================================= */
+  private loadUserData(): void {
+    const email = this.authService.getEmail();
+    const rol = this.authService.getRole();
 
     if (!email || !rol) {
-      this.errorMessage = 'No se encontró información del usuario en sesión. Por favor, inicie sesión nuevamente.';
+      this.errorMessage =
+        'No se encontró la sesión. Inicia sesión nuevamente, por favor.';
       this.router.navigate(['/login']);
       return;
     }
 
-    this.usuarioService.obtenerUsuarioPorEmail(email, rol).subscribe({
-      next: (data: any) => {
-        this.userData = {
-          nombre: data.nombre || '',
-          email: data.email || '',
-          departamento: data.departamento || '',
-          especialidad: data.especialidad || ''
-        };
-        localStorage.setItem('userName', this.userData.nombre);
+    this.usuarioService.obtenerUsuario(email, rol).subscribe({
+      next: (dto) => {
+        this.id = dto;
+        /* Nuevo endpoint que devuelve el DTO completo                *
+         * (internamente el Service llama a /datos/{email})           */
+        this.usuarioService.obtenerUsuario(email, rol).subscribe({
+          next: (dto) => {
+            this.userData = {
+              nombre: dto.nombre ?? '',
+              email: dto.email ?? '',
+              departamento: dto.departamento ?? '',
+              especialidad: dto.especialidad ?? '',
+            };
+            localStorage.setItem('userName', this.userData.nombre);
+            this.errorMessage = '';
+          },
+          error: (err) => {
+            console.error('Error al cargar datos:', err);
+            this.errorMessage = 'Error al cargar los datos del usuario.';
+          },
+        });
       },
-      error: (error: any) => {
-        this.errorMessage = 'Error al cargar los datos del usuario.';
-        console.error('Error:', error);
-      }
+      error: (err) => {
+        this.errorMessage = 'Error al cargar los datos de la empresa.';
+        console.error('[Empresa] loadCompanyData:', err);
+      },
     });
   }
 
-  toggleEdit() {
+  /* =========================================================
+   *  EDICIÓN DE PERFIL
+   * ======================================================= */
+  toggleEdit(): void {
     this.isEditing = !this.isEditing;
-    if (!this.isEditing) this.loadUserData();
+
+    if (!this.isEditing) {
+      // si cancela, recargamos los datos para descartar cambios
+      this.loadUserData();
+    }
+
     this.successMessage = '';
     this.errorMessage = '';
   }
 
-  updateProfile() {
-    const rol = sessionStorage.getItem('user-role');
-    if (!rol || !this.userData.email) return;
-
+  updateProfile(): void {
     this.usuarioService.actualizarUsuario(this.userData).subscribe({
       next: () => {
         this.successMessage = 'Perfil actualizado exitosamente';
         this.isEditing = false;
         localStorage.setItem('userName', this.userData.nombre);
       },
-      error: (error: any) => {
-        this.errorMessage = 'Error al actualizar el perfil';
-        console.error('Error updating profile:', error);
-      }
+      error: (err) => {
+        console.error('Error updating profile:', err);
+        this.errorMessage = 'Error al actualizar el perfil.';
+      },
     });
   }
 
-  onPasswordChange(newPassword: string) {
-    const email = sessionStorage.getItem('user');
-    const rol = sessionStorage.getItem('user-role');
-
-    if (!email || !rol) {
-      this.errorMessage = 'No se encontró información del usuario en sesión.';
+  /* =========================================================
+   *  PASSWORD
+   * ======================================================= */
+  onPasswordChange(): void {
+    if (this.passwordData.nueva !== this.passwordData.confirm) {
+      this.errorMessage = 'Las contraseñas no coinciden';
       return;
     }
 
-    this.authService.changePassword({ email, nuevaPassword: newPassword }).subscribe({
-      next: () => {
-        this.successMessage = 'Contraseña cambiada correctamente.';
-        this.showPasswordModal = false;
+    const email = this.authService.getEmail();
+    if (!email) return;
+
+    this.authService
+      .changePassword({ email, nuevaPassword: this.passwordData.nueva })
+      .subscribe({
+        next: () => {
+          this.successMessage = 'Contraseña cambiada correctamente.';
+          this.showPasswordModal = false;
+          this.passwordData = { current: '', nueva: '', confirm: '' };
+        },
+        error: (err) => {
+          console.error('Error al cambiar contraseña:', err);
+          this.errorMessage =
+            err.error?.message || 'Ocurrió un error al cambiar la contraseña.';
+        },
+      });
+  }
+
+  /* =========================================================
+   *  ELIMINAR CUENTA
+   * ======================================================= */
+  deleteAccount(): void {
+    if (
+      !confirm(
+        '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.'
+      )
+    )
+      return;
+
+    const email = this.authService.getEmail();
+    const rol = this.authService.getRole();
+    if (!email || !rol) return;
+    this.usuarioService.obtenerUsuario(email, rol).subscribe({
+      next: (dto) => {
+        this.id = dto;
+
+        this.usuarioService.eliminarUsuarioPorId(this.id, rol).subscribe({
+          next: () => {
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          },
+          error: (err) => {
+            console.error('Delete account error:', err);
+            this.errorMessage = 'Error al eliminar la cuenta.';
+          },
+        });
       },
-      error: (error: any) => {
-        console.error('Error:', error);
-        this.errorMessage = error.message || 'Ocurrió un error al cambiar la contraseña.';
-      }
+      error: (err) => {
+        this.errorMessage = 'Error al cargar los datos de la empresa.';
+        console.error('[Empresa] loadCompanyData:', err);
+      },
     });
   }
 
-  deleteAccount() {
-    if (confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      const email = sessionStorage.getItem('user');
-      const rol = sessionStorage.getItem('user-role');
-      if (!email || !rol) return;
-
-      this.usuarioService.eliminarUsuarioPorEmail(email, rol).subscribe({
-        next: () => {
-          this.authService.logout();
-          this.router.navigate(['/login']);
-        },
-        error: (error: any) => {
-          this.errorMessage = 'Error al eliminar la cuenta.';
-          console.error('Delete account error:', error);
-        }
-      });
-    }
-  }
-
-  toggleTheme() {
+  /* =========================================================
+   *  TEMA & PREFERENCIAS
+   * ======================================================= */
+  toggleTheme(): void {
     this.darkMode = !this.darkMode;
-    localStorage.setItem('darkMode', this.darkMode.toString());
+    localStorage.setItem('darkMode', String(this.darkMode));
     this.applyTheme();
   }
 
-  loadThemePreference() {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    this.darkMode = darkMode;
+  private loadThemePreference(): void {
+    this.darkMode = localStorage.getItem('darkMode') === 'true';
     this.applyTheme();
   }
 
-  private applyTheme() {
+  private applyTheme(): void {
     document.body.classList.toggle('dark-mode', this.darkMode);
   }
 
-  createHabit() {
+  /* =========================================================
+   *  PLACEHOLDERS DE NEGOCIO (hábitos / retos)
+   * ======================================================= */
+  createHabit(): void {
     console.log('Crear nuevo hábito');
   }
 
-  createChallenge() {
+  createChallenge(): void {
     console.log('Crear nuevo reto');
   }
 }

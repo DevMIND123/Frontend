@@ -1,13 +1,17 @@
+/*  src/app/components/home/marketing/marketing.component.ts  */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
+
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
+
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
-import { UsuarioUpdateDTO } from '../../../models/usuario'; // 👈 NUEVO
+import { UsuarioUpdateDTO } from '../../../models/usuario';
 
+/* ---------------- Modelos mock ---------------- */
 interface Campaign {
   id: string;
   name: string;
@@ -20,78 +24,91 @@ interface Campaign {
 
 @Component({
   selector: 'app-marketing',
-  standalone: true,
+  standalone: true, // ← componente stand‑alone
   imports: [
     CommonModule,
-    RouterModule,
     FormsModule,
+    RouterModule,
     NavbarComponent,
-    FooterComponent
+    FooterComponent,
   ],
   templateUrl: './marketing.component.html',
-  styleUrls: ['./marketing.component.css']
+  styleUrls: ['./marketing.component.css'],
 })
 export class MarketingComponent implements OnInit {
-  activeCampaigns = 0;
-  totalReach = 0;
-  totalBudget = 0;
+  /* ---------- flags / feedback ---------- */
   isEditing = false;
-  successMessage = '';
-  errorMessage = '';
   showPasswordForm = false;
-
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+  id = 0; // para el CRUD mock de campañas
+  /* ---------- datos de usuario ---------- */
   userData = {
     nombre: '',
     email: '',
     departamento: 'Marketing',
-    especialidad: 'Marketing Digital'
+    especialidad: 'Marketing Digital',
   };
 
+  /* ---------- password (coincide con HTML) ---------- */
   passwordData = {
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   };
 
+  /* ---------- preferencias ---------- */
   preferences = {
     darkMode: false,
-    notifications: true
+    notifications: true,
   };
 
+  /* ---------- campañas mock ---------- */
   campaigns: Campaign[] = [
     {
       id: '1',
       name: 'Campaña de Verano',
       status: 'active',
-      startDate: new Date('2024-03-01'),
-      endDate: new Date('2024-05-31'),
-      budget: 5000000,
-      reach: 50000
+      startDate: new Date('2024‑03‑01'),
+      endDate: new Date('2024‑05‑31'),
+      budget: 5_000_000,
+      reach: 50_000,
     },
     {
       id: '2',
       name: 'Promoción Fitness',
       status: 'draft',
-      startDate: new Date('2024-04-01'),
-      endDate: new Date('2024-06-30'),
-      budget: 3000000,
-      reach: 30000
-    }
+      startDate: new Date('2024‑04‑01'),
+      endDate: new Date('2024‑06‑30'),
+      budget: 3_000_000,
+      reach: 30_000,
+    },
   ];
 
-  constructor(
-    private router: Router,
-    private authService: AuthService,
-    private usuarioService: UsuarioService
-  ) { }
+  /* ---------- métricas ---------- */
+  activeCampaigns = 0;
+  totalReach = 0;
+  totalBudget = 0;
 
-  ngOnInit() {
+  constructor(
+    private authService: AuthService,
+    private usuarioService: UsuarioService,
+    private router: Router
+  ) {}
+
+  /* =====================================================
+   *  CICLO DE VIDA
+   * =================================================== */
+  ngOnInit(): void {
     this.calculateStats();
     this.loadUserData();
     this.loadThemePreference();
   }
 
-  loadUserData() {
+  /* =====================================================
+   *  CARGA DE DATOS
+   * =================================================== */
+  private loadUserData(): void {
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
 
@@ -99,153 +116,188 @@ export class MarketingComponent implements OnInit {
       this.errorMessage = 'No se encontró información del usuario.';
       return;
     }
+    this.usuarioService.obtenerUsuario(email, rol).subscribe({
+      next: (dto) => {
+        this.id = dto;
 
-    this.usuarioService.obtenerUsuarioPorEmail(email, rol).subscribe({
-      next: (data: any) => {
-        this.userData = {
-          nombre: data.nombre || '',
-          email: data.email || '',
-          departamento: data.departamento || 'Marketing',
-          especialidad: data.especialidad || 'Marketing Digital'
-        };
-        this.errorMessage = '';
+        this.usuarioService.obtenerUsuario(email, rol).subscribe({
+          next: (dto) => {
+            this.userData = {
+              nombre: dto.nombre ?? '',
+              email: dto.email,
+              departamento: dto.departamento ?? 'Marketing',
+              especialidad: dto.especialidad ?? 'Marketing Digital',
+            };
+            this.errorMessage = null;
+          },
+          error: (err) => {
+            console.error('Error loading user data:', err);
+            this.errorMessage = 'Error al cargar los datos del usuario';
+          },
+        });
       },
-      error: (error: any) => {
-        console.error('Error loading user data:', error);
-        this.errorMessage = 'Error al cargar los datos del usuario';
-      }
+      error: (err) => {
+        this.errorMessage = 'Error al cargar los datos de la empresa.';
+        console.error('[Empresa] loadCompanyData:', err);
+      },
     });
   }
 
-  updateProfile() {
-    const rol = this.authService.getRole();
-    if (!this.userData.email || !rol) return;
+  /* =====================================================
+   *  EDICIÓN PERFIL
+   * =================================================== */
+  toggleEdit(): void {
+    this.isEditing = !this.isEditing;
+    if (!this.isEditing) {
+      this.loadUserData(); // descartar cambios al cancelar
+      this.successMessage = null;
+    }
+    this.errorMessage = null;
+  }
 
-    const updateData: UsuarioUpdateDTO = {
+  updateProfile(): void {
+    const dto: UsuarioUpdateDTO = {
       nombre: this.userData.nombre,
       email: this.userData.email,
       departamento: this.userData.departamento,
-      especialidad: this.userData.especialidad
+      especialidad: this.userData.especialidad,
     };
 
-    this.usuarioService.actualizarUsuario(updateData).subscribe({
+    this.usuarioService.actualizarUsuario(dto).subscribe({
       next: () => {
         this.successMessage = 'Perfil actualizado exitosamente';
         this.isEditing = false;
+        this.errorMessage = null;
         localStorage.setItem('userName', this.userData.nombre);
       },
-      error: (error: any) => {
-        console.error('Error updating profile:', error);
+      error: (err) => {
+        console.error('Error updating profile:', err);
         this.errorMessage = 'Error al actualizar el perfil';
-      }
+      },
     });
   }
 
-  deleteAccount() {
-    if (confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      const email = this.userData.email;
-      const rol = this.authService.getRole();
-
-      if (!email || !rol) return;
-
-      this.usuarioService.eliminarUsuarioPorEmail(email, rol).subscribe({
-        next: () => {
-          this.authService.logout();
-          this.router.navigate(['/login']);
-        },
-        error: (error: any) => {
-          console.error('Error deleting account:', error);
-          this.errorMessage = 'Error al eliminar la cuenta';
-        }
-      });
-    }
+  /* =====================================================
+   *  PASSWORD
+   * =================================================== */
+  togglePasswordForm(): void {
+    this.showPasswordForm = !this.showPasswordForm;
+    this.passwordData = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    };
+    this.errorMessage = null;
+    this.successMessage = null;
   }
 
-  changePassword() {
+  changePassword(): void {
     if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
       this.errorMessage = 'Las contraseñas nuevas no coinciden';
       return;
     }
 
-    const email = this.userData.email;
+    const email = this.authService.getEmail();
+    if (!email) return;
 
-    this.authService.changePassword({ email, nuevaPassword: this.passwordData.newPassword }).subscribe({
+    this.authService
+      .changePassword({ email, nuevaPassword: this.passwordData.newPassword })
+      .subscribe({
+        next: () => {
+          this.successMessage = 'Contraseña actualizada exitosamente';
+          this.togglePasswordForm();
+        },
+        error: (err) => {
+          console.error('Error changing password:', err);
+          this.errorMessage = 'Error al cambiar la contraseña';
+        },
+      });
+  }
+
+  /* =====================================================
+   *  ELIMINAR CUENTA
+   * =================================================== */
+  deleteAccount(): void {
+    if (
+      !confirm(
+        '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.'
+      )
+    )
+      return;
+
+    const email = this.authService.getEmail();
+    const rol = this.authService.getRole();
+    if (!email || !rol) return;
+
+    this.usuarioService.eliminarUsuarioPorId(this.id, rol).subscribe({
       next: () => {
-        this.successMessage = 'Contraseña actualizada exitosamente';
-        this.togglePasswordForm();
+        this.authService.logout();
+        this.router.navigate(['/login']);
       },
-      error: (error: any) => {
-        console.error('Error changing password:', error);
-        this.errorMessage = 'Error al cambiar la contraseña';
-      }
+      error: (err) => {
+        console.error('Error deleting account:', err);
+        this.errorMessage = 'Error al eliminar la cuenta';
+      },
     });
   }
 
-  toggleEdit() {
-    this.isEditing = !this.isEditing;
-    if (!this.isEditing) this.loadUserData();
-    this.successMessage = '';
-    this.errorMessage = '';
-  }
-
-  togglePasswordForm() {
-    this.showPasswordForm = !this.showPasswordForm;
-    this.passwordData = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    };
-  }
-
-  loadThemePreference() {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    this.preferences.darkMode = darkMode;
-    this.applyTheme();
-  }
-
-  toggleTheme() {
+  /* =====================================================
+   *  PREFERENCIAS / TEMA
+   * =================================================== */
+  toggleTheme(): void {
     this.preferences.darkMode = !this.preferences.darkMode;
-    localStorage.setItem('darkMode', this.preferences.darkMode.toString());
+    localStorage.setItem('darkMode', String(this.preferences.darkMode));
     this.applyTheme();
   }
 
-  private applyTheme() {
+  private loadThemePreference(): void {
+    this.preferences.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.applyTheme();
+  }
+
+  private applyTheme(): void {
     document.body.classList.toggle('dark-mode', this.preferences.darkMode);
   }
 
-  calculateStats() {
-    this.activeCampaigns = this.campaigns.filter(c => c.status === 'active').length;
+  /* =====================================================
+   *  CAMPAÑAS (mock)
+   * =================================================== */
+  private calculateStats(): void {
+    this.activeCampaigns = this.campaigns.filter(
+      (c) => c.status === 'active'
+    ).length;
     this.totalReach = this.campaigns.reduce((sum, c) => sum + c.reach, 0);
     this.totalBudget = this.campaigns.reduce((sum, c) => sum + c.budget, 0);
   }
 
-  getStatusClass(status: string): string {
-    const classes = {
-      'active': 'bg-success',
-      'draft': 'bg-warning',
-      'completed': 'bg-secondary'
-    };
-    return classes[status as keyof typeof classes] || 'bg-secondary';
+  getStatusClass(status: Campaign['status']): string {
+    return (
+      {
+        active: 'bg-success',
+        draft: 'bg-warning',
+        completed: 'bg-secondary',
+      }[status] || 'bg-secondary'
+    );
   }
 
-  getStatusLabel(status: string): string {
-    const labels = {
-      'active': 'Activa',
-      'draft': 'Borrador',
-      'completed': 'Completada'
-    };
-    return labels[status as keyof typeof labels] || status;
+  getStatusLabel(status: Campaign['status']): string {
+    return (
+      {
+        active: 'Activa',
+        draft: 'Borrador',
+        completed: 'Completada',
+      }[status] || status
+    );
   }
 
-  createCampaign() {
+  /* ----- CRUD mock campañas ----- */
+  createCampaign(): void {
     console.log('Create new campaign');
   }
-
-  editCampaign(campaign: Campaign) {
-    console.log('Edit campaign:', campaign);
+  editCampaign(c: Campaign): void {
+    console.log('Edit campaign:', c);
   }
-
-  deleteCampaign(campaign: Campaign) {
-    console.log('Delete campaign:', campaign);
+  deleteCampaign(c: Campaign): void {
+    console.log('Delete campaign:', c);
   }
 }

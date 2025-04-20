@@ -41,7 +41,7 @@ export class LoginComponent implements OnInit {
         console.log('Login exitoso. JWT:', jwt);
         localStorage.setItem('token', jwt.token); // ✅ Guarda token
 
-        this.usuarioService.obtenerUsuarioPorEmail(jwt.email, jwt.rol).subscribe({
+        this.usuarioService.obtenerIdPorEmail(jwt.email, jwt.rol).subscribe({
           next: (usuario: any) => {
             console.log('Rol:', jwt.rol);
             this.usuarioService.setRol(jwt.rol);
