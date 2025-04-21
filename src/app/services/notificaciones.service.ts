@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 /* ✅ Usamos notificationUrl directamente */
-const NOTIF_URL = environment.notificationUrl;
+const NOTIF_URL = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class NotificacionesService {
