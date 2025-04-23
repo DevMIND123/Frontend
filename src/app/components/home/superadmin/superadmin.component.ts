@@ -1,14 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
 
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth.service';
+import { UsuarioService } from '../../../services/usuario.service';
 import { FinanzasService } from '../../../services/finanzas.service';
+
+import Swal from 'sweetalert2';
+import { forkJoin } from 'rxjs';
+
+/* Modelo auxiliar */
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'CLIENTE' | 'EMPRESA' | 'SOPORTE' | 'MARKETING' | 'SUPER_ADMIN';
+  status: 'active' | 'inactive';
+  createdAt: Date;
+}
 
 @Component({
   selector: 'app-superadmin-home',
@@ -22,58 +36,71 @@ import { FinanzasService } from '../../../services/finanzas.service';
   ],
   templateUrl: './superadmin.component.html',
   styleUrls: ['./superadmin.component.css'],
-  providers: [FinanzasService]
+  providers: [FinanzasService],
 })
 export class SuperadminComponent implements OnInit {
-  /* ------------ flags & feedback ------------- */
+  // Flags
   isEditing = false;
   darkMode = false;
   notificationsEnabled = true;
+  showPasswordForm = false;
 
-  successMessage = '';
-  errorMessage = '';
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
 
-  /* ------------ datos del admin -------------- */
+  id: number = 0;
+
+  // Datos personales del admin
   adminData = {
     nombre: '',
     email: '',
   };
 
-  /* ------------ gestión usuarios ------------- */
+  // Gestión de usuarios
   searchTerm = '';
-  filteredUsers: any[] = []; // ajusta el tipo si tienes interfaz Usuario[]
+  filteredUsers: User[] = [];
+  allUsers: User[] = [];
+  availableRoles = ['SOPORTE', 'MARKETING'];
 
-  /* ------------ módulo financiero ------------- */
+  // Finanzas
   datosFinancieros: any = null;
+
+  // Cambio de contraseña
+  passwordData = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  };
 
   constructor(
     private adminService: AdminService,
     private authService: AuthService,
-    private finanzasService: FinanzasService
-  ) { }
+    private usuarioService: UsuarioService,
+    private finanzasService: FinanzasService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadSettings();
     this.loadAdminData();
-    this.cargarDatosFinancieros();
-    this.cargarUsuarios(); // carga usuarios reales
+    this.loadUsers();
+    this.loadFinancialData();
   }
 
-  /* ========= Obtener usuarios desde base de datos ========= */
-  private cargarUsuarios(): void {
+  /* ============ Carga de usuarios reales ============ */
+  private loadUsers(): void {
     this.adminService.obtenerUsuarios().subscribe({
       next: (usuarios) => {
         this.filteredUsers = usuarios;
+        this.allUsers = usuarios;
       },
-      error: (err) => {
-        console.error('Error al cargar usuarios:', err);
-      }
+      error: (err) => console.error('Error al cargar usuarios:', err),
     });
   }
 
   filterUsers(): void {
     const term = this.searchTerm.toLowerCase();
-    this.filteredUsers = this.filteredUsers.filter(
+    this.filteredUsers = this.allUsers.filter(
       (u) =>
         u.name.toLowerCase().includes(term) ||
         u.email.toLowerCase().includes(term) ||
@@ -81,32 +108,68 @@ export class SuperadminComponent implements OnInit {
     );
   }
 
-  /* ================== Finanzas =================== */
-  private cargarDatosFinancieros(): void {
+  /* ============ Datos financieros (mock) ============ */
+  private loadFinancialData(): void {
     this.finanzasService.obtenerModuloFinanzas().subscribe({
       next: (data) => {
         this.datosFinancieros = data.moduloFinanzas;
       },
-      error: (err) => {
-        console.error('Error cargando datos de finanzas:', err);
-      }
+      error: (err) =>
+        console.error('Error cargando datos financieros:', err),
     });
   }
 
-  /* ================== Datos admin =================== */
+  /* ============ Cargar datos del administrador ============ */
   private loadAdminData(): void {
     const email = this.authService.getEmail();
-    if (!email) return;
+    const rol = this.authService.getRole();
 
-    this.adminService.obtenerAdminPorEmail(email).subscribe({
+    if (!email || !rol) {
+      this.errorMessage =
+        'No se encontró la sesión de la empresa. Inicia sesión nuevamente.';
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.usuarioService.obtenerUsuario(email, rol).subscribe({
       next: (dto) => {
-        this.adminData = { nombre: dto.nombre, email: dto.email };
-        localStorage.setItem('userName', dto.nombre);
-        this.errorMessage = '';
+        this.id = dto;
+        this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
+          next: (dto) => {
+            this.adminData = {
+              nombre: dto.nombre,
+              email: dto.email,
+            };
+            this.errorMessage = null;
+          },
+          error: (err) => {
+            this.errorMessage = 'Error al cargar los datos del administrador.';
+            console.error('[Admin] loadById:', err);
+          },
+        });
       },
       error: (err) => {
-        console.error('Error cargando admin:', err);
-        this.errorMessage = 'Error al cargar los datos del administrador';
+        this.errorMessage = 'Error al cargar datos del administrador.';
+        console.error('[Admin] loadByEmail:', err);
+      },
+    });
+  }
+
+  updateProfile(): void {
+    const rol = this.authService.getRole();
+    const dto = {
+      nombre: this.adminData.nombre,
+      email: this.adminData.email,
+    };
+
+    this.usuarioService.actualizarUsuarioPorId(this.id, dto, rol).subscribe({
+      next: () => {
+        this.successMessage = 'Datos actualizados correctamente';
+        this.isEditing = false;
+      },
+      error: (err) => {
+        this.errorMessage = 'Error al actualizar el perfil';
+        console.error('updateProfile:', err);
       },
     });
   }
@@ -118,24 +181,7 @@ export class SuperadminComponent implements OnInit {
     this.errorMessage = '';
   }
 
-  updateProfile(): void {
-    const id = this.authService.getUserId();
-    if (!id) return;
-
-    this.adminService.actualizarAdmin(id, this.adminData).subscribe({
-      next: () => {
-        this.successMessage = 'Perfil actualizado exitosamente';
-        this.isEditing = false;
-        localStorage.setItem('userName', this.adminData.nombre);
-      },
-      error: (err) => {
-        console.error('Error actualizando perfil:', err);
-        this.errorMessage = 'Error al actualizar el perfil';
-      },
-    });
-  }
-
-  /* ================== Preferencias =================== */
+  /* ================== Preferencias ================== */
   toggleTheme(): void {
     this.darkMode = !this.darkMode;
     localStorage.setItem('darkMode', String(this.darkMode));
@@ -157,12 +203,12 @@ export class SuperadminComponent implements OnInit {
     document.body.classList.toggle('dark-mode', this.darkMode);
   }
 
-  /* ================== Acciones usuario =================== */
-  editUser(user: any): void {
+  /* ================== Acciones sobre usuarios ================== */
+  editUser(user: User): void {
     console.log('Editar usuario:', user);
   }
 
-  deleteUser(user: any): void {
+  deleteUser(user: User): void {
     console.log('Eliminar usuario:', user);
   }
 
@@ -176,5 +222,90 @@ export class SuperadminComponent implements OnInit {
         SUPER_ADMIN: 'bg-danger',
       }[role] || 'bg-secondary'
     );
+  }
+
+  /* ================== Modal Crear Usuario ================== */
+  openCreateUserModal() {
+    Swal.fire({
+      title: 'Crear nuevo usuario',
+      html:
+        `<input id="swal-email" class="swal2-input" placeholder="Email">` +
+        `<input id="swal-nombre" class="swal2-input" placeholder="Nombre">` +
+        `<input id="swal-password" type="password" class="swal2-input" placeholder="Contraseña">` +
+        `<select id="swal-rol" class="swal2-input">
+          ${this.availableRoles
+            .map((r) => `<option value="${r}">${r}</option>`)
+            .join('')}
+        </select>`,
+      showCancelButton: true,
+      confirmButtonText: 'Crear',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const email = (document.getElementById('swal-email') as HTMLInputElement).value;
+        const nombre = (document.getElementById('swal-nombre') as HTMLInputElement).value;
+        const password = (document.getElementById('swal-password') as HTMLInputElement).value;
+        const rol = (document.getElementById('swal-rol') as HTMLSelectElement).value;
+        if (!email || !nombre || !password) {
+          Swal.showValidationMessage('✱ Todos los campos son obligatorios');
+        }
+        return { email, nombre, password, rol };
+      },
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        this.adminService.createAdmin(result.value).subscribe(
+          () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Usuario creado correctamente.',
+              confirmButtonText: 'Aceptar',
+            });
+            this.loadUsers(); // actualizar lista
+          },
+          (error) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'No se pudo crear el usuario.',
+              confirmButtonText: 'Aceptar',
+            });
+            console.error('Error al crear el usuario:', error);
+          }
+        );
+      }
+    });
+  }
+
+  /* ================== Cambio de contraseña ================== */
+  togglePasswordForm(): void {
+    this.showPasswordForm = !this.showPasswordForm;
+    this.passwordData = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    };
+    this.successMessage = null;
+    this.errorMessage = null;
+  }
+
+  changePassword(): void {
+    const email = this.authService.getEmail();
+    if (!email) return;
+
+    this.authService
+      .changePasswordAdmin({
+        email,
+        nuevaPassword: this.passwordData.newPassword,
+      })
+      .subscribe({
+        next: () => {
+          this.successMessage = 'Contraseña actualizada correctamente';
+          this.togglePasswordForm();
+        },
+        error: (err) => {
+          this.errorMessage = 'Error al cambiar la contraseña';
+          console.error('changePassword:', err);
+        },
+      });
   }
 }

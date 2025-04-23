@@ -93,23 +93,38 @@ export class SoporteHomeComponent implements OnInit {
     const rol = this.authService.getRole();
 
     if (!email || !rol) {
-      this.errorMessage = 'No se encontró información del usuario.';
+      this.errorMessage =
+        'No se encontró la sesión de la empresa. Inicia sesión nuevamente.';
+      this.router.navigate(['/login']);
       return;
     }
 
     this.usuarioService.obtenerUsuario(email, rol).subscribe({
       next: (dto) => {
-        this.userData = {
-          nombre: dto.nombre ?? '',
-          email: dto.email,
-          departamento: dto.departamento ?? 'Soporte Técnico',
-          especialidad: dto.especialidad ?? 'Atención al Cliente',
-        };
-        this.errorMessage = '';
+        this.id = dto;
+
+        // ✅ Ya tienes this.id, ahora sí haces la segunda llamada
+        this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
+          next: (dto) => {
+            this.userData = {
+              nombre: dto.nombre,
+              email: dto.email,
+              departamento: 'Soporte Técnico',
+              especialidad: 'Atención al Cliente',
+            };
+
+            console.log('[Empresa] loadCompanyData (by ID):', this.userData);
+            this.errorMessage = null;
+          },
+          error: (err) => {
+            this.errorMessage = 'Error al cargar los datos de la empresa.';
+            console.error('[Empresa] loadCompanyData (by ID):', err);
+          },
+        });
       },
       error: (err) => {
-        console.error('Error loading user:', err);
-        this.errorMessage = 'Error al cargar los datos del usuario';
+        this.errorMessage = 'Error al cargar los datos de la empresa.';
+        console.error('[Empresa] loadCompanyData:', err);
       },
     });
   }
@@ -143,22 +158,23 @@ export class SoporteHomeComponent implements OnInit {
   }
 
   updateProfile(): void {
-    const dto: UsuarioUpdateDTO = {
+    console.log('[Empresa] onSubmit:', this.userData);
+
+    const dto = {
       nombre: this.userData.nombre,
       email: this.userData.email,
-      departamento: this.userData.departamento,
-      especialidad: this.userData.especialidad,
     };
+    const rol = this.authService.getRole();
 
-    this.usuarioService.actualizarUsuario(dto).subscribe({
+    this.usuarioService.actualizarUsuarioPorId(this.id, dto, rol).subscribe({
       next: () => {
-        this.successMessage = 'Perfil actualizado exitosamente';
+        this.successMessage = 'Datos actualizados correctamente';
         this.isEditing = false;
-        localStorage.setItem('userName', this.userData.nombre);
+        this.errorMessage = null;
       },
       error: (err) => {
-        console.error('Error updating profile:', err);
-        this.errorMessage = 'Error al actualizar el perfil';
+        this.errorMessage = 'Error al actualizar los datos.';
+        console.error('[Empresa] onSubmit:', err);
       },
     });
   }
@@ -175,16 +191,16 @@ export class SoporteHomeComponent implements OnInit {
   }
 
   changePassword(): void {
-    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
-      this.errorMessage = 'Las contraseñas nuevas no coinciden';
-      return;
-    }
+
 
     const email = this.authService.getEmail();
     if (!email) return;
 
     this.authService
-      .changePassword({ email, nuevaPassword: this.passwordData.newPassword })
+      .changePasswordAdmin({
+        email,
+        nuevaPassword: this.passwordData.newPassword,
+      })
       .subscribe({
         next: () => {
           this.successMessage = 'Contraseña actualizada exitosamente';
@@ -292,4 +308,46 @@ export class SoporteHomeComponent implements OnInit {
   updateStatus(t: any): void {
     console.log('Update ticket status:', t);
   }
+
+  cambiarContrasena(): void {
+    console.log('[Empresa] cambiarContrasena');
+    const user = sessionStorage.getItem('user');
+
+    if (!user) {
+      this.errorMessage = 'No se encontró información del usuario en sesión.';
+      return;
+    }
+
+    const email = user;
+
+    console.log('[Empresa] cambiarContrasena user:', email);
+    console.log(
+      '[Empresa] cambiarContrasena nueva contraseña:',
+      this.passwordData.newPassword
+    );
+
+    const payload = {
+      email: email,
+      nuevaPassword: this.passwordData.newPassword,
+    };
+
+    this.authService.changePasswordAdmin(payload).subscribe({
+      next: () => {
+        console.log('[Empresa] cambiarContrasena: éxito');
+        this.successMessage = 'Contraseña actualizada correctamente';
+        this.togglePasswordForm(); // ✅ coma agregada
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Contraseña actualizada correctamente.',
+          confirmButtonText: 'Aceptar',
+        });
+      },
+      error: (err) => {
+        this.errorMessage = 'Error al cambiar la contraseña';
+        console.error('[Empresa] cambiarContrasena:', err);
+      },
+    });
+  }
+
 }
