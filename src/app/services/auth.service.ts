@@ -112,4 +112,18 @@ export class AuthService {
       }
     );
   }
+
+  changePasswordAdmin(data: {
+    email: string;
+    nuevaPassword: string;
+  }): Observable<string> {
+    return this.http.patch(
+      `${environment.apiUrl}/administradores/cambiar-password`,
+      data,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        responseType: 'text',
+      }
+    );
+  }
 }

@@ -192,16 +192,15 @@ export class MarketingComponent implements OnInit {
   }
 
   changePassword(): void {
-    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
-      this.errorMessage = 'Las contraseñas nuevas no coinciden';
-      return;
-    }
 
     const email = this.authService.getEmail();
     if (!email) return;
 
     this.authService
-      .changePassword({ email, nuevaPassword: this.passwordData.newPassword })
+      .changePasswordAdmin({
+        email,
+        nuevaPassword: this.passwordData.newPassword,
+      })
       .subscribe({
         next: () => {
           this.successMessage = 'Contraseña actualizada exitosamente';
