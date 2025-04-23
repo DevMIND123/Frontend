@@ -1,4 +1,5 @@
-/* Layout */
+/* EXISTENTE - se mantiene */
+
 :host {
     display: flex;
     flex-direction: column;
@@ -53,6 +54,44 @@
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
+}
+
+/* NUEVO: Listas Financieras (CastleMock) */
+.list-group {
+    padding-left: 0;
+    margin: 0;
+}
+
+.list-group-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 1rem;
+    background-color: #ffffff;
+}
+
+.alert-primary,
+.alert-success {
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.list-group-item strong {
+    color: #2d3748;
+}
+
+.mt-4,
+.mt-3 {
+    margin-top: 1.5rem !important;
+}
+
+/* NUEVO: Iconos financieros */
+.bi-cash-stack,
+.bi-cash,
+.bi-receipt,
+.bi-credit-card-2-front,
+.bi-calendar-check {
+    font-size: 1.2rem;
 }
 
 /* Form Controls */
@@ -179,26 +218,22 @@
     color: #e2e8f0;
 }
 
-:host-context(body.dark-mode) .table-container {
-    background-color: #2d3748;
-}
-
-:host-context(body.dark-mode) .table {
-    color: #e2e8f0;
-}
-
-:host-context(body.dark-mode) .input-group-text {
+:host-context(body.dark-mode) .table-container,
+:host-context(body.dark-mode) .list-group-item {
     background-color: #2d3748;
     border-color: #4a5568;
     color: #e2e8f0;
 }
 
+:host-context(body.dark-mode) .input-group-text,
+:host-context(body.dark-mode) .form-check-label,
 :host-context(body.dark-mode) .form-label {
     color: #e2e8f0;
 }
 
-:host-context(body.dark-mode) .form-check-label {
-    color: #e2e8f0;
+:host-context(body.dark-mode) .alert {
+    background-color: #3c4a5d;
+    border-color: #4a5568;
 }
 
 /* Animations */

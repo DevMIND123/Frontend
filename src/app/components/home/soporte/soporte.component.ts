@@ -9,8 +9,8 @@ import { FooterComponent } from '../../shared/footer/footer.component';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { UsuarioUpdateDTO } from '../../../models/usuario';
+import { SoporteService } from '../../../services/soporte.service'; // 👈 nuevo servicio CastleMock
 
-/* --------------- Modelos mock --------------- */
 interface Ticket {
   id: string;
   title: string;
@@ -35,14 +35,12 @@ interface Ticket {
   styleUrls: ['./soporte.component.css'],
 })
 export class SoporteHomeComponent implements OnInit {
-  /* -------- flags & feedback -------- */
   isEditing = false;
   showPasswordForm = false;
-  id = 0; // para el CRUD mock de tickets
+  id = 0;
   successMessage = '';
   errorMessage = '';
 
-  /* -------- user data -------- */
   userData = {
     nombre: '',
     email: '',
@@ -50,93 +48,108 @@ export class SoporteHomeComponent implements OnInit {
     especialidad: 'Atención al Cliente',
   };
 
-  /* -------- password (estructura unificada) -------- */
   passwordData = {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   };
 
-  /* -------- preferencias -------- */
   preferences = {
     darkMode: false,
     notifications: true,
   };
 
-  /* -------- estadísticas -------- */
+  // NUEVAS PROPIEDADES (datos de CastleMock)
+  empresaId = '';
+  documentosSubidos: any[] = [];
+  estadoValidacion = '';
+  notificacionEnviada = false;
+  historialSoporteUsuario: any[] = [];
+  reportesEficiencia: any;
+  faq: any[] = [];
+
+  // TICKETS reemplazados por los del mock
+  tickets: any[] = [];
+
   activeTickets = 0;
   inProgressTickets = 0;
   resolvedTickets = 0;
 
-  /* -------- tickets dummy -------- */
-  tickets: Ticket[] = [
-    {
-      id: '1',
-      title: 'Error en inicio de sesión',
-      status: 'open',
-      priority: 'high',
-      createdAt: new Date('2024‑03‑10T09:00:00'),
-      updatedAt: new Date('2024‑03‑10T09:00:00'),
-      client: 'Juan Pérez',
-    },
-    {
-      id: '2',
-      title: 'Problema con pago',
-      status: 'in_progress',
-      priority: 'medium',
-      createdAt: new Date('2024‑03‑09T15:30:00'),
-      updatedAt: new Date('2024‑03‑10T10:15:00'),
-      client: 'María López',
-    },
-  ];
-
   constructor(
     private authService: AuthService,
     private usuarioService: UsuarioService,
+    private soporteService: SoporteService,
     private router: Router
-  ) {}
+  ) { }
 
-  /* =========================================================
-   *  CICLO DE VIDA
-   * ======================================================= */
   ngOnInit(): void {
-    this.calculateStats();
     this.loadUserData();
     this.loadThemePreference();
+    this.cargarDatosDesdeMock();
   }
 
-  /* =========================================================
-   *  CARGA DE DATOS
-   * ======================================================= */
   private loadUserData(): void {
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
 
     if (!email || !rol) {
-      this.errorMessage = 'No se encontró información del usuario.';
+      this.errorMessage =
+        'No se encontró la sesión de la empresa. Inicia sesión nuevamente.';
+      this.router.navigate(['/login']);
       return;
     }
 
     this.usuarioService.obtenerUsuario(email, rol).subscribe({
       next: (dto) => {
-        this.userData = {
-          nombre: dto.nombre ?? '',
-          email: dto.email,
-          departamento: dto.departamento ?? 'Soporte Técnico',
-          especialidad: dto.especialidad ?? 'Atención al Cliente',
-        };
-        this.errorMessage = '';
+        this.id = dto;
+
+        // ✅ Ya tienes this.id, ahora sí haces la segunda llamada
+        this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
+          next: (dto) => {
+            this.userData = {
+              nombre: dto.nombre,
+              email: dto.email,
+              departamento: 'Soporte Técnico',
+              especialidad: 'Atención al Cliente',
+            };
+
+            console.log('[Empresa] loadCompanyData (by ID):', this.userData);
+            this.errorMessage = null;
+          },
+          error: (err) => {
+            this.errorMessage = 'Error al cargar los datos de la empresa.';
+            console.error('[Empresa] loadCompanyData (by ID):', err);
+          },
+        });
       },
       error: (err) => {
-        console.error('Error loading user:', err);
-        this.errorMessage = 'Error al cargar los datos del usuario';
+        this.errorMessage = 'Error al cargar los datos de la empresa.';
+        console.error('[Empresa] loadCompanyData:', err);
       },
     });
   }
 
-  /* =========================================================
-   *  EDICIÓN PERFIL
-   * ======================================================= */
+  private cargarDatosDesdeMock(): void {
+    this.soporteService.obtenerModuloSoporte().subscribe({
+      next: (data) => {
+        this.empresaId = data.empresaId;
+        const soporte = data.moduloSoporte;
+        this.documentosSubidos = soporte.validacionEmpresa.documentosSubidos;
+        this.estadoValidacion = soporte.validacionEmpresa.estadoValidacion;
+        this.notificacionEnviada = soporte.validacionEmpresa.notificacionEnviada;
+        this.historialSoporteUsuario = soporte.historialSoporteUsuario;
+        this.reportesEficiencia = soporte.reportesEficiencia;
+        this.faq = soporte.faq;
+        this.tickets = soporte.tickets;
+        this.calculateStats();
+      },
+      error: (err) => {
+        console.error('Error cargando datos de CastleMock:', err);
+        this.errorMessage = 'No se pudo obtener la información de soporte';
+      }
+    });
+  }
+
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) this.loadUserData();
@@ -145,29 +158,27 @@ export class SoporteHomeComponent implements OnInit {
   }
 
   updateProfile(): void {
-    const dto: UsuarioUpdateDTO = {
+    console.log('[Empresa] onSubmit:', this.userData);
+
+    const dto = {
       nombre: this.userData.nombre,
       email: this.userData.email,
-      departamento: this.userData.departamento,
-      especialidad: this.userData.especialidad,
     };
+    const rol = this.authService.getRole();
 
-    this.usuarioService.actualizarUsuario(dto).subscribe({
+    this.usuarioService.actualizarUsuarioPorId(this.id, dto, rol).subscribe({
       next: () => {
-        this.successMessage = 'Perfil actualizado exitosamente';
+        this.successMessage = 'Datos actualizados correctamente';
         this.isEditing = false;
-        localStorage.setItem('userName', this.userData.nombre);
+        this.errorMessage = null;
       },
       error: (err) => {
-        console.error('Error updating profile:', err);
-        this.errorMessage = 'Error al actualizar el perfil';
+        this.errorMessage = 'Error al actualizar los datos.';
+        console.error('[Empresa] onSubmit:', err);
       },
     });
   }
 
-  /* =========================================================
-   *  PASSWORD
-   * ======================================================= */
   togglePasswordForm(): void {
     this.showPasswordForm = !this.showPasswordForm;
     this.passwordData = {
@@ -180,16 +191,16 @@ export class SoporteHomeComponent implements OnInit {
   }
 
   changePassword(): void {
-    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
-      this.errorMessage = 'Las contraseñas nuevas no coinciden';
-      return;
-    }
+
 
     const email = this.authService.getEmail();
     if (!email) return;
 
     this.authService
-      .changePassword({ email, nuevaPassword: this.passwordData.newPassword })
+      .changePasswordAdmin({
+        email,
+        nuevaPassword: this.passwordData.newPassword,
+      })
       .subscribe({
         next: () => {
           this.successMessage = 'Contraseña actualizada exitosamente';
@@ -202,16 +213,8 @@ export class SoporteHomeComponent implements OnInit {
       });
   }
 
-  /* =========================================================
-   *  ELIMINAR CUENTA
-   * ======================================================= */
   deleteAccount(): void {
-    if (
-      !confirm(
-        '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.'
-      )
-    )
-      return;
+    if (!confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) return;
 
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
@@ -239,9 +242,6 @@ export class SoporteHomeComponent implements OnInit {
     });
   }
 
-  /* =========================================================
-   *  PREFERENCIAS / TEMA
-   * ======================================================= */
   toggleTheme(): void {
     this.preferences.darkMode = !this.preferences.darkMode;
     localStorage.setItem('darkMode', String(this.preferences.darkMode));
@@ -257,64 +257,97 @@ export class SoporteHomeComponent implements OnInit {
     document.body.classList.toggle('dark-mode', this.preferences.darkMode);
   }
 
-  /* =========================================================
-   *  ESTADÍSTICAS DE TICKETS (mock)
-   * ======================================================= */
   private calculateStats(): void {
-    this.activeTickets = this.tickets.filter((t) => t.status === 'open').length;
-    this.inProgressTickets = this.tickets.filter(
-      (t) => t.status === 'in_progress'
-    ).length;
-    this.resolvedTickets = this.tickets.filter(
-      (t) => t.status === 'resolved'
-    ).length;
+    this.activeTickets = this.tickets.filter((t) => t.estado === 'Abierto').length;
+    this.inProgressTickets = this.tickets.filter((t) => t.estado === 'En Progreso').length;
+    this.resolvedTickets = this.tickets.filter((t) => t.estado === 'Cerrado').length;
   }
 
-  /* -------- helpers view -------- */
-  getStatusClass(status: Ticket['status']): string {
-    return (
-      {
-        open: 'bg-danger',
-        in_progress: 'bg-warning',
-        resolved: 'bg-success',
-        closed: 'bg-secondary',
-      }[status] || 'bg-secondary'
-    );
+  getStatusClass(status: string): string {
+    return {
+      'Abierto': 'bg-danger',
+      'En Progreso': 'bg-warning',
+      'Cerrado': 'bg-success',
+      'Resuelto': 'bg-success'
+    }[status] || 'bg-secondary';
   }
 
-  getPriorityClass(p: Ticket['priority']): string {
-    return (
-      {
-        low: 'bg-info',
-        medium: 'bg-warning',
-        high: 'bg-danger',
-      }[p] || 'bg-secondary'
-    );
+  getPriorityClass(priority: string): string {
+    return {
+      'Baja': 'bg-info',
+      'Media': 'bg-warning',
+      'Alta': 'bg-danger'
+    }[priority] || 'bg-secondary';
   }
 
-  getStatusLabel(status: Ticket['status']): string {
-    return (
-      {
-        open: 'Abierto',
-        in_progress: 'En progreso',
-        resolved: 'Resuelto',
-        closed: 'Cerrado',
-      }[status] || status
-    );
+  getStatusLabel(status: string): string {
+    return {
+      'Abierto': 'Abierto',
+      'En Progreso': 'En progreso',
+      'Cerrado': 'Cerrado',
+      'Resuelto': 'Resuelto'
+    }[status] || status;
   }
 
-  getPriorityLabel(priority: Ticket['priority']): string {
-    return { low: 'Baja', medium: 'Media', high: 'Alta' }[priority] || priority;
+  getPriorityLabel(priority: string): string {
+    return {
+      'Baja': 'Baja',
+      'Media': 'Media',
+      'Alta': 'Alta'
+    }[priority] || priority;
   }
 
-  /* -------- acciones mock tickets -------- */
   createTicket(): void {
     console.log('Create new ticket');
   }
-  viewTicket(t: Ticket): void {
+
+  viewTicket(t: any): void {
     console.log('View ticket:', t);
   }
-  updateStatus(t: Ticket): void {
+
+  updateStatus(t: any): void {
     console.log('Update ticket status:', t);
   }
+
+  cambiarContrasena(): void {
+    console.log('[Empresa] cambiarContrasena');
+    const user = sessionStorage.getItem('user');
+
+    if (!user) {
+      this.errorMessage = 'No se encontró información del usuario en sesión.';
+      return;
+    }
+
+    const email = user;
+
+    console.log('[Empresa] cambiarContrasena user:', email);
+    console.log(
+      '[Empresa] cambiarContrasena nueva contraseña:',
+      this.passwordData.newPassword
+    );
+
+    const payload = {
+      email: email,
+      nuevaPassword: this.passwordData.newPassword,
+    };
+
+    this.authService.changePasswordAdmin(payload).subscribe({
+      next: () => {
+        console.log('[Empresa] cambiarContrasena: éxito');
+        this.successMessage = 'Contraseña actualizada correctamente';
+        this.togglePasswordForm(); // ✅ coma agregada
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Contraseña actualizada correctamente.',
+          confirmButtonText: 'Aceptar',
+        });
+      },
+      error: (err) => {
+        this.errorMessage = 'Error al cambiar la contraseña';
+        console.error('[Empresa] cambiarContrasena:', err);
+      },
+    });
+  }
+
 }
