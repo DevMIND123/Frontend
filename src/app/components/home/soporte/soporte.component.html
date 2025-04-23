@@ -21,64 +21,35 @@
                     </div>
 
                     <!-- Feedback -->
-                    <div
-                        *ngIf="successMessage"
-                        class="alert alert-success alert-dismissible fade show"
-                        role="alert">
+                    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ successMessage }}
-                        <button
-                            type="button"
-                            class="btn-close"
-                            (click)="successMessage = ''"></button>
+                        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
                     </div>
-
-                    <div
-                        *ngIf="errorMessage"
-                        class="alert alert-danger alert-dismissible fade show"
-                        role="alert">
+                    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
                         {{ errorMessage }}
-                        <button
-                            type="button"
-                            class="btn-close"
-                            (click)="errorMessage = ''"></button>
+                        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
                     </div>
 
                     <!-- Formulario perfil -->
                     <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
                         <div class="mb-3">
                             <label class="form-label">Nombre completo</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                [(ngModel)]="userData.nombre"
-                                name="nombre"
-                                [readonly]="!isEditing"
-                                required />
+                            <input type="text" class="form-control" [(ngModel)]="userData.nombre" name="nombre"
+                                [readonly]="!isEditing" required />
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Correo electrónico</label>
-                            <input
-                                type="email"
-                                class="form-control"
-                                [(ngModel)]="userData.email"
-                                name="email"
-                                [readonly]="!isEditing"
-                                required />
+                            <input type="email" class="form-control" [(ngModel)]="userData.email" name="email"
+                                [readonly]="!isEditing" required />
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button
-                                type="button"
-                                class="btn btn-outline-primary flex-grow-1"
-                                (click)="toggleEdit()">
+                            <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="toggleEdit()">
                                 <i class="bi" [class]="isEditing ? 'bi-x-lg' : 'bi-pencil'"></i>
                                 {{ isEditing ? 'Cancelar' : 'Editar' }}
                             </button>
-                            <button
-                                *ngIf="isEditing"
-                                type="submit"
-                                class="btn btn-primary flex-grow-1"
+                            <button *ngIf="isEditing" type="submit" class="btn btn-primary flex-grow-1"
                                 [disabled]="!profileForm.form.valid">
                                 <i class="bi bi-save"></i>
                                 Guardar
@@ -88,42 +59,27 @@
 
                     <hr />
 
-                    <!-- =================== CONFIGURACIÓN =================== -->
+                    <!-- CONFIGURACIÓN -->
                     <h4 class="mb-3">Configuración</h4>
                     <div class="form-check form-switch mb-3">
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            [(ngModel)]="preferences.darkMode"
-                            name="darkMode"
-                            [ngModelOptions]="{ standalone: true }"
-                            (change)="toggleTheme()" />
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="preferences.darkMode"
+                            name="darkMode" [ngModelOptions]="{ standalone: true }" (change)="toggleTheme()" />
                         <label class="form-check-label">Modo Oscuro</label>
                     </div>
                     <div class="form-check form-switch mb-4">
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            [(ngModel)]="preferences.notifications"
-                            name="notifications"
-                            [ngModelOptions]="{ standalone: true }" />
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="preferences.notifications"
+                            name="notifications" [ngModelOptions]="{ standalone: true }" />
                         <label class="form-check-label">Notificaciones</label>
                     </div>
 
-                    <!-- =================== SEGURIDAD =================== -->
+                    <!-- SEGURIDAD -->
                     <h4 class="mb-3">Seguridad</h4>
                     <div class="d-grid gap-2">
-                        <button
-                            class="btn btn-outline-primary"
-                            (click)="togglePasswordForm()">
-                            <i class="bi bi-key me-2"></i>
-                            Cambiar Contraseña
+                        <button class="btn btn-outline-primary" (click)="togglePasswordForm()">
+                            <i class="bi bi-key me-2"></i> Cambiar Contraseña
                         </button>
-                        <button
-                            class="btn btn-outline-danger"
-                            (click)="deleteAccount()">
-                            <i class="bi bi-trash me-2"></i>
-                            Eliminar Cuenta
+                        <button class="btn btn-outline-danger" (click)="deleteAccount()">
+                            <i class="bi bi-trash me-2"></i> Eliminar Cuenta
                         </button>
                     </div>
 
@@ -131,17 +87,29 @@
                     <div *ngIf="showPasswordForm" class="password-form mt-4">
                         <h5 class="mb-3">Cambiar Contraseña</h5>
                         <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
-
                             <div class="mb-3">
-                                <label class="form-label">Nueva Contraseña</label>
+                                <label class="form-label">Contraseña Actual</label>
                                 <input
                                     type="password"
                                     class="form-control"
-                                    [(ngModel)]="passwordData.newPassword"
-                                    name="newPassword"
+                                    [(ngModel)]="passwordData.currentPassword"
+                                    name="currentPassword"
                                     required />
                             </div>
-
+                            <div class="mb-3">
+                                <label class="form-label">Nueva Contraseña</label>
+                                <input type="password" class="form-control" [(ngModel)]="passwordData.newPassword"
+                                    name="newPassword" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Confirmar Nueva Contraseña</label>
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    [(ngModel)]="passwordData.confirmPassword"
+                                    name="confirmPassword"
+                                    required />
+                            </div>
                             <div class="d-flex gap-2">
                                 <button
                                     type="button"
@@ -150,8 +118,7 @@
                                     Cancelar
                                 </button>
                                 <button
-                                    type="button"
-                                    (click)="cambiarContrasena()"
+                                    type="submit"
                                     class="btn btn-primary flex-grow-1"
                                     [disabled]="!passwordForm.form.valid">
                                     Actualizar Contraseña
@@ -163,9 +130,9 @@
             </div>
         </div>
 
-        <!-- =================== DASHBOARD SOPORTE =================== -->
+        <!-- =================== PANEL DE SOPORTE =================== -->
         <div class="col-md-8">
-            <!-- Tarjetas estadísticas -->
+            <!-- Estadísticas -->
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <div class="stat-card bg-primary text-white">
@@ -175,7 +142,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="stat-card bg-warning text-white">
-                        <h5>En Progreso</h5>
+                        <h5>En Progreso</h5>
                         <h3>{{ inProgressTickets }}</h3>
                     </div>
                 </div>
@@ -187,61 +154,96 @@
                 </div>
             </div>
 
-            <!-- Tabla de tickets -->
-            <div class="card shadow-sm">
+            <!-- Validación de Empresa -->
+            <div class="card shadow-sm mb-4 validacion-card">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="card-title mb-0">Tickets Recientes</h3>
+                    <h4 class="card-title">Validación de Empresa</h4>
+                    <p><strong>Estado:</strong> {{ estadoValidacion }}</p>
+                    <p><strong>Notificación enviada:</strong> {{ notificacionEnviada ? 'Sí' : 'No' }}</p>
+                    <ul class="list-group mt-3">
+                        <li class="list-group-item" *ngFor="let doc of documentosSubidos">
+                            {{ doc.tipoDocumento }} - <a href="#">{{ doc.nombreArchivo }}</a> ({{ doc.fechaSubida }})
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Reporte de Eficiencia -->
+            <div class="card shadow-sm mb-4 reporte-card" *ngIf="reportesEficiencia">
+                <div class="card-body">
+                    <h4 class="card-title">Reporte de Eficiencia</h4>
+                    <p><strong>Total tickets:</strong> {{ reportesEficiencia.ticketsTotales }}</p>
+                    <p><strong>Resueltos:</strong> {{ reportesEficiencia.ticketsResueltos }}</p>
+                    <p><strong>Tiempo promedio resolución:</strong> {{ reportesEficiencia.tiempoPromedioResolucionHoras
+                        }} h</p>
+                    <p><strong>% Resolución:</strong> {{ reportesEficiencia.porcentajeResolucion }}%</p>
+                </div>
+            </div>
+
+            <!-- Historial de Soporte por Usuario -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">Historial de Soporte</h4>
+                    <div *ngFor="let usuario of historialSoporteUsuario" class="mb-3">
+                        <h6><strong>Usuario:</strong> {{ usuario.usuarioId }}</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item" *ngFor="let t of usuario.tickets">
+                                <strong>{{ t.asunto }}</strong> ({{ t.estado }}) - {{ t.fecha }}
+                                <ul class="mt-2" *ngIf="t.respuestas.length > 0">
+                                    <li *ngFor="let r of t.respuestas">
+                                        📅 {{ r.fecha }}: {{ r.mensaje }}
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Tickets -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="card-title">Tickets</h4>
                         <button class="btn btn-primary" (click)="createTicket()">
                             <i class="bi bi-plus-lg me-2"></i>Nuevo Ticket
                         </button>
                     </div>
-
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Cliente</th>
+                                    <th>Usuario</th>
                                     <th>Asunto</th>
                                     <th>Estado</th>
-                                    <th>Prioridad</th>
-                                    <th>Acciones</th>
+                                    <th>Categoría</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let ticket of tickets">
-                                    <td>#{{ ticket.id }}</td>
-                                    <td>{{ ticket.client }}</td>
-                                    <td>{{ ticket.title }}</td>
-                                    <td>
-                                        <span class="badge" [class]="getStatusClass(ticket.status)">
-                                            {{ getStatusLabel(ticket.status) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge" [class]="getPriorityClass(ticket.priority)">
-                                            {{ getPriorityLabel(ticket.priority) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <button
-                                                class="btn btn-sm btn-outline-primary"
-                                                (click)="viewTicket(ticket)">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button
-                                                class="btn btn-sm btn-outline-success"
-                                                (click)="updateStatus(ticket)">
-                                                <i class="bi bi-arrow-clockwise"></i>
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <td>{{ ticket.ticketId }}</td>
+                                    <td>{{ ticket.usuarioId }}</td>
+                                    <td>{{ ticket.asunto }}</td>
+                                    <td>{{ ticket.estado }}</td>
+                                    <td>{{ ticket.categoria }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- Preguntas Frecuentes -->
+            <div class="card shadow-sm mb-4 faq-card" *ngIf="faq.length > 0">
+                <div class="card-body">
+                    <h4 class="card-title">Preguntas Frecuentes</h4>
+                    <ul class="list-group">
+                        <li class="list-group-item" *ngFor="let item of faq">
+                            <strong>{{ item.pregunta }}</strong><br />
+                            <span>{{ item.respuesta }}</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
