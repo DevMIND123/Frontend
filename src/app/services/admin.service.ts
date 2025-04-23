@@ -14,6 +14,10 @@ export class AdminService {
     return this.http.put<any>(`${environment.apiUrl}/admin/${userId}`, adminData);
   }
 
+  obtenerUsuarios(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/admin/usuarios`);
+  }
+
   // Obtiene los datos de un administrador por su correo electrónico
   obtenerAdminPorEmail(email: string): Observable<{ nombre: string; email: string }> {
     return this.http.get<{ nombre: string; email: string }>(`${environment.apiUrl}/admin/email/${email}`);

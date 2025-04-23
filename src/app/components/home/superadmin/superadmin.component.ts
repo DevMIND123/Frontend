@@ -1,4 +1,3 @@
-/*  src/app/components/home/superadmin/superadmin.component.ts  */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,16 +8,7 @@ import { FooterComponent } from '../../shared/footer/footer.component';
 
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth.service';
-
-/* --------------- Modelos auxiliares (mock) --------------- */
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'CLIENTE' | 'EMPRESA' | 'SOPORTE' | 'MARKETING' | 'SUPER_ADMIN';
-  status: 'active' | 'inactive';
-  createdAt: Date;
-}
+import { FinanzasService } from '../../../services/finanzas.service';
 
 @Component({
   selector: 'app-superadmin-home',
@@ -32,6 +22,7 @@ interface User {
   ],
   templateUrl: './superadmin.component.html',
   styleUrls: ['./superadmin.component.css'],
+  providers: [FinanzasService]
 })
 export class SuperadminComponent implements OnInit {
   /* ------------ flags & feedback ------------- */
@@ -48,62 +39,61 @@ export class SuperadminComponent implements OnInit {
     email: '',
   };
 
-  /* ------------ dashboard  mock -------------- */
-  users: User[] = [
-    {
-      id: '1',
-      name: 'Juan Pérez',
-      email: 'juan@example.com',
-      role: 'CLIENTE',
-      status: 'active',
-      createdAt: new Date('2024‑01‑15'),
-    },
-    {
-      id: '2',
-      name: 'Tech Corp',
-      email: 'tech@example.com',
-      role: 'EMPRESA',
-      status: 'active',
-      createdAt: new Date('2024‑02‑01'),
-    },
-    {
-      id: '3',
-      name: 'Ana López',
-      email: 'ana@example.com',
-      role: 'SOPORTE',
-      status: 'inactive',
-      createdAt: new Date('2024‑03‑01'),
-    },
-  ];
-
-  /* ------------ dashboard métricas ----------- */
-  totalUsers = 0;
-  activeUsers = 0;
-  totalCompanies = 0;
-  newUsersThisMonth = 0;
-
-  /* ------------ búsqueda usuarios ------------ */
+  /* ------------ gestión usuarios ------------- */
   searchTerm = '';
-  filteredUsers: User[] = [];
+  filteredUsers: any[] = []; // ajusta el tipo si tienes interfaz Usuario[]
+
+  /* ------------ módulo financiero ------------- */
+  datosFinancieros: any = null;
 
   constructor(
     private adminService: AdminService,
-    private authService: AuthService
+    private authService: AuthService,
+    private finanzasService: FinanzasService
   ) { }
 
-  /* =========================================================
-   *  CICLO DE VIDA
-   * ======================================================= */
   ngOnInit(): void {
-    this.filteredUsers = this.users; // mock
-    this.calculateStats();
     this.loadSettings();
     this.loadAdminData();
+    this.cargarDatosFinancieros();
+    this.cargarUsuarios(); // carga usuarios reales
   }
 
-  /* =========================================================
-   *  CARGAR ADMIN
-   * ======================================================= */
+  /* ========= Obtener usuarios desde base de datos ========= */
+  private cargarUsuarios(): void {
+    this.adminService.obtenerUsuarios().subscribe({
+      next: (usuarios) => {
+        this.filteredUsers = usuarios;
+      },
+      error: (err) => {
+        console.error('Error al cargar usuarios:', err);
+      }
+    });
+  }
+
+  filterUsers(): void {
+    const term = this.searchTerm.toLowerCase();
+    this.filteredUsers = this.filteredUsers.filter(
+      (u) =>
+        u.name.toLowerCase().includes(term) ||
+        u.email.toLowerCase().includes(term) ||
+        u.role.toLowerCase().includes(term)
+    );
+  }
+
+  /* ================== Finanzas =================== */
+  private cargarDatosFinancieros(): void {
+    this.finanzasService.obtenerModuloFinanzas().subscribe({
+      next: (data) => {
+        this.datosFinancieros = data.moduloFinanzas;
+      },
+      error: (err) => {
+        console.error('Error cargando datos de finanzas:', err);
+      }
+    });
+  }
+
+  /* ================== Datos admin =================== */
   private loadAdminData(): void {
     const email = this.authService.getEmail();
     if (!email) return;
@@ -115,48 +105,12 @@ export class SuperadminComponent implements OnInit {
         this.errorMessage = '';
       },
       error: (err) => {
-        console.error('Error loading admin:', err);
+        console.error('Error cargando admin:', err);
         this.errorMessage = 'Error al cargar los datos del administrador';
       },
     });
   }
 
-  /* =========================================================
-   *  DASHBOARD MÉTRICAS
-   * ======================================================= */
-  private calculateStats(): void {
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-
-    this.totalUsers = this.users.length;
-    this.activeUsers = this.users.filter((u) => u.status === 'active').length;
-    this.totalCompanies = this.users.filter((u) => u.role === 'EMPRESA').length;
-    this.newUsersThisMonth = this.users.filter(
-      (u) => u.createdAt >= firstDay
-    ).length;
-  }
-
-  /* =========================================================
-   *  BÚSQUEDA / FILTRO
-   * ======================================================= */
-  filterUsers(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredUsers = this.users;
-      return;
-    }
-
-    const term = this.searchTerm.toLowerCase();
-    this.filteredUsers = this.users.filter(
-      (u) =>
-        u.name.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term) ||
-        u.role.toLowerCase().includes(term)
-    );
-  }
-
-  /* =========================================================
-   *  EDICIÓN DE PERFIL
-   * ======================================================= */
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) this.loadAdminData();
@@ -175,15 +129,13 @@ export class SuperadminComponent implements OnInit {
         localStorage.setItem('userName', this.adminData.nombre);
       },
       error: (err) => {
-        console.error('Error updating admin:', err);
+        console.error('Error actualizando perfil:', err);
         this.errorMessage = 'Error al actualizar el perfil';
       },
     });
   }
 
-  /* =========================================================
-   *  PREFS / DARK MODE / NOTIFICACIONES
-   * ======================================================= */
+  /* ================== Preferencias =================== */
   toggleTheme(): void {
     this.darkMode = !this.darkMode;
     localStorage.setItem('darkMode', String(this.darkMode));
@@ -191,10 +143,7 @@ export class SuperadminComponent implements OnInit {
   }
 
   toggleNotifications(): void {
-    localStorage.setItem(
-      'notifications',
-      String(this.notificationsEnabled)
-    );
+    localStorage.setItem('notifications', String(this.notificationsEnabled));
   }
 
   private loadSettings(): void {
@@ -208,10 +157,16 @@ export class SuperadminComponent implements OnInit {
     document.body.classList.toggle('dark-mode', this.darkMode);
   }
 
-  /* =========================================================
-   *  ESTILOS BADGES (helpers view)
-   * ======================================================= */
-  getRoleBadgeClass(role: User['role']): string {
+  /* ================== Acciones usuario =================== */
+  editUser(user: any): void {
+    console.log('Editar usuario:', user);
+  }
+
+  deleteUser(user: any): void {
+    console.log('Eliminar usuario:', user);
+  }
+
+  getRoleBadgeClass(role: string): string {
     return (
       {
         CLIENTE: 'bg-success',
@@ -221,21 +176,5 @@ export class SuperadminComponent implements OnInit {
         SUPER_ADMIN: 'bg-danger',
       }[role] || 'bg-secondary'
     );
-  }
-  getStatusBadgeClass(status: User['status']): string {
-    return status === 'active' ? 'bg-success' : 'bg-secondary';
-  }
-
-  /* =========================================================
-   *  ACCIONES MOCK SOBRE USUARIOS
-   * ======================================================= */
-  createUser(): void {
-    console.log('Create new user');
-  }
-  editUser(u: User): void {
-    console.log('Edit user:', u);
-  }
-  deleteUser(u: User): void {
-    console.log('Delete user:', u);
   }
 }
