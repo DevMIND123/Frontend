@@ -1,10 +1,10 @@
 /* Layout */
 :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
     background-color: #f8f9fa;
     padding-top: 76px;
-    /* Add padding for fixed navbar */
 }
 
 .container {
@@ -20,6 +20,7 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
 }
 
 .card:hover {
@@ -94,7 +95,7 @@
     padding: 0.5rem 0.75rem;
 }
 
-/* Stats Cards */
+/* Estadísticas */
 .stat-card {
     border-radius: 1rem;
     padding: 1.5rem;
@@ -119,7 +120,7 @@
     margin: 0;
 }
 
-/* Table Styles */
+/* Tabla de Tickets */
 .table-responsive {
     border-radius: 1rem;
     background: white;
@@ -136,11 +137,14 @@
     color: #4a5568;
     border-bottom-width: 2px;
     padding: 1rem;
+    text-align: left;
 }
 
 .table td {
     padding: 1rem;
     vertical-align: middle;
+    color: #2d3748;
+    font-size: 0.9rem;
 }
 
 .table tbody tr {
@@ -148,15 +152,7 @@
 }
 
 .table tbody tr:hover {
-    background-color: #f8fafc;
-}
-
-/* Badge Styles */
-.badge {
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    font-size: 0.75rem;
+    background-color: #f1f5f9;
 }
 
 /* Switch Styles */
@@ -189,6 +185,66 @@
     border-radius: 0.75rem;
     padding: 1rem;
     margin-bottom: 1rem;
+}
+
+/* ================= Validación de Empresa ================= */
+.validacion-card .list-group-item {
+    border: none;
+    padding: 0.75rem 1rem;
+    background-color: #fefefe;
+    font-size: 0.9rem;
+    color: #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.validacion-card .list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* ================= Reporte de Eficiencia ================= */
+.reporte-card p {
+    margin: 0.4rem 0;
+    font-size: 0.95rem;
+    color: #2d3748;
+}
+
+/* ================= Historial de Soporte ================= */
+.card-body h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.card-body ul.list-group li {
+    background-color: #fff;
+    border: none;
+    border-bottom: 1px solid #edf2f7;
+    padding: 0.75rem 1rem;
+}
+
+.card-body ul.list-group li:last-child {
+    border-bottom: none;
+}
+
+/* ================= Preguntas Frecuentes ================= */
+.faq-card .list-group-item {
+    background-color: #f9fafb;
+    border: none;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem;
+}
+
+.faq-card .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.faq-card strong {
+    color: #2d3748;
+}
+
+.faq-card span {
+    color: #4a5568;
+    font-size: 0.9rem;
 }
 
 /* Dark Mode Styles */
@@ -236,11 +292,7 @@
     }
 }
 
-.card {
-    animation: fadeIn 0.5s ease-out;
-}
-
-/* Responsive Adjustments */
+/* Responsive */
 @media (max-width: 768px) {
     .container {
         padding-top: 1rem;
@@ -258,21 +310,24 @@
     .table-responsive {
         margin-top: 1rem;
     }
+
+    .card-body ul.list-group li {
+        font-size: 0.85rem;
+    }
+
+    .validacion-card,
+    .reporte-card,
+    .faq-card {
+        margin-bottom: 1rem;
+    }
 }
-/* Fix Footer Layout */
+
+/* Footer Layout */
 html,
 body {
     height: 100%;
     margin: 0;
     padding: 0;
-}
-
-:host {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: #f8f9fa;
-    padding-top: 76px;
 }
 
 main {
