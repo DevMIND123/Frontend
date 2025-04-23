@@ -33,11 +33,7 @@ export class UsuarioService {
     return this.http.get<number>(`${BASE_URL}/${ruta}/email/${email}`);
   }
 
-  actualizarUsuarioPorId(
-    id: any,
-    dto:any,
-    rol: any
-  ): Observable<any> {
+  actualizarUsuarioPorId(id: any, dto: any, rol: any): Observable<any> {
     const ruta = this.getRutaPorRol(rol);
     return this.http.patch(`${BASE_URL}/${ruta}/actualizar/${id}`, dto, {
       headers: this.jsonHeaders,
@@ -89,5 +85,27 @@ export class UsuarioService {
   }
   getRol(): Observable<string> {
     return this.rol$.asObservable();
+  }
+
+  /* ---------- NUEVO: obtener todos los usuarios según rol ---------- */
+  obtenerTodosPorRol(rol: string): Observable<any[]> {
+    const ruta = this.getRutaPorRol(rol);
+    return this.http.get<any[]>(`${BASE_URL}/${ruta}`, {
+      headers: this.jsonHeaders,
+    });
+  }
+
+  /* ejemplos de métodos especializados si los necesitas */
+  obtenerTodosClientes(): Observable<any[]> {
+    return this.obtenerTodosPorRol('CLIENTE');
+  }
+
+  obtenerTodasEmpresas(): Observable<any[]> {
+    return this.obtenerTodosPorRol('EMPRESA');
+  }
+
+  obtenerTodosAdministradores(): Observable<any[]> {
+    // engloba ADMINISTRADOR, MARKETING y SOPORTE
+    return this.obtenerTodosPorRol('ADMINISTRADOR');
   }
 }

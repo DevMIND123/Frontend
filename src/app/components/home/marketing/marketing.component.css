@@ -19,6 +19,7 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
 }
 
 .card:hover {
@@ -132,12 +133,35 @@
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Badge Styles */
-.badge {
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
+.campaign-card h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.campaign-card .badge {
     font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.4rem 0.7rem;
+    border-radius: 0.5rem;
+    background-color: #e2e8f0;
+    color: #2d3748;
+}
+
+/* Badge Styles */
+.badge.bg-success {
+    background-color: #38a169 !important;
+    color: white;
+}
+
+.badge.bg-warning {
+    background-color: #ed8936 !important;
+    color: white;
+}
+
+.badge.bg-secondary {
+    background-color: #718096 !important;
+    color: white;
 }
 
 /* Switch Styles */
@@ -178,7 +202,9 @@
     color: #e2e8f0;
 }
 
-:host-context(body.dark-mode) .card {
+:host-context(body.dark-mode) .card,
+:host-context(body.dark-mode) .campaign-card,
+:host-context(body.dark-mode) .password-form {
     background-color: #2d3748;
 }
 
@@ -186,14 +212,6 @@
     background-color: #2d3748;
     border-color: #4a5568;
     color: #e2e8f0;
-}
-
-:host-context(body.dark-mode) .campaign-card {
-    background-color: #2d3748;
-}
-
-:host-context(body.dark-mode) .password-form {
-    background-color: #2d3748;
 }
 
 /* Animations */
@@ -207,10 +225,6 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.card {
-    animation: fadeIn 0.5s ease-out;
 }
 
 /* Responsive Adjustments */
@@ -228,34 +242,8 @@
         margin-bottom: 1rem;
     }
 }
-.footer {
-    background-color: #343a40;
-    color: #ffffff;
-    text-align: center;
-    padding: 1rem 0;
-    width: 100%;
-    /* Asegura que el footer ocupe todo el ancho */
-}
 
-.footer .social-icons a {
-    font-size: 1.5rem;
-    margin-right: 10px;
-    color: #ffffff;
-    text-decoration: none;
-}
-
-.footer .social-icons a:hover {
-    color: #ffc107;
-}
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-:host ::ng-deep app-footer {
-    margin-top: auto;
-}
-/* Estilos visuales del footer */
+/* Footer */
 .footer {
     background-color: #1a202c;
     color: #ffffff;
@@ -272,4 +260,14 @@
 
 .footer .social-icons a:hover {
     color: #ffc107;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+:host ::ng-deep app-footer {
+    margin-top: auto;
 }
