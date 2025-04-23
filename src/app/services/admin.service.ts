@@ -66,13 +66,13 @@ export class AdminService {
 
   /** Obtiene todos los usuarios (para superadmin dashboard) */
   obtenerUsuarios(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/admin/usuarios`);
+    return this.http.get<any[]>(`${this.baseUrl}`);
   }
 
   /** Obtiene datos de un administrador por email (mockSoporte) */
   obtenerAdminPorEmail(email: string): Observable<{ nombre: string; email: string }> {
     return this.http.get<{ nombre: string; email: string }>(
-      `${environment.apiUrl}/admin/email/${email}`
+      `${this.baseUrl}/email/${email}`
     );
   }
 }
