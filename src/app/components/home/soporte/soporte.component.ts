@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
@@ -114,7 +115,7 @@ export class SoporteHomeComponent implements OnInit {
             };
 
             console.log('[Empresa] loadCompanyData (by ID):', this.userData);
-            this.errorMessage = null;
+            this.errorMessage = '';
           },
           error: (err) => {
             this.errorMessage = 'Error al cargar los datos de la empresa.';
@@ -170,7 +171,7 @@ export class SoporteHomeComponent implements OnInit {
       next: () => {
         this.successMessage = 'Datos actualizados correctamente';
         this.isEditing = false;
-        this.errorMessage = null;
+        this.errorMessage = '';
       },
       error: (err) => {
         this.errorMessage = 'Error al actualizar los datos.';
