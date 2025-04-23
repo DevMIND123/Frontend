@@ -9,6 +9,7 @@ import { FooterComponent } from '../../shared/footer/footer.component';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { UsuarioUpdateDTO } from '../../../models/usuario';
+import { SoporteService } from '../../../services/soporte.service'; // 👈 nuevo servicio CastleMock
 
 interface Ticket {
   id: string;
@@ -36,7 +37,7 @@ interface Ticket {
 export class SoporteHomeComponent implements OnInit {
   isEditing = false;
   showPasswordForm = false;
-  id = 0; // para el CRUD mock de tickets
+  id = 0;
   successMessage = '';
   errorMessage = '';
 
