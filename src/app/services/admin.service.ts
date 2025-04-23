@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
-// DTO de administrador (opcionalmente defines una interfaz separada)
+// DTO de administrador
 export interface AdministradorDTO {
   email: string;
   password: string;
@@ -29,17 +29,6 @@ export class AdminService {
     });
   }
 
-  /** Actualiza un administrador existente (reemplaza con PUT) */
-  updateAdmin(
-    id: string,
-    adminData: Partial<AdministradorDTO>
-  ): Observable<any> {
-    return this.http.put<any>(`${this.baseUrl}/actualizar/${id}`, adminData, {
-      headers: this.jsonHeaders,
-      responseType: 'text' as 'json',
-    });
-  }
-
   /** Obtiene todos los administradores */
   getAllAdmins(): Observable<AdministradorDTO[]> {
     return this.http.get<AdministradorDTO[]>(this.baseUrl, {
@@ -55,11 +44,35 @@ export class AdminService {
     );
   }
 
+  /** Actualiza un administrador por ID (usa PUT) */
+  updateAdmin(id: string, adminData: Partial<AdministradorDTO>): Observable<any> {
+    return this.http.put<any>(
+      `${this.baseUrl}/actualizar/${id}`,
+      adminData,
+      {
+        headers: this.jsonHeaders,
+        responseType: 'text' as 'json',
+      }
+    );
+  }
+
   /** Elimina un administrador por ID */
   deleteAdmin(id: string): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}/eliminar/${id}`, {
       headers: this.jsonHeaders,
       responseType: 'text' as 'json',
     });
+  }
+
+  /** Obtiene todos los usuarios (para superadmin dashboard) */
+  obtenerUsuarios(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/admin/usuarios`);
+  }
+
+  /** Obtiene datos de un administrador por email (mockSoporte) */
+  obtenerAdminPorEmail(email: string): Observable<{ nombre: string; email: string }> {
+    return this.http.get<{ nombre: string; email: string }>(
+      `${environment.apiUrl}/admin/email/${email}`
+    );
   }
 }

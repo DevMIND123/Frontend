@@ -1,4 +1,3 @@
-/*  src/app/components/home/marketing/marketing.component.ts  */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,21 +9,23 @@ import { FooterComponent } from '../../shared/footer/footer.component';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { UsuarioUpdateDTO } from '../../../models/usuario';
+import { MarketingService } from '../../../services/marketing.service'; // nuevo servicio
 
-/* ---------------- Modelos mock ---------------- */
 interface Campaign {
-  id: string;
-  name: string;
-  status: 'active' | 'draft' | 'completed';
-  startDate: Date;
-  endDate: Date;
-  budget: number;
-  reach: number;
+  campañaId: string;
+  nombre: string;
+  estado: 'Activa' | 'Inactiva';
+  fechaInicio: string;
+  fechaFin: string;
+  clicks: number;
+  CTR: number;
+  gananciasTotales: number;
+  publicidades?: any[];
 }
 
 @Component({
   selector: 'app-marketing',
-  standalone: true, // ← componente stand‑alone
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -36,56 +37,32 @@ interface Campaign {
   styleUrls: ['./marketing.component.css'],
 })
 export class MarketingComponent implements OnInit {
-  /* ---------- flags / feedback ---------- */
   isEditing = false;
   showPasswordForm = false;
   successMessage: string | null = null;
   errorMessage: string | null = null;
-  id = 0; // para el CRUD mock de campañas
-  /* ---------- datos de usuario ---------- */
+  id = 0;
+
   userData = {
     nombre: '',
     email: '',
     departamento: 'Marketing',
-    especialidad: 'Marketing Digital',
+    especialidad: 'Marketing Digital',
   };
 
-  /* ---------- password (coincide con HTML) ---------- */
   passwordData = {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   };
 
-  /* ---------- preferencias ---------- */
   preferences = {
     darkMode: false,
     notifications: true,
   };
 
-  /* ---------- campañas mock ---------- */
-  campaigns: Campaign[] = [
-    {
-      id: '1',
-      name: 'Campaña de Verano',
-      status: 'active',
-      startDate: new Date('2024‑03‑01'),
-      endDate: new Date('2024‑05‑31'),
-      budget: 5_000_000,
-      reach: 50_000,
-    },
-    {
-      id: '2',
-      name: 'Promoción Fitness',
-      status: 'draft',
-      startDate: new Date('2024‑04‑01'),
-      endDate: new Date('2024‑06‑30'),
-      budget: 3_000_000,
-      reach: 30_000,
-    },
-  ];
+  campaigns: Campaign[] = [];
 
-  /* ---------- métricas ---------- */
   activeCampaigns = 0;
   totalReach = 0;
   totalBudget = 0;
@@ -93,21 +70,30 @@ export class MarketingComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private usuarioService: UsuarioService,
+    private marketingService: MarketingService,
     private router: Router
-  ) {}
+  ) { }
 
-  /* =====================================================
-   *  CICLO DE VIDA
-   * =================================================== */
   ngOnInit(): void {
-    this.calculateStats();
     this.loadUserData();
     this.loadThemePreference();
+    this.cargarDatosDesdeMock();
   }
 
-  /* =====================================================
-   *  CARGA DE DATOS
-   * =================================================== */
+  private cargarDatosDesdeMock(): void {
+    this.marketingService.obtenerModuloMarketing().subscribe({
+      next: (data) => {
+        const modulo = data.moduloMercadeoPublicidad;
+        this.campaigns = modulo.campañas;
+        this.calculateStats();
+      },
+      error: (err) => {
+        console.error('Error cargando campañas desde CastleMock:', err);
+        this.errorMessage = 'No se pudo obtener información de campañas';
+      }
+    });
+  }
+
   private loadUserData(): void {
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
@@ -116,6 +102,7 @@ export class MarketingComponent implements OnInit {
       this.errorMessage = 'No se encontró información del usuario.';
       return;
     }
+
     this.usuarioService.obtenerUsuario(email, rol).subscribe({
       next: (dto) => {
         this.id = dto;
@@ -126,7 +113,7 @@ export class MarketingComponent implements OnInit {
               nombre: dto.nombre ?? '',
               email: dto.email,
               departamento: dto.departamento ?? 'Marketing',
-              especialidad: dto.especialidad ?? 'Marketing Digital',
+              especialidad: dto.especialidad ?? 'Marketing Digital',
             };
             this.errorMessage = null;
           },
@@ -143,13 +130,10 @@ export class MarketingComponent implements OnInit {
     });
   }
 
-  /* =====================================================
-   *  EDICIÓN PERFIL
-   * =================================================== */
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) {
-      this.loadUserData(); // descartar cambios al cancelar
+      this.loadUserData();
       this.successMessage = null;
     }
     this.errorMessage = null;
@@ -177,9 +161,6 @@ export class MarketingComponent implements OnInit {
     });
   }
 
-  /* =====================================================
-   *  PASSWORD
-   * =================================================== */
   togglePasswordForm(): void {
     this.showPasswordForm = !this.showPasswordForm;
     this.passwordData = {
@@ -213,9 +194,6 @@ export class MarketingComponent implements OnInit {
       });
   }
 
-  /* =====================================================
-   *  ELIMINAR CUENTA
-   * =================================================== */
   deleteAccount(): void {
     if (
       !confirm(
@@ -240,9 +218,6 @@ export class MarketingComponent implements OnInit {
     });
   }
 
-  /* =====================================================
-   *  PREFERENCIAS / TEMA
-   * =================================================== */
   toggleTheme(): void {
     this.preferences.darkMode = !this.preferences.darkMode;
     localStorage.setItem('darkMode', String(this.preferences.darkMode));
@@ -258,45 +233,41 @@ export class MarketingComponent implements OnInit {
     document.body.classList.toggle('dark-mode', this.preferences.darkMode);
   }
 
-  /* =====================================================
-   *  CAMPAÑAS (mock)
-   * =================================================== */
   private calculateStats(): void {
     this.activeCampaigns = this.campaigns.filter(
-      (c) => c.status === 'active'
+      (c) => c.estado === 'Activa'
     ).length;
-    this.totalReach = this.campaigns.reduce((sum, c) => sum + c.reach, 0);
-    this.totalBudget = this.campaigns.reduce((sum, c) => sum + c.budget, 0);
+    this.totalReach = this.campaigns.reduce((sum, c) => sum + (c.clicks || 0), 0);
+    this.totalBudget = this.campaigns.reduce((sum, c) => sum + (c.gananciasTotales || 0), 0);
   }
 
-  getStatusClass(status: Campaign['status']): string {
+  getStatusClass(estado: string): string {
     return (
       {
-        active: 'bg-success',
-        draft: 'bg-warning',
-        completed: 'bg-secondary',
-      }[status] || 'bg-secondary'
+        Activa: 'bg-success',
+        Inactiva: 'bg-secondary',
+      }[estado] || 'bg-secondary'
     );
   }
 
-  getStatusLabel(status: Campaign['status']): string {
+  getStatusLabel(estado: string): string {
     return (
       {
-        active: 'Activa',
-        draft: 'Borrador',
-        completed: 'Completada',
-      }[status] || status
+        Activa: 'Activa',
+        Inactiva: 'Inactiva',
+      }[estado] || estado
     );
   }
 
-  /* ----- CRUD mock campañas ----- */
   createCampaign(): void {
-    console.log('Create new campaign');
+    console.log('Crear nueva campaña');
   }
+
   editCampaign(c: Campaign): void {
-    console.log('Edit campaign:', c);
+    console.log('Editar campaña:', c);
   }
+
   deleteCampaign(c: Campaign): void {
-    console.log('Delete campaign:', c);
+    console.log('Eliminar campaña:', c);
   }
 }
