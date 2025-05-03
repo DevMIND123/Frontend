@@ -33,12 +33,31 @@ export class UsuarioService {
     return this.http.get<number>(`${BASE_URL}/${ruta}/email/${email}`);
   }
 
-  actualizarUsuarioPorId(id: any, dto: any, rol: any): Observable<any> {
+  actualizarUsuarioPorId(
+    id: any,
+    dto: any,
+    rol: any
+  ): Observable<string> {
     const ruta = this.getRutaPorRol(rol);
-    return this.http.patch(`${BASE_URL}/${ruta}/actualizar/${id}`, dto, {
-      headers: this.jsonHeaders,
-    });
+
+    // 👇 1) sin el <string>
+    // 👇 2) sin "observe" (el valor por defecto es 'body')
+    // 👇 3) solo responseType: 'text'
+    return this.http.patch(
+      `${BASE_URL}/${ruta}/actualizar/${id}`,
+      dto,
+      {
+        headers: this.jsonHeaders,
+        responseType: 'text',       // <-- literal exacto
+      }
+    ) as Observable<string>;        // <-- casteo opcional si lo prefieres
   }
+
+
+
+
+
+
 
   actualizarUsuario(userData: {
     nombre: string;

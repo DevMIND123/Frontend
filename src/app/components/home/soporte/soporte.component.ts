@@ -10,6 +10,7 @@ import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { UsuarioUpdateDTO } from '../../../models/usuario';
 import { SoporteService } from '../../../services/soporte.service'; // 👈 nuevo servicio CastleMock
+import Swal from 'sweetalert2';
 
 interface Ticket {
   id: string;
@@ -39,7 +40,7 @@ export class SoporteHomeComponent implements OnInit {
   showPasswordForm = false;
   id = 0;
   successMessage = '';
-  errorMessage = '';
+  errorMessage: any;
 
   userData = {
     nombre: '',

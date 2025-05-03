@@ -89,14 +89,48 @@ export class SuperadminComponent implements OnInit {
 
   /* ============ Carga de usuarios reales ============ */
   private loadUsers(): void {
-    this.adminService.obtenerUsuarios().subscribe({
-      next: (usuarios) => {
-        this.filteredUsers = usuarios;
-        this.allUsers = usuarios;
+    forkJoin({
+      admins: this.adminService.obtenerUsuarios(),
+      clientes: this.adminService.obtenerClientes(),
+      empresas: this.adminService.obtenerEmpresas(),
+    }).subscribe({
+      next: ({ admins, clientes, empresas }) => {
+        const mappedAdmins: User[] = admins.map((a) => ({
+          id: a.id,
+          name: a.nombre,
+          email: a.email,
+          role: a.rol, // Asume que ya es 'SOPORTE', 'MARKETING', etc.
+          status: a.estadoCuenta === 'Activo' ? 'active' : 'inactive',
+          createdAt: new Date(), // Ajusta si tienes un campo de fecha
+        }));
+
+        const mappedClientes: User[] = clientes.map((c) => ({
+          id: c.id,
+          name: c.nombre,
+          email: c.email,
+          role: 'CLIENTE',
+          status: c.estadoCuenta === 'Activo' ? 'active' : 'inactive',
+          createdAt: new Date(), // Ajusta si tienes fecha
+        }));
+
+        const mappedEmpresas: User[] = empresas.map((e) => ({
+          id: e.id,
+          name: e.nombre,
+          email: e.email,
+          role: 'EMPRESA',
+          status: e.estadoCuenta === 'Activo' ? 'active' : 'inactive',
+          createdAt: new Date(), // Ajusta si tienes fecha
+        }));
+
+        const allUsers = [...mappedAdmins, ...mappedClientes, ...mappedEmpresas];
+
+        this.allUsers = allUsers;
+        this.filteredUsers = allUsers;
       },
       error: (err) => console.error('Error al cargar usuarios:', err),
     });
   }
+
 
   filterUsers(): void {
     const term = this.searchTerm.toLowerCase();
