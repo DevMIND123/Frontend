@@ -14,7 +14,14 @@ import { RetoComidaService } from '../../../services/reto-comida.service';
 import { AlimentacionDTO } from '../../../dto/alimentacion.dto';
 import { RetoAlimentacionDTO } from '../../../dto/reto-alimentacion.dto';
 import { RegistroComidaDTO } from '../../../dto/registro-comida.dto';
-
+import { CicloMenstrualService } from '../../../services/ciclo-menstrual.service';
+import { EventoTipo } from '../../../dto/evento-menstrual.dto';
+import { SintomaTipo } from '../../../dto/sintoma-menstrual.dto';
+import { Calendar } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import esLocale from '@fullcalendar/core/locales/es';
+import { forkJoin } from 'rxjs';
+/* importa como namespace */
 
 @Component({
   selector: 'app-client',
@@ -62,7 +69,8 @@ export class ClientComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private usuarioService: UsuarioService,
-    private retoComidaService: RetoComidaService
+    private retoComidaService: RetoComidaService,
+    private cicloMenstrualService: CicloMenstrualService
   ) { }
 
   /* =========================================================
@@ -460,6 +468,333 @@ export class ClientComponent implements OnInit {
         }
       });
     });
+  }
+
+
+
+  verComidas(alimentacion: any, event: MouseEvent): void {
+    event.stopPropagation();
+
+    this.retoComidaService.obtenerComidasPorAlimentacion(alimentacion.id).subscribe({
+      next: (comidas) => {
+        if (!comidas.length) {
+          Swal.fire('Sin registros', 'No hay comidas registradas aún.', 'info');
+          return;
+        }
+
+        const comidasPorFecha: { [fecha: string]: RegistroComidaDTO[] } = {};
+        comidas.forEach((comida) => {
+          const fecha = comida.fechaHoraRegistro.split('T')[0];
+          if (!comidasPorFecha[fecha]) comidasPorFecha[fecha] = [];
+          comidasPorFecha[fecha].push(comida);
+        });
+
+        let html = '';
+        Object.keys(comidasPorFecha).sort().reverse().forEach((fecha) => {
+          html += `
+            <div style="margin-bottom: 1.5rem;">
+              <h5 style="margin-bottom: 0.6rem; color: #333; font-weight: 600; border-bottom: 1px solid #ddd; padding-bottom: 0.3rem;">
+                📅 ${fecha}
+              </h5>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          `;
+          comidasPorFecha[fecha].forEach((comida) => {
+            const hora = new Date(comida.fechaHoraRegistro).toLocaleTimeString('es-CO', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+
+            html += `
+              <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #f5f5f5;
+                padding: 0.6rem 1rem;
+                border-radius: 10px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+              ">
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-weight: 600; font-size: 0.95rem; color: #222;">
+                    🍽️ ${comida.nombre}
+                  </span>
+                  <span style="font-size: 0.85rem; color: #777;">
+                    🕒 ${hora}
+                  </span>
+                </div>
+                <div style="font-weight: 600; font-size: 0.95rem; color: #4caf50;">
+                  🔥 ${comida.calorias} cal
+                </div>
+              </div>
+            `;
+          });
+
+          html += `</div></div>`;
+        });
+
+        Swal.fire({
+          title: 'Comidas registradas',
+          html: `<div style="max-height: 450px; overflow-y: auto; text-align: left;">${html}</div>`,
+          confirmButtonText: 'Cerrar',
+          width: 620,
+          scrollbarPadding: false,
+        });
+      },
+      error: () => {
+        Swal.fire('Error', 'No se pudieron cargar las comidas.', 'error');
+      }
+    });
+  }
+
+
+
+  abrirSwalCicloMenstrual(): void {
+    const email = sessionStorage.getItem('user');
+    if (!email) {
+      Swal.fire('Error', 'No se encontró información del usuario.', 'error');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Ciclo Menstrual',
+      html: `
+        <div class="text-start">
+          <p class="mb-2">¿Qué deseas hacer?</p>
+          <button id="btn-ciclo"     class="swal2-confirm swal2-styled" style="background:#d63384;margin:4px 0;">Registrar Ciclo</button>
+          <button id="btn-evento"    class="swal2-confirm swal2-styled" style="background:#6f42c1;margin:4px 0;">Registrar Evento</button>
+          <button id="btn-sintoma"   class="swal2-confirm swal2-styled" style="background:#20c997;margin:4px 0;">Registrar Síntoma</button>
+          <button id="btn-calendario"class="swal2-confirm swal2-styled" style="background:#0d6efd;margin:4px 0;">Ver Calendario</button>
+        </div>
+      `,
+      showConfirmButton: false,
+      didOpen: () => {
+        const btnCiclo     = document.getElementById('btn-ciclo');
+        const btnEvento    = document.getElementById('btn-evento');
+        const btnSintoma   = document.getElementById('btn-sintoma');
+        const btnCalendario= document.getElementById('btn-calendario');
+
+        /* ---------- Registrar ciclo ---------- */
+        btnCiclo?.addEventListener('click', () => {
+          Swal.fire({
+            title: 'Registrar Ciclo',
+            html: `
+              <input id="duracion"      class="swal2-input" type="number" placeholder="Duración del ciclo (días)">
+              <input id="menstruacion"  class="swal2-input" type="number" placeholder="Duración menstruación (días)">
+            `,
+            preConfirm: () => {
+              const duracion      = +(document.getElementById('duracion')     as HTMLInputElement).value;
+              const menstruacion  = +(document.getElementById('menstruacion') as HTMLInputElement).value;
+              const hoy = new Date().toISOString().split('T')[0];
+
+              if (!duracion || !menstruacion) {
+                Swal.showValidationMessage('Todos los campos son requeridos.');
+                return;
+              }
+
+              return this.cicloMenstrualService.registrarCiclo(
+                {
+                  emailUsuario: email,
+                  fechaInicio: hoy,
+                  duracionCiclo: duracion,
+                  duracionMenstruacion: menstruacion
+                },
+                `Bearer ${sessionStorage.getItem('token')}`
+              ).toPromise();
+            }
+          }).then(res => {
+            if (res.isConfirmed)
+              Swal.fire('Guardado', 'Ciclo registrado correctamente', 'success');
+          });
+        });
+
+        /* ---------- Registrar evento ---------- */
+        btnEvento?.addEventListener('click', () => {
+          Swal.fire({
+            title: 'Registrar Evento',
+            html: `
+              <select id="evento" class="swal2-input">
+                <option value="">Seleccionar evento</option>
+                <option value="INICIO_REGLA">Inicio regla</option>
+                <option value="FIN_REGLA">Fin regla</option>
+                <option value="OVULACION">Ovulación</option>
+                <option value="SANGRADO_INTERMENSTRUAL">Sangrado intermenstrual</option>
+                <option value="DOLOR_INTENSO">Dolor intenso</option>
+                <option value="CAMBIO_ANIMO_BRUSCO">Cambio de ánimo brusco</option>
+                <option value="FLUJO_ANORMAL">Flujo anormal</option>
+                <option value="FIEBRE">Fiebre</option>
+                <option value="OTRO">Otro</option>
+              </select>
+              <input id="obs" class="swal2-input" placeholder="Observaciones (opcional)">
+            `,
+            preConfirm: () => {
+              const tipo          = (document.getElementById('evento') as HTMLSelectElement).value;
+              const observaciones = (document.getElementById('obs')    as HTMLInputElement).value;
+              const fecha = new Date().toISOString().split('T')[0];
+
+              if (!tipo) {
+                Swal.showValidationMessage('Debe seleccionar un evento');
+                return;
+              }
+
+              return this.cicloMenstrualService.registrarEvento({
+                emailUsuario: email,
+                tipo: tipo as EventoTipo,
+                observaciones,
+                fecha
+              }).toPromise();
+            }
+          }).then(res => {
+            if (res.isConfirmed)
+              Swal.fire('Guardado', 'Evento registrado', 'success');
+          });
+        });
+
+        /* ---------- Registrar síntoma ---------- */
+        btnSintoma?.addEventListener('click', () => {
+          Swal.fire({
+            title: 'Registrar Síntoma',
+            html: `
+              <select id="sintoma" class="swal2-input">
+                <option value="">Seleccionar síntoma</option>
+                <option value="COLICOS">Cólicos</option> <option value="MIGRAÑA">Migraña</option>
+                <option value="DOLOR_PELVICO">Dolor pélvico</option> <option value="ACNE">Acné</option>
+                <option value="CAMBIO_ANIMO">Cambio de ánimo</option> <option value="FATIGA">Fatiga</option>
+                <option value="ANSIEDAD">Ansiedad</option> <option value="DEPRESION">Depresión</option>
+                <option value="NAUSEAS">Náuseas</option> <option value="PECHOS_SENSIBLES">Pechos sensibles</option>
+                <option value="INSOMNIO">Insomnio</option> <option value="HAMBRE_EXCESIVA">Hambre excesiva</option>
+                <option value="RETENCION_LIQUIDOS">Retención de líquidos</option> <option value="OTRO">Otro</option>
+              </select>
+              <input id="intensidad" class="swal2-input" placeholder="Intensidad (baja, media, alta)">
+            `,
+            preConfirm: () => {
+              const tipo       = (document.getElementById('sintoma')    as HTMLSelectElement).value;
+              const intensidad = (document.getElementById('intensidad') as HTMLInputElement).value;
+              const fecha = new Date().toISOString().split('T')[0];
+
+              if (!tipo || !intensidad) {
+                Swal.showValidationMessage('Todos los campos son obligatorios');
+                return;
+              }
+
+              return this.cicloMenstrualService.registrarSintoma({
+                emailUsuario: email,
+                tipo: tipo as SintomaTipo,
+                intensidad,
+                fecha
+              }).toPromise();
+            }
+          }).then(res => {
+            if (res.isConfirmed)
+              Swal.fire('Guardado', 'Síntoma registrado', 'success');
+          });
+        });
+
+        /* ---------- Ver calendario ---------- */
+        btnCalendario?.addEventListener('click', () => {
+          forkJoin([
+            this.cicloMenstrualService.obtenerEventosPorUsuario(email),
+            this.cicloMenstrualService.obtenerSintomasPorUsuario(email),
+            this.cicloMenstrualService.obtenerCiclosPorUsuario(email)
+          ]).subscribe({
+            next: ([eventos, sintomas, ciclos]) => {
+
+              console.log('Ciclos:', ciclos);
+
+              /* 1️⃣ Eventos de backend → FullCalendar */
+              const fullEvents = [
+                /* eventos puntuales */
+                ...eventos.map(ev => ({
+                  title: this.prettyEvento(ev.tipo),
+                  start: ev.fecha,
+                  color: this.colorEvento(ev.tipo),
+                  extendedProps: { obs: ev.observaciones ?? '' }
+                })),
+
+                /* síntomas */
+                ...sintomas.map(si => ({
+                  title: this.prettySintoma(si.tipo, si.intensidad),
+                  start: si.fecha,
+                  color: '#20c997',
+                  extendedProps: { intensidad: si.intensidad }
+                })),
+
+                /* ciclos: marca Día 1, ovulación y próxima regla */
+                ...ciclos.flatMap(c => [
+                  {
+                    title: '🩸 Día 1 (Inicio ciclo)',
+                    start: c.fechaInicio,
+                    color: '#e74c3c'
+                  },
+                  {
+                    title: '🌸 Ovulación',
+                    start: c.fechaOvulacion,
+                    color: '#3498db'
+                  },
+                  {
+                    title: '🔔 Próxima menstruación',
+                    start: c.fechaProximaMenstruacion,
+                    color: '#f39c12'
+                  }
+                ])
+              ];
+
+              /* 2️⃣ Mostrar calendario */
+              Swal.fire({
+                title: 'Calendario Menstrual',
+                html: `<div id="calMenstrual" style="max-width:100%;margin:0 auto;"></div>`,
+                width: 800,
+                showCloseButton: true,
+                showConfirmButton: false,
+                didOpen: () => {
+                  const calEl = document.getElementById('calMenstrual')!;
+                  const calendar = new Calendar(calEl, {
+                    plugins: [dayGridPlugin],
+                    locale: 'es',
+                    initialView: 'dayGridMonth',
+                    height: 500,
+                    headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                    events: fullEvents,
+                    eventClick(info) {
+                      const extra =
+                        info.event.extendedProps['obs'] ??
+                        info.event.extendedProps['intensidad'] ??
+                        '';
+                      Swal.fire(
+                        info.event.title,
+                        extra ? `<small>${extra}</small>` : '',
+                        'info'
+                      );
+                    }
+                  });
+                  calendar.render();
+                }
+              });
+            },
+            error: () => Swal.fire('Error', 'No se pudo cargar el calendario', 'error')
+          });
+        });
+
+      }
+    });
+  }
+
+  /* Helpers colorear y titular */
+  private prettyEvento(tipo: EventoTipo): string {
+    switch (tipo) {
+      case 'INICIO_REGLA': return '🩸 Inicio Regla';
+      case 'FIN_REGLA':    return '✅ Fin Regla';
+      case 'OVULACION':    return '🌸 Ovulación';
+      default:             return '⚠️ ' + tipo.replace(/_/g, ' ');
+    }
+  }
+  private colorEvento(tipo: EventoTipo): string {
+    if (tipo === 'INICIO_REGLA' || tipo === 'FIN_REGLA') return '#e74c3c';
+    if (tipo === 'OVULACION')                            return '#3498db';
+    return '#f39c12';
+  }
+  private prettySintoma(tipo: SintomaTipo, int?: string) {
+    const base = tipo.replace(/_/g, ' ').toLowerCase();
+    return `🤒 ${base}${int ? ' (' + int + ')' : ''}`;
   }
 
 

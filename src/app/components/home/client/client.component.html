@@ -21,70 +21,36 @@
           </div>
 
           <!-- Success/Error Messages -->
-          <div
-            *ngIf="successMessage"
-            class="alert alert-success alert-dismissible fade show"
-            role="alert"
-          >
+          <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
             {{ successMessage }}
-            <button
-              type="button"
-              class="btn-close"
-              (click)="successMessage = ''"
-            ></button>
+            <button type="button" class="btn-close" (click)="successMessage = ''"></button>
           </div>
 
-          <div
-            *ngIf="errorMessage"
-            class="alert alert-danger alert-dismissible fade show"
-            role="alert"
-          >
+          <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ errorMessage }}
-            <button
-              type="button"
-              class="btn-close"
-              (click)="errorMessage = ''"
-            ></button>
+            <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
           </div>
 
           <!-- Profile Form -->
           <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
             <div class="mb-3">
               <label class="form-label">Nombre completo</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="userData.nombre"
-                name="nombre"
-                [readonly]="!isEditing"
-              />
+              <input type="text" class="form-control" [(ngModel)]="userData.nombre" name="nombre"
+                [readonly]="!isEditing" />
             </div>
 
             <div class="mb-3">
               <label class="form-label">Correo electrónico</label>
-              <input
-                type="email"
-                class="form-control"
-                [(ngModel)]="userData.email"
-                name="email"
-                [readonly]="!isEditing"
-              />
+              <input type="email" class="form-control" [(ngModel)]="userData.email" name="email"
+                [readonly]="!isEditing" />
             </div>
 
             <div class="d-flex gap-2">
-              <button
-                type="button"
-                class="btn btn-outline-primary flex-grow-1"
-                (click)="toggleEdit()"
-              >
+              <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="toggleEdit()">
                 <i class="bi" [class]="isEditing ? 'bi-x-lg' : 'bi-pencil'"></i>
                 {{ isEditing ? "Cancelar" : "Editar" }}
               </button>
-              <button
-                *ngIf="isEditing"
-                type="submit"
-                class="btn btn-primary flex-grow-1"
-              >
+              <button *ngIf="isEditing" type="submit" class="btn btn-primary flex-grow-1">
                 <i class="bi bi-save"></i>
                 Guardar
               </button>
@@ -107,21 +73,14 @@
             </div>
             -->
           <div class="form-check form-switch mb-4">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              [(ngModel)]="notificationsEnabled"
-            />
+            <input class="form-check-input" type="checkbox" [(ngModel)]="notificationsEnabled" />
             <label class="form-check-label">Notificaciones</label>
           </div>
 
           <!-- Account Actions -->
           <h4 class="mb-3">Seguridad</h4>
           <div class="d-grid gap-2">
-            <button
-              class="btn btn-outline-primary"
-              (click)="togglePasswordForm()"
-            >
+            <button class="btn btn-outline-primary" (click)="togglePasswordForm()">
               <i class="bi bi-key me-2"></i>
               Cambiar Contraseña
             </button>
@@ -132,34 +91,21 @@
           </div>
 
           <!-- ======== Password Change Form ======== -->
-          <div *ngIf="showPasswordForm" class="password-form mt-4"  >
+          <div *ngIf="showPasswordForm" class="password-form mt-4">
             <h5 class="mb-3">Cambiar Contraseña</h5>
-            <form  #passwordForm="ngForm">
+            <form #passwordForm="ngForm">
               <div class="mb-3">
                 <label class="form-label">Nueva Contraseña</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  [(ngModel)]="passwordData.newPassword"
-                  name="newPassword"
-                  required
-                />
+                <input type="password" class="form-control" [(ngModel)]="passwordData.newPassword" name="newPassword"
+                  required />
               </div>
 
               <div class="d-flex gap-2">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary flex-grow-1"
-                  (click)="togglePasswordForm()"
-                >
+                <button type="button" class="btn btn-outline-secondary flex-grow-1" (click)="togglePasswordForm()">
                   Cancelar
                 </button>
-                <button
-                  type="button"
-                  (click)="cambiarContrasena()"
-                  class="btn btn-primary flex-grow-1"
-                  [disabled]="!passwordForm.form.valid"
-                >
+                <button type="button" (click)="cambiarContrasena()" class="btn btn-primary flex-grow-1"
+                  [disabled]="!passwordForm.form.valid">
                   Actualizar Contraseña
                 </button>
               </div>
@@ -191,12 +137,17 @@
               <div class="challenge-card" (click)="abrirSwalRegistroComida(item)">
 
                 <!-- ENCABEZADO -->
-                <div class="challenge-header">
+                <div class="challenge-header d-flex justify-content-between align-items-center">
                   <h4>{{ item.objetivo }}</h4>
-                  <span class="badge" [ngClass]="getBadgeColor(item.progreso)">
-                    Día {{ item.diasTranscurridos }}
-                  </span>
+                  <div>
+                    <span class="badge" [ngClass]="getBadgeColor(item.progreso)">
+                      Día {{ item.diasTranscurridos }}
+                    </span>
+                    <i class="bi bi-eye ms-2 text-primary" style="cursor: pointer;"
+                      (click)="verComidas(item, $event)"></i>
+                  </div>
                 </div>
+
 
                 <!-- BARRA DE PROGRESO -->
                 <div class="progress-info">
@@ -207,12 +158,8 @@
                     </span>
                   </div>
                   <div class="progress">
-                    <div
-                      class="progress-bar"
-                      [ngClass]="getBarColor(item.progreso)"
-                      role="progressbar"
-                      [style.width.%]="item.progreso"
-                    ></div>
+                    <div class="progress-bar" [ngClass]="getBarColor(item.progreso)" role="progressbar"
+                      [style.width.%]="item.progreso"></div>
                   </div>
                 </div>
 
@@ -242,111 +189,29 @@
         </div>
       </div>
 
-      <!-- Habits Section -->
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center">
-              <div class="card-icon bg-primary me-3">
-                <i class="bi bi-check2-circle"></i>
-              </div>
-              <h3 class="card-title mb-0">Mis Hábitos</h3>
-            </div>
-            <button class="btn btn-primary" (click)="createHabit()">
-              <i class="bi bi-plus-lg me-2"></i>Nuevo Hábito
-            </button>
+      <!-- Habit Card - Ciclo Menstrual -->
+      <div class="col-md-4">
+        <div class="habit-card" (click)="abrirSwalCicloMenstrual()">
+          <div class="habit-icon menstrual-icon">
+            <i class="bi bi-droplet-half text-danger"></i>
           </div>
-
-          <div class="row g-4">
-            <!-- Habit Card - Alimentación -->
-            <div class="col-md-4">
-              <div class="habit-card">
-                <div class="habit-icon food-icon">
-                  <i class="bi bi-apple"></i>
-                </div>
-                <h5>Alimentación</h5>
-                <div class="habit-progress">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-2"
-                  >
-                    <span>Progreso</span>
-                    <span class="text-success">75%</span>
-                  </div>
-                  <div class="progress">
-                    <div
-                      class="progress-bar bg-success"
-                      role="progressbar"
-                      style="width: 75%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="habit-streak">
-                  <i class="bi bi-lightning-charge-fill text-warning"></i>
-                  <span>12 días consecutivos</span>
-                </div>
-              </div>
+          <h5>Ciclo Menstrual</h5>
+          <div class="habit-progress">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span>Último ciclo</span>
+              <span class="text-danger">28 días</span>
             </div>
-
-            <!-- Habit Card - Tiempo -->
-            <div class="col-md-4">
-              <div class="habit-card">
-                <div class="habit-icon time-icon">
-                  <i class="bi bi-clock"></i>
-                </div>
-                <h5>Tiempo</h5>
-                <div class="habit-progress">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-2"
-                  >
-                    <span>Progreso</span>
-                    <span class="text-info">60%</span>
-                  </div>
-                  <div class="progress">
-                    <div
-                      class="progress-bar bg-info"
-                      role="progressbar"
-                      style="width: 60%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="habit-streak">
-                  <i class="bi bi-lightning-charge-fill text-warning"></i>
-                  <span>8 días consecutivos</span>
-                </div>
-              </div>
+            <div class="progress">
+              <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
             </div>
-
-            <!-- Habit Card - Finanzas -->
-            <div class="col-md-4">
-              <div class="habit-card">
-                <div class="habit-icon finance-icon">
-                  <i class="bi bi-piggy-bank"></i>
-                </div>
-                <h5>Finanzas</h5>
-                <div class="habit-progress">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-2"
-                  >
-                    <span>Progreso</span>
-                    <span class="text-warning">45%</span>
-                  </div>
-                  <div class="progress">
-                    <div
-                      class="progress-bar bg-warning"
-                      role="progressbar"
-                      style="width: 45%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="habit-streak">
-                  <i class="bi bi-lightning-charge-fill text-warning"></i>
-                  <span>5 días consecutivos</span>
-                </div>
-              </div>
-            </div>
+          </div>
+          <div class="habit-streak">
+            <i class="bi bi-calendar-event-fill text-danger me-2"></i>
+            <span>Ver calendario menstrual</span>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
