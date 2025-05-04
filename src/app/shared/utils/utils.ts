@@ -1,9 +1,12 @@
 export function safeLocalStorageGet(key: string): string | null {
-  return typeof window !== 'undefined' ? safeLocalStorageGet(key) : null;
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return window.localStorage.getItem(key);
+  }
+  return null;
 }
 
 export function safeLocalStorageSet(key: string, value: string): void {
-  if (typeof window !== 'undefined') {
-    safeLocalStorageSet(key, value);
+  if (typeof window !== 'undefined' && window.localStorage) {
+    window.localStorage.setItem(key, value);
   }
 }
