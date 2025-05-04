@@ -3,15 +3,15 @@ import { LoginDto } from '../../dto/login-dto';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../../services/usuario.service';
+import { safeLocalStorageSet } from '../../shared/utils/utils';
 
 @Component({
   selector: 'app-login',
   standalone: false,
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
-
   loginDto: LoginDto = new LoginDto('', '');
   showPassword: boolean = false;
   rememberMe: boolean = false;
@@ -22,7 +22,7 @@ export class LoginComponent implements OnInit {
     private auth: AuthService,
     private router: Router,
     private usuarioService: UsuarioService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.auth.logout(); // Limpiar sesión anterior
@@ -39,7 +39,7 @@ export class LoginComponent implements OnInit {
     this.auth.login(this.loginDto).subscribe({
       next: (jwt: any) => {
         console.log('Login exitoso. JWT:', jwt);
-        localStorage.setItem('token', jwt.token); // ✅ Guarda token
+        safeLocalStorageSet('token', jwt.token); // ✅ Guarda token
 
         this.usuarioService.obtenerIdPorEmail(jwt.email, jwt.rol).subscribe({
           next: (usuario: any) => {
@@ -52,14 +52,14 @@ export class LoginComponent implements OnInit {
             console.error('Error al obtener usuario por email:', err);
             this.errorMessage = 'No se pudo obtener información del usuario.';
             this.isLoading = false;
-          }
+          },
         });
       },
       error: (err: any) => {
         console.error('Error de login:', err);
         this.errorMessage = 'Usuario o contraseña incorrectos';
         this.isLoading = false;
-      }
+      },
     });
   }
 
