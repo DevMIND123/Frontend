@@ -10,15 +10,19 @@ import { FooterComponent } from '../../shared/footer/footer.component';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import Swal from 'sweetalert2';
+import { RetoComidaService } from '../../../services/reto-comida.service';
+import { AlimentacionDTO } from '../../../dto/alimentacion.dto';
+import { RetoAlimentacionDTO } from '../../../dto/reto-alimentacion.dto';
+import { RegistroComidaDTO } from '../../../dto/registro-comida.dto';
+
+
 @Component({
   selector: 'app-client',
   standalone: true,
   imports: [
-    /* Angular */
     CommonModule,
     FormsModule,
     RouterModule,
-    /* Layout */
     NavbarComponent,
     FooterComponent,
   ],
@@ -32,6 +36,7 @@ export class ClientComponent implements OnInit {
   id: number = 0;
   successMessage: string | null = null;
   errorMessage: string | null = null;
+  alimentaciones: any[] = [];
 
   userData = {
     nombre: '',
@@ -39,8 +44,6 @@ export class ClientComponent implements OnInit {
     departamento: '',
     especialidad: '',
   };
-
-  /* ------------ feedback UI ------------ */
 
 
   /* ------------ preferencias ------------ */
@@ -58,8 +61,9 @@ export class ClientComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private usuarioService: UsuarioService
-  ) {}
+    private usuarioService: UsuarioService,
+    private retoComidaService: RetoComidaService
+  ) { }
 
   /* =========================================================
    *  CICLO DE VIDA
@@ -112,7 +116,81 @@ export class ClientComponent implements OnInit {
         console.error('[Empresa] loadCompanyData:', err);
       },
     });
+
+    this.retoComidaService.obtenerAlimentacionPorEmail(email).subscribe({
+      next: (res) => {
+        console.log('Alimentación encontrada:', res);
+        this.alimentaciones = res.map((alimentacion: any) => ({
+          ...alimentacion,
+          diasTranscurridos: this.calcularDiasTranscurridos(alimentacion.fechaInicio),
+          diasRestantes: this.calcularDiasRestantes(alimentacion.fechaFin),
+          progreso: this.calcularProgreso(
+            alimentacion.caloriasConsumidasHoy,
+            alimentacion.caloriasObjetivoDiarias
+          ),
+        }));
+        console.log('Alimentaciones:', this.alimentaciones);
+      },
+      error: (err) => {
+        console.error('Error al cargar la alimentación:', err);
+      },
+    });
+
+
+
   }
+
+
+  getBadgeColor(progreso: number): string {
+    if (progreso >= 75) return 'bg-success';
+    if (progreso >= 40) return 'bg-warning';
+    return 'bg-danger';
+  }
+
+  getTextColor(progreso: number): string {
+    if (progreso >= 75) return 'text-success';
+    if (progreso >= 40) return 'text-warning';
+    return 'text-danger';
+  }
+
+  getBarColor(progreso: number): string {
+    if (progreso >= 75) return 'bg-success';
+    if (progreso >= 40) return 'bg-warning';
+    return 'bg-danger';
+  }
+
+
+
+  calcularDiasTranscurridos(fechaInicio: string): number {
+    if (!fechaInicio) return 0;
+    const inicio = new Date(fechaInicio);
+    const hoy = new Date();
+    const diff = Math.floor((hoy.getTime() - inicio.getTime()) / (1000 * 3600 * 24));
+    return diff > 0 ? diff : 0;
+  }
+
+  calcularDiasRestantes(fechaFin: string): number {
+    if (!fechaFin) return 0;
+    const fin = new Date(fechaFin);
+    const hoy = new Date();
+    const diff = Math.ceil((fin.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
+    return diff > 0 ? diff : 0;
+  }
+
+  calcularProgreso(caloriasConsumidas: number, caloriasObjetivo: number): number {
+    if (!caloriasObjetivo || caloriasObjetivo <= 0) return 0;
+
+    const progreso = (caloriasConsumidas / caloriasObjetivo) * 100;
+    return progreso < 0 ? 0 : progreso > 100 ? 100 : Math.round(progreso);
+  }
+
+
+
+
+
+
+
+
 
   /* =========================================================
    *  EDICIÓN DE PERFIL
@@ -209,8 +287,84 @@ export class ClientComponent implements OnInit {
   }
 
   createChallenge(): void {
-    console.log('Crear nuevo reto');
+    const emailUsuario = sessionStorage.getItem('user');
+    if (!emailUsuario) {
+      Swal.fire('Error', 'No se encontró información de sesión.', 'error');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Nuevo reto de alimentación',
+      html: `
+        <select id="objetivo" class="swal2-input">
+          <option value="">Seleccione un objetivo</option>
+          <option value="Perder peso">Perder peso</option>
+          <option value="Ganar masa">Ganar masa</option>
+          <option value="Mantener peso">Mantener peso</option>
+        </select>
+        <input id="calorias" type="number" class="swal2-input" placeholder="Calorías diarias">
+        <input id="fechaFin" type="date" class="swal2-input">
+        <input id="descripcion" class="swal2-input" placeholder="Descripción del reto">
+      `,
+      confirmButtonText: 'Crear reto',
+      focusConfirm: false,
+      preConfirm: () => {
+        const objetivo = (document.getElementById('objetivo') as HTMLSelectElement).value;
+        const calorias = +(document.getElementById('calorias') as HTMLInputElement).value;
+        const fechaInicio = new Date().toISOString().split('T')[0];
+        const fechaFin = (document.getElementById('fechaFin') as HTMLInputElement).value;
+        const descripcion = (document.getElementById('descripcion') as HTMLInputElement).value;
+
+        if (!objetivo || !calorias || !fechaFin || !descripcion) {
+          Swal.showValidationMessage('Todos los campos son obligatorios');
+          return null;
+        }
+
+        return { objetivo, calorias, fechaInicio, fechaFin, descripcion };
+      }
+    }).then(result => {
+      if (!result.isConfirmed || !result.value) return;
+
+      const { objetivo, calorias, fechaInicio, fechaFin, descripcion } = result.value;
+
+      const alimentacion: AlimentacionDTO = {
+        emailUsuario,
+        objetivo,
+        caloriasObjetivoDiarias: calorias,
+        caloriasConsumidasHoy: 0,
+        fechaInicio,
+        fechaFin
+      };
+
+      this.retoComidaService.crearAlimentacion(alimentacion).subscribe({
+        next: (res) => {
+          const alimentacionId = res.id!;
+          const reto: RetoAlimentacionDTO = {
+            descripcion,
+            completado: false,
+            fechaInicio,
+            fechaFin
+          };
+
+          this.retoComidaService.asignarReto(alimentacionId, reto).subscribe({
+            next: () => {
+              Swal.fire('¡Listo!', 'Se creó el reto de alimentación exitosamente.', 'success');
+            },
+            error: () => {
+              Swal.fire('Error', 'No se pudo asignar el reto.', 'error');
+            }
+          });
+        },
+        error: () => {
+          Swal.fire('Error', 'No se pudo crear el hábito de alimentación.', 'error');
+        }
+      });
+    });
+    this.loadUserData(); // Recargar datos después de crear el reto
   }
+
+
+
 
   cambiarContrasena(): void {
     console.log('[Empresa] cambiarContrasena');
@@ -267,4 +421,46 @@ export class ClientComponent implements OnInit {
     this.errorMessage = null;
     this.successMessage = null;
   }
+
+
+
+  abrirSwalRegistroComida(alimentacion: any): void {
+    console.log('Alimentación seleccionada:', alimentacion);
+    Swal.fire({
+      title: 'Registrar comida',
+      html: `
+        <input id="nombre" class="swal2-input" placeholder="Nombre de la comida">
+        <input id="calorias" type="number" class="swal2-input" placeholder="Calorías">
+      `,
+      confirmButtonText: 'Registrar',
+      focusConfirm: false,
+      preConfirm: () => {
+        const nombre = (document.getElementById('nombre') as HTMLInputElement).value;
+        const calorias = +(document.getElementById('calorias') as HTMLInputElement).value;
+        const fechaHoraRegistro = new Date().toISOString(); // fecha automática
+
+        if (!nombre || !calorias) {
+          Swal.showValidationMessage('Todos los campos son obligatorios');
+          return null;
+        }
+
+        return { nombre, calorias, fechaHoraRegistro };
+      }
+    }).then(result => {
+      if (!result.isConfirmed || !result.value) return;
+
+      const comida: RegistroComidaDTO = result.value;
+
+      this.retoComidaService.registrarComida(alimentacion.id, comida).subscribe({
+        next: () => {
+          Swal.fire('¡Registrado!', 'La comida fue registrada correctamente.', 'success');
+        },
+        error: () => {
+          Swal.fire('Error', 'No se pudo registrar la comida.', 'error');
+        }
+      });
+    });
+  }
+
+
 }

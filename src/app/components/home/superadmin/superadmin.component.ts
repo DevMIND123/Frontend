@@ -239,11 +239,60 @@ export class SuperadminComponent implements OnInit {
 
   /* ================== Acciones sobre usuarios ================== */
   editUser(user: User): void {
-    console.log('Editar usuario:', user);
+    Swal.fire({
+      title: 'Editar usuario',
+      html:
+        `<input id="swal-input-nombre" class="swal2-input" placeholder="Nombre" value="${user.name}">` +
+        `<input id="swal-input-email" class="swal2-input" value="${user.email}" disabled>`,
+      focusConfirm: false,
+      preConfirm: () => {
+        const nombre = (document.getElementById('swal-input-nombre') as HTMLInputElement).value;
+        const email = user.email; // No editable, pero se envía
+        if (!nombre.trim()) {
+          Swal.showValidationMessage('El nombre no puede estar vacío');
+          return false;
+        }
+        return { nombre, email };
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const rol = this.authService.getRole(); // Asumiendo que ya lo tienes
+        const dto = {
+          nombre: result.value.nombre,
+          email: result.value.email
+        };
+
+        this.usuarioService.actualizarUsuarioPorId(user.id, dto, rol).subscribe({
+          next: () => {
+            Swal.fire('Éxito', 'Datos actualizados correctamente', 'success');
+            // Aquí puedes actualizar la lista local si lo deseas
+            user.name = result.value.nombre;
+          },
+          error: (err) => {
+            console.error('Error al actualizar:', err);
+            Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
+          }
+        });
+      }
+    });
   }
+
 
   deleteUser(user: User): void {
     console.log('Eliminar usuario:', user);
+    this.adminService.deleteAdmin(user.id).subscribe({
+      next: () => {
+        Swal.fire('Éxito', 'Usuario eliminado correctamente', 'success');
+        this.loadUsers(); // Actualizar lista de usuarios
+      },
+      error: (err) => {
+        console.error('Error al eliminar usuario:', err);
+        Swal.fire('Error', 'No se pudo eliminar el usuario', 'error');
+      },
+    });
   }
 
   getRoleBadgeClass(role: string): string {
