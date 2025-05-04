@@ -183,6 +183,54 @@
     <!-- ===================== DASHBOARD ===================== -->
     <div class="col-md-8">
       <!-- Stats Cards -->
+       <!-- Resumen General -->
+<div class="card shadow-sm mb-4" *ngIf="dashboardResumen">
+  <div class="card-body">
+    <div class="d-flex align-items-center mb-3">
+      <div class="card-icon bg-dark me-3">
+        <i class="bi bi-graph-up"></i>
+      </div>
+      <h3 class="card-title mb-0">Resumen de Actividad Empresarial</h3>
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <strong>Satisfacción del Cliente:</strong>
+        <div class="progress">
+          <div class="progress-bar bg-success" role="progressbar"
+               [style.width.%]="dashboardResumen.satisfaccionClientes">
+            {{ dashboardResumen.satisfaccionClientes }}%
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <strong>Clientes Retenidos:</strong>
+        <p class="mb-0">{{ dashboardResumen.clientesRetenidos }} / {{ dashboardResumen.totalClientes }}</p>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <strong>Tasa de Crecimiento Anual:</strong>
+        <p class="mb-0 text-success">
+          <i class="bi bi-arrow-up-right-circle-fill me-1"></i>
+          {{ dashboardResumen.tasaCrecimientoAnual }}%
+        </p>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <strong>Soportes Atendidos este Mes:</strong>
+        <p class="mb-0">{{ dashboardResumen.soportesAtendidosMes }}</p>
+      </div>
+
+      <div class="col-md-12">
+        <strong>Comentario General:</strong>
+        <p class="text-muted fst-italic">
+          "{{ dashboardResumen.comentarioGeneral }}"
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
       <div class="row g-3 mb-4">
         <div class="col-md-4">
           <div class="stat-card bg-primary text-white">
