@@ -21,6 +21,7 @@ import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import esLocale from '@fullcalendar/core/locales/es';
 import { forkJoin } from 'rxjs';
+import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
 /* importa como namespace */
 
 @Component({
@@ -52,7 +53,6 @@ export class ClientComponent implements OnInit {
     especialidad: '',
   };
 
-
   /* ------------ preferencias ------------ */
   darkMode = false;
   notificationsEnabled = true;
@@ -71,7 +71,7 @@ export class ClientComponent implements OnInit {
     private usuarioService: UsuarioService,
     private retoComidaService: RetoComidaService,
     private cicloMenstrualService: CicloMenstrualService
-  ) { }
+  ) {}
 
   /* =========================================================
    *  CICLO DE VIDA
@@ -110,7 +110,7 @@ export class ClientComponent implements OnInit {
               departamento: dto.departamento ?? '',
               especialidad: dto.especialidad ?? '',
             };
-            localStorage.setItem('userName', this.userData.nombre);
+            safeLocalStorageSet('userName', this.userData.nombre);
             this.errorMessage = '';
           },
           error: (err) => {
@@ -130,7 +130,9 @@ export class ClientComponent implements OnInit {
         console.log('Alimentación encontrada:', res);
         this.alimentaciones = res.map((alimentacion: any) => ({
           ...alimentacion,
-          diasTranscurridos: this.calcularDiasTranscurridos(alimentacion.fechaInicio),
+          diasTranscurridos: this.calcularDiasTranscurridos(
+            alimentacion.fechaInicio
+          ),
           diasRestantes: this.calcularDiasRestantes(alimentacion.fechaFin),
           progreso: this.calcularProgreso(
             alimentacion.caloriasConsumidasHoy,
@@ -143,11 +145,7 @@ export class ClientComponent implements OnInit {
         console.error('Error al cargar la alimentación:', err);
       },
     });
-
-
-
   }
-
 
   getBadgeColor(progreso: number): string {
     if (progreso >= 75) return 'bg-success';
@@ -167,13 +165,13 @@ export class ClientComponent implements OnInit {
     return 'bg-danger';
   }
 
-
-
   calcularDiasTranscurridos(fechaInicio: string): number {
     if (!fechaInicio) return 0;
     const inicio = new Date(fechaInicio);
     const hoy = new Date();
-    const diff = Math.floor((hoy.getTime() - inicio.getTime()) / (1000 * 3600 * 24));
+    const diff = Math.floor(
+      (hoy.getTime() - inicio.getTime()) / (1000 * 3600 * 24)
+    );
     return diff > 0 ? diff : 0;
   }
 
@@ -181,24 +179,21 @@ export class ClientComponent implements OnInit {
     if (!fechaFin) return 0;
     const fin = new Date(fechaFin);
     const hoy = new Date();
-    const diff = Math.ceil((fin.getTime() - hoy.getTime()) / (1000 * 3600 * 24));
+    const diff = Math.ceil(
+      (fin.getTime() - hoy.getTime()) / (1000 * 3600 * 24)
+    );
     return diff > 0 ? diff : 0;
   }
 
-  calcularProgreso(caloriasConsumidas: number, caloriasObjetivo: number): number {
+  calcularProgreso(
+    caloriasConsumidas: number,
+    caloriasObjetivo: number
+  ): number {
     if (!caloriasObjetivo || caloriasObjetivo <= 0) return 0;
 
     const progreso = (caloriasConsumidas / caloriasObjetivo) * 100;
     return progreso < 0 ? 0 : progreso > 100 ? 100 : Math.round(progreso);
   }
-
-
-
-
-
-
-
-
 
   /* =========================================================
    *  EDICIÓN DE PERFIL
@@ -220,7 +215,7 @@ export class ClientComponent implements OnInit {
       next: () => {
         this.successMessage = 'Perfil actualizado exitosamente';
         this.isEditing = false;
-        localStorage.setItem('userName', this.userData.nombre);
+        safeLocalStorageSet('userName', this.userData.nombre);
       },
       error: (err) => {
         console.error('Error updating profile:', err);
@@ -274,12 +269,12 @@ export class ClientComponent implements OnInit {
    * ======================================================= */
   toggleTheme(): void {
     this.darkMode = !this.darkMode;
-    localStorage.setItem('darkMode', String(this.darkMode));
+    safeLocalStorageSet('darkMode', String(this.darkMode));
     this.applyTheme();
   }
 
   private loadThemePreference(): void {
-    this.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.darkMode = safeLocalStorageGet('darkMode') === 'true';
     this.applyTheme();
   }
 
@@ -317,11 +312,19 @@ export class ClientComponent implements OnInit {
       confirmButtonText: 'Crear reto',
       focusConfirm: false,
       preConfirm: () => {
-        const objetivo = (document.getElementById('objetivo') as HTMLSelectElement).value;
-        const calorias = +(document.getElementById('calorias') as HTMLInputElement).value;
+        const objetivo = (
+          document.getElementById('objetivo') as HTMLSelectElement
+        ).value;
+        const calorias = +(
+          document.getElementById('calorias') as HTMLInputElement
+        ).value;
         const fechaInicio = new Date().toISOString().split('T')[0];
-        const fechaFin = (document.getElementById('fechaFin') as HTMLInputElement).value;
-        const descripcion = (document.getElementById('descripcion') as HTMLInputElement).value;
+        const fechaFin = (
+          document.getElementById('fechaFin') as HTMLInputElement
+        ).value;
+        const descripcion = (
+          document.getElementById('descripcion') as HTMLInputElement
+        ).value;
 
         if (!objetivo || !calorias || !fechaFin || !descripcion) {
           Swal.showValidationMessage('Todos los campos son obligatorios');
@@ -329,11 +332,12 @@ export class ClientComponent implements OnInit {
         }
 
         return { objetivo, calorias, fechaInicio, fechaFin, descripcion };
-      }
-    }).then(result => {
+      },
+    }).then((result) => {
       if (!result.isConfirmed || !result.value) return;
 
-      const { objetivo, calorias, fechaInicio, fechaFin, descripcion } = result.value;
+      const { objetivo, calorias, fechaInicio, fechaFin, descripcion } =
+        result.value;
 
       const alimentacion: AlimentacionDTO = {
         emailUsuario,
@@ -341,7 +345,7 @@ export class ClientComponent implements OnInit {
         caloriasObjetivoDiarias: calorias,
         caloriasConsumidasHoy: 0,
         fechaInicio,
-        fechaFin
+        fechaFin,
       };
 
       this.retoComidaService.crearAlimentacion(alimentacion).subscribe({
@@ -351,28 +355,33 @@ export class ClientComponent implements OnInit {
             descripcion,
             completado: false,
             fechaInicio,
-            fechaFin
+            fechaFin,
           };
 
           this.retoComidaService.asignarReto(alimentacionId, reto).subscribe({
             next: () => {
-              Swal.fire('¡Listo!', 'Se creó el reto de alimentación exitosamente.', 'success');
+              Swal.fire(
+                '¡Listo!',
+                'Se creó el reto de alimentación exitosamente.',
+                'success'
+              );
             },
             error: () => {
               Swal.fire('Error', 'No se pudo asignar el reto.', 'error');
-            }
+            },
           });
         },
         error: () => {
-          Swal.fire('Error', 'No se pudo crear el hábito de alimentación.', 'error');
-        }
+          Swal.fire(
+            'Error',
+            'No se pudo crear el hábito de alimentación.',
+            'error'
+          );
+        },
       });
     });
     this.loadUserData(); // Recargar datos después de crear el reto
   }
-
-
-
 
   cambiarContrasena(): void {
     console.log('[Empresa] cambiarContrasena');
@@ -430,8 +439,6 @@ export class ClientComponent implements OnInit {
     this.successMessage = null;
   }
 
-
-
   abrirSwalRegistroComida(alimentacion: any): void {
     console.log('Alimentación seleccionada:', alimentacion);
     Swal.fire({
@@ -443,8 +450,11 @@ export class ClientComponent implements OnInit {
       confirmButtonText: 'Registrar',
       focusConfirm: false,
       preConfirm: () => {
-        const nombre = (document.getElementById('nombre') as HTMLInputElement).value;
-        const calorias = +(document.getElementById('calorias') as HTMLInputElement).value;
+        const nombre = (document.getElementById('nombre') as HTMLInputElement)
+          .value;
+        const calorias = +(
+          document.getElementById('calorias') as HTMLInputElement
+        ).value;
         const fechaHoraRegistro = new Date().toISOString(); // fecha automática
 
         if (!nombre || !calorias) {
@@ -453,58 +463,73 @@ export class ClientComponent implements OnInit {
         }
 
         return { nombre, calorias, fechaHoraRegistro };
-      }
-    }).then(result => {
+      },
+    }).then((result) => {
       if (!result.isConfirmed || !result.value) return;
 
       const comida: RegistroComidaDTO = result.value;
 
-      this.retoComidaService.registrarComida(alimentacion.id, comida).subscribe({
-        next: () => {
-          Swal.fire('¡Registrado!', 'La comida fue registrada correctamente.', 'success');
-        },
-        error: () => {
-          Swal.fire('Error', 'No se pudo registrar la comida.', 'error');
-        }
-      });
+      this.retoComidaService
+        .registrarComida(alimentacion.id, comida)
+        .subscribe({
+          next: () => {
+            Swal.fire(
+              '¡Registrado!',
+              'La comida fue registrada correctamente.',
+              'success'
+            );
+          },
+          error: () => {
+            Swal.fire('Error', 'No se pudo registrar la comida.', 'error');
+          },
+        });
     });
   }
-
-
 
   verComidas(alimentacion: any, event: MouseEvent): void {
     event.stopPropagation();
 
-    this.retoComidaService.obtenerComidasPorAlimentacion(alimentacion.id).subscribe({
-      next: (comidas) => {
-        if (!comidas.length) {
-          Swal.fire('Sin registros', 'No hay comidas registradas aún.', 'info');
-          return;
-        }
+    this.retoComidaService
+      .obtenerComidasPorAlimentacion(alimentacion.id)
+      .subscribe({
+        next: (comidas) => {
+          if (!comidas.length) {
+            Swal.fire(
+              'Sin registros',
+              'No hay comidas registradas aún.',
+              'info'
+            );
+            return;
+          }
 
-        const comidasPorFecha: { [fecha: string]: RegistroComidaDTO[] } = {};
-        comidas.forEach((comida) => {
-          const fecha = comida.fechaHoraRegistro.split('T')[0];
-          if (!comidasPorFecha[fecha]) comidasPorFecha[fecha] = [];
-          comidasPorFecha[fecha].push(comida);
-        });
+          const comidasPorFecha: { [fecha: string]: RegistroComidaDTO[] } = {};
+          comidas.forEach((comida) => {
+            const fecha = comida.fechaHoraRegistro.split('T')[0];
+            if (!comidasPorFecha[fecha]) comidasPorFecha[fecha] = [];
+            comidasPorFecha[fecha].push(comida);
+          });
 
-        let html = '';
-        Object.keys(comidasPorFecha).sort().reverse().forEach((fecha) => {
-          html += `
+          let html = '';
+          Object.keys(comidasPorFecha)
+            .sort()
+            .reverse()
+            .forEach((fecha) => {
+              html += `
             <div style="margin-bottom: 1.5rem;">
               <h5 style="margin-bottom: 0.6rem; color: #333; font-weight: 600; border-bottom: 1px solid #ddd; padding-bottom: 0.3rem;">
                 📅 ${fecha}
               </h5>
               <div style="display: flex; flex-direction: column; gap: 0.5rem;">
           `;
-          comidasPorFecha[fecha].forEach((comida) => {
-            const hora = new Date(comida.fechaHoraRegistro).toLocaleTimeString('es-CO', {
-              hour: '2-digit',
-              minute: '2-digit',
-            });
+              comidasPorFecha[fecha].forEach((comida) => {
+                const hora = new Date(
+                  comida.fechaHoraRegistro
+                ).toLocaleTimeString('es-CO', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
 
-            html += `
+                html += `
               <div style="
                 display: flex;
                 justify-content: space-between;
@@ -527,26 +552,24 @@ export class ClientComponent implements OnInit {
                 </div>
               </div>
             `;
+              });
+
+              html += `</div></div>`;
+            });
+
+          Swal.fire({
+            title: 'Comidas registradas',
+            html: `<div style="max-height: 450px; overflow-y: auto; text-align: left;">${html}</div>`,
+            confirmButtonText: 'Cerrar',
+            width: 620,
+            scrollbarPadding: false,
           });
-
-          html += `</div></div>`;
-        });
-
-        Swal.fire({
-          title: 'Comidas registradas',
-          html: `<div style="max-height: 450px; overflow-y: auto; text-align: left;">${html}</div>`,
-          confirmButtonText: 'Cerrar',
-          width: 620,
-          scrollbarPadding: false,
-        });
-      },
-      error: () => {
-        Swal.fire('Error', 'No se pudieron cargar las comidas.', 'error');
-      }
-    });
+        },
+        error: () => {
+          Swal.fire('Error', 'No se pudieron cargar las comidas.', 'error');
+        },
+      });
   }
-
-
 
   abrirSwalCicloMenstrual(): void {
     const email = sessionStorage.getItem('user');
@@ -568,10 +591,10 @@ export class ClientComponent implements OnInit {
       `,
       showConfirmButton: false,
       didOpen: () => {
-        const btnCiclo     = document.getElementById('btn-ciclo');
-        const btnEvento    = document.getElementById('btn-evento');
-        const btnSintoma   = document.getElementById('btn-sintoma');
-        const btnCalendario= document.getElementById('btn-calendario');
+        const btnCiclo = document.getElementById('btn-ciclo');
+        const btnEvento = document.getElementById('btn-evento');
+        const btnSintoma = document.getElementById('btn-sintoma');
+        const btnCalendario = document.getElementById('btn-calendario');
 
         /* ---------- Registrar ciclo ---------- */
         btnCiclo?.addEventListener('click', () => {
@@ -582,8 +605,12 @@ export class ClientComponent implements OnInit {
               <input id="menstruacion"  class="swal2-input" type="number" placeholder="Duración menstruación (días)">
             `,
             preConfirm: () => {
-              const duracion      = +(document.getElementById('duracion')     as HTMLInputElement).value;
-              const menstruacion  = +(document.getElementById('menstruacion') as HTMLInputElement).value;
+              const duracion = +(
+                document.getElementById('duracion') as HTMLInputElement
+              ).value;
+              const menstruacion = +(
+                document.getElementById('menstruacion') as HTMLInputElement
+              ).value;
               const hoy = new Date().toISOString().split('T')[0];
 
               if (!duracion || !menstruacion) {
@@ -591,19 +618,25 @@ export class ClientComponent implements OnInit {
                 return;
               }
 
-              return this.cicloMenstrualService.registrarCiclo(
-                {
-                  emailUsuario: email,
-                  fechaInicio: hoy,
-                  duracionCiclo: duracion,
-                  duracionMenstruacion: menstruacion
-                },
-                `Bearer ${sessionStorage.getItem('token')}`
-              ).toPromise();
-            }
-          }).then(res => {
+              return this.cicloMenstrualService
+                .registrarCiclo(
+                  {
+                    emailUsuario: email,
+                    fechaInicio: hoy,
+                    duracionCiclo: duracion,
+                    duracionMenstruacion: menstruacion,
+                  },
+                  `Bearer ${sessionStorage.getItem('token')}`
+                )
+                .toPromise();
+            },
+          }).then((res) => {
             if (res.isConfirmed)
-              Swal.fire('Guardado', 'Ciclo registrado correctamente', 'success');
+              Swal.fire(
+                'Guardado',
+                'Ciclo registrado correctamente',
+                'success'
+              );
           });
         });
 
@@ -627,8 +660,12 @@ export class ClientComponent implements OnInit {
               <input id="obs" class="swal2-input" placeholder="Observaciones (opcional)">
             `,
             preConfirm: () => {
-              const tipo          = (document.getElementById('evento') as HTMLSelectElement).value;
-              const observaciones = (document.getElementById('obs')    as HTMLInputElement).value;
+              const tipo = (
+                document.getElementById('evento') as HTMLSelectElement
+              ).value;
+              const observaciones = (
+                document.getElementById('obs') as HTMLInputElement
+              ).value;
               const fecha = new Date().toISOString().split('T')[0];
 
               if (!tipo) {
@@ -636,14 +673,16 @@ export class ClientComponent implements OnInit {
                 return;
               }
 
-              return this.cicloMenstrualService.registrarEvento({
-                emailUsuario: email,
-                tipo: tipo as EventoTipo,
-                observaciones,
-                fecha
-              }).toPromise();
-            }
-          }).then(res => {
+              return this.cicloMenstrualService
+                .registrarEvento({
+                  emailUsuario: email,
+                  tipo: tipo as EventoTipo,
+                  observaciones,
+                  fecha,
+                })
+                .toPromise();
+            },
+          }).then((res) => {
             if (res.isConfirmed)
               Swal.fire('Guardado', 'Evento registrado', 'success');
           });
@@ -667,8 +706,12 @@ export class ClientComponent implements OnInit {
               <input id="intensidad" class="swal2-input" placeholder="Intensidad (baja, media, alta)">
             `,
             preConfirm: () => {
-              const tipo       = (document.getElementById('sintoma')    as HTMLSelectElement).value;
-              const intensidad = (document.getElementById('intensidad') as HTMLInputElement).value;
+              const tipo = (
+                document.getElementById('sintoma') as HTMLSelectElement
+              ).value;
+              const intensidad = (
+                document.getElementById('intensidad') as HTMLInputElement
+              ).value;
               const fecha = new Date().toISOString().split('T')[0];
 
               if (!tipo || !intensidad) {
@@ -676,14 +719,16 @@ export class ClientComponent implements OnInit {
                 return;
               }
 
-              return this.cicloMenstrualService.registrarSintoma({
-                emailUsuario: email,
-                tipo: tipo as SintomaTipo,
-                intensidad,
-                fecha
-              }).toPromise();
-            }
-          }).then(res => {
+              return this.cicloMenstrualService
+                .registrarSintoma({
+                  emailUsuario: email,
+                  tipo: tipo as SintomaTipo,
+                  intensidad,
+                  fecha,
+                })
+                .toPromise();
+            },
+          }).then((res) => {
             if (res.isConfirmed)
               Swal.fire('Guardado', 'Síntoma registrado', 'success');
           });
@@ -694,48 +739,47 @@ export class ClientComponent implements OnInit {
           forkJoin([
             this.cicloMenstrualService.obtenerEventosPorUsuario(email),
             this.cicloMenstrualService.obtenerSintomasPorUsuario(email),
-            this.cicloMenstrualService.obtenerCiclosPorUsuario(email)
+            this.cicloMenstrualService.obtenerCiclosPorUsuario(email),
           ]).subscribe({
             next: ([eventos, sintomas, ciclos]) => {
-
               console.log('Ciclos:', ciclos);
 
               /* 1️⃣ Eventos de backend → FullCalendar */
               const fullEvents = [
                 /* eventos puntuales */
-                ...eventos.map(ev => ({
+                ...eventos.map((ev) => ({
                   title: this.prettyEvento(ev.tipo),
                   start: ev.fecha,
                   color: this.colorEvento(ev.tipo),
-                  extendedProps: { obs: ev.observaciones ?? '' }
+                  extendedProps: { obs: ev.observaciones ?? '' },
                 })),
 
                 /* síntomas */
-                ...sintomas.map(si => ({
+                ...sintomas.map((si) => ({
                   title: this.prettySintoma(si.tipo, si.intensidad),
                   start: si.fecha,
                   color: '#20c997',
-                  extendedProps: { intensidad: si.intensidad }
+                  extendedProps: { intensidad: si.intensidad },
                 })),
 
                 /* ciclos: marca Día 1, ovulación y próxima regla */
-                ...ciclos.flatMap(c => [
+                ...ciclos.flatMap((c) => [
                   {
                     title: '🩸 Día 1 (Inicio ciclo)',
                     start: c.fechaInicio,
-                    color: '#e74c3c'
+                    color: '#e74c3c',
                   },
                   {
                     title: '🌸 Ovulación',
                     start: c.fechaOvulacion,
-                    color: '#3498db'
+                    color: '#3498db',
                   },
                   {
                     title: '🔔 Próxima menstruación',
                     start: c.fechaProximaMenstruacion,
-                    color: '#f39c12'
-                  }
-                ])
+                    color: '#f39c12',
+                  },
+                ]),
               ];
 
               /* 2️⃣ Mostrar calendario */
@@ -752,7 +796,11 @@ export class ClientComponent implements OnInit {
                     locale: 'es',
                     initialView: 'dayGridMonth',
                     height: 500,
-                    headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                    headerToolbar: {
+                      left: 'prev,next today',
+                      center: 'title',
+                      right: '',
+                    },
                     events: fullEvents,
                     eventClick(info) {
                       const extra =
@@ -764,38 +812,40 @@ export class ClientComponent implements OnInit {
                         extra ? `<small>${extra}</small>` : '',
                         'info'
                       );
-                    }
+                    },
                   });
                   calendar.render();
-                }
+                },
               });
             },
-            error: () => Swal.fire('Error', 'No se pudo cargar el calendario', 'error')
+            error: () =>
+              Swal.fire('Error', 'No se pudo cargar el calendario', 'error'),
           });
         });
-
-      }
+      },
     });
   }
 
   /* Helpers colorear y titular */
   private prettyEvento(tipo: EventoTipo): string {
     switch (tipo) {
-      case 'INICIO_REGLA': return '🩸 Inicio Regla';
-      case 'FIN_REGLA':    return '✅ Fin Regla';
-      case 'OVULACION':    return '🌸 Ovulación';
-      default:             return '⚠️ ' + tipo.replace(/_/g, ' ');
+      case 'INICIO_REGLA':
+        return '🩸 Inicio Regla';
+      case 'FIN_REGLA':
+        return '✅ Fin Regla';
+      case 'OVULACION':
+        return '🌸 Ovulación';
+      default:
+        return '⚠️ ' + tipo.replace(/_/g, ' ');
     }
   }
   private colorEvento(tipo: EventoTipo): string {
     if (tipo === 'INICIO_REGLA' || tipo === 'FIN_REGLA') return '#e74c3c';
-    if (tipo === 'OVULACION')                            return '#3498db';
+    if (tipo === 'OVULACION') return '#3498db';
     return '#f39c12';
   }
   private prettySintoma(tipo: SintomaTipo, int?: string) {
     const base = tipo.replace(/_/g, ' ').toLowerCase();
     return `🤒 ${base}${int ? ' (' + int + ')' : ''}`;
   }
-
-
 }

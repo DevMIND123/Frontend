@@ -11,6 +11,8 @@ import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { FinanzasService } from '../../../services/finanzas.service';
 
+import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
+
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
 
@@ -122,7 +124,11 @@ export class SuperadminComponent implements OnInit {
           createdAt: new Date(), // Ajusta si tienes fecha
         }));
 
-        const allUsers = [...mappedAdmins, ...mappedClientes, ...mappedEmpresas];
+        const allUsers = [
+          ...mappedAdmins,
+          ...mappedClientes,
+          ...mappedEmpresas,
+        ];
 
         this.allUsers = allUsers;
         this.filteredUsers = allUsers;
@@ -130,7 +136,6 @@ export class SuperadminComponent implements OnInit {
       error: (err) => console.error('Error al cargar usuarios:', err),
     });
   }
-
 
   filterUsers(): void {
     const term = this.searchTerm.toLowerCase();
@@ -148,8 +153,7 @@ export class SuperadminComponent implements OnInit {
       next: (data) => {
         this.datosFinancieros = data.moduloFinanzas;
       },
-      error: (err) =>
-        console.error('Error cargando datos financieros:', err),
+      error: (err) => console.error('Error cargando datos financieros:', err),
     });
   }
 
@@ -218,18 +222,18 @@ export class SuperadminComponent implements OnInit {
   /* ================== Preferencias ================== */
   toggleTheme(): void {
     this.darkMode = !this.darkMode;
-    localStorage.setItem('darkMode', String(this.darkMode));
+    safeLocalStorageSet('darkMode', String(this.darkMode));
     this.applyDarkMode();
   }
 
   toggleNotifications(): void {
-    localStorage.setItem('notifications', String(this.notificationsEnabled));
+    safeLocalStorageSet('notifications', String(this.notificationsEnabled));
   }
 
   private loadSettings(): void {
-    this.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.darkMode = safeLocalStorageGet('darkMode') === 'true';
     this.notificationsEnabled =
-      localStorage.getItem('notifications') !== 'false';
+      safeLocalStorageGet('notifications') !== 'false';
     this.applyDarkMode();
   }
 
@@ -246,7 +250,9 @@ export class SuperadminComponent implements OnInit {
         `<input id="swal-input-email" class="swal2-input" value="${user.email}" disabled>`,
       focusConfirm: false,
       preConfirm: () => {
-        const nombre = (document.getElementById('swal-input-nombre') as HTMLInputElement).value;
+        const nombre = (
+          document.getElementById('swal-input-nombre') as HTMLInputElement
+        ).value;
         const email = user.email; // No editable, pero se envía
         if (!nombre.trim()) {
           Swal.showValidationMessage('El nombre no puede estar vacío');
@@ -262,24 +268,25 @@ export class SuperadminComponent implements OnInit {
         const rol = this.authService.getRole(); // Asumiendo que ya lo tienes
         const dto = {
           nombre: result.value.nombre,
-          email: result.value.email
+          email: result.value.email,
         };
 
-        this.usuarioService.actualizarUsuarioPorId(user.id, dto, rol).subscribe({
-          next: () => {
-            Swal.fire('Éxito', 'Datos actualizados correctamente', 'success');
-            // Aquí puedes actualizar la lista local si lo deseas
-            user.name = result.value.nombre;
-          },
-          error: (err) => {
-            console.error('Error al actualizar:', err);
-            Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
-          }
-        });
+        this.usuarioService
+          .actualizarUsuarioPorId(user.id, dto, rol)
+          .subscribe({
+            next: () => {
+              Swal.fire('Éxito', 'Datos actualizados correctamente', 'success');
+              // Aquí puedes actualizar la lista local si lo deseas
+              user.name = result.value.nombre;
+            },
+            error: (err) => {
+              console.error('Error al actualizar:', err);
+              Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
+            },
+          });
       }
     });
   }
-
 
   deleteUser(user: User): void {
     console.log('Eliminar usuario:', user);
@@ -324,10 +331,17 @@ export class SuperadminComponent implements OnInit {
       confirmButtonText: 'Crear',
       cancelButtonText: 'Cancelar',
       preConfirm: () => {
-        const email = (document.getElementById('swal-email') as HTMLInputElement).value;
-        const nombre = (document.getElementById('swal-nombre') as HTMLInputElement).value;
-        const password = (document.getElementById('swal-password') as HTMLInputElement).value;
-        const rol = (document.getElementById('swal-rol') as HTMLSelectElement).value;
+        const email = (
+          document.getElementById('swal-email') as HTMLInputElement
+        ).value;
+        const nombre = (
+          document.getElementById('swal-nombre') as HTMLInputElement
+        ).value;
+        const password = (
+          document.getElementById('swal-password') as HTMLInputElement
+        ).value;
+        const rol = (document.getElementById('swal-rol') as HTMLSelectElement)
+          .value;
         if (!email || !nombre || !password) {
           Swal.showValidationMessage('✱ Todos los campos son obligatorios');
         }
