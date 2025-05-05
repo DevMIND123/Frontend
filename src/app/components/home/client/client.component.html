@@ -212,6 +212,65 @@
         </div>
       </div>
 
+      <!-- Hábito: Ejercicio o Deporte -->
+      <div class="card shadow-sm mb-4" *ngIf="habitoEjercicio">
+        <div class="card-body">
+          <h4 class="card-title">Ejercicio o Deporte</h4>
+          <p class="text-muted">Actividad reciente: {{ habitoEjercicio.ultimaActividad }}</p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" *ngFor="let actividad of habitoEjercicio.actividades">
+              <strong>{{ actividad.tipo }}</strong> - {{ actividad.duracion }} minutos ({{ actividad.frecuencia }}
+              veces/semana)
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Hábito: Moda -->
+      <div class="card shadow-sm mb-4" *ngIf="habitoModa">
+        <div class="card-body">
+          <h4 class="card-title">Moda</h4>
+          <p class="text-muted">Estilo preferido: {{ habitoModa.estilo }}</p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" *ngFor="let outfit of habitoModa.outfitsRecientes">
+              <strong>{{ outfit.fecha }}</strong>: {{ outfit.descripcion }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Hábito: Belleza -->
+      <div class="card shadow-sm mb-4" *ngIf="habitoBelleza">
+        <div class="card-body">
+          <h4 class="card-title">Belleza y productos de belleza</h4>
+          <p class="text-muted">Rutinas activas: {{ habitoBelleza.rutinas.length }}</p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" *ngFor="let rutina of habitoBelleza.rutinas">
+              <strong>{{ rutina.nombre }}</strong> - {{ rutina.frecuencia.vecesPorSemana }} veces/semana
+              <div *ngIf="rutina.productosUsados?.length">
+                <small class="text-muted">Productos:</small>
+                <ul>
+                  <li *ngFor="let p of rutina.productosUsados">{{ p.producto }} ({{ p.marca }})</li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Hábito: Dinero -->
+      <div class="card shadow-sm mb-4" *ngIf="habitoDinero">
+        <div class="card-body">
+          <h4 class="card-title">Dinero</h4>
+          <p class="text-muted">Ahorro mensual: COP {{ habitoDinero.resumenFinanciero.ahorroMensualCOP }}</p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" *ngFor="let mov of habitoDinero.movimientosRecientes">
+              <strong>{{ mov.fecha }}</strong>: {{ mov.tipo }} - {{ mov.concepto }} (COP {{ mov.monto }})
+            </li>
+          </ul>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
