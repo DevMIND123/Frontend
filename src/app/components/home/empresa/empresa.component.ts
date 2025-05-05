@@ -13,7 +13,11 @@ import { UsuarioService } from '../../../services/usuario.service';
 import { AuthService } from '../../../services/auth.service';
 import { EmpresaUpdateDTO } from '../../../models/empresa';
 import Swal from 'sweetalert2';
+import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
+
 /* ─── Tipos “mock” usados en la vista ──────────────────── */
+import { EmpresaDashboardService } from '../../../services/empresa-dashboard.service';
+
 interface ServiceItem {
   name: string;
   description: string;
@@ -108,6 +112,7 @@ export class EmpresaHomeComponent implements OnInit {
   ];
   filteredClients: ClientItem[] = [...this.clients];
   searchTerm = '';
+  dashboardResumen: any = null;
 
   /* ═══════════════════════════════════════════════════════
    *  CONSTRUCTOR & CICLO DE VIDA
@@ -115,12 +120,22 @@ export class EmpresaHomeComponent implements OnInit {
   constructor(
     private readonly usuarioService: UsuarioService,
     private readonly authService: AuthService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly empresaDashboardService: EmpresaDashboardService
   ) {}
 
   ngOnInit(): void {
     this.loadCompanyData();
     this.loadThemePreference();
+    this.empresaDashboardService.obtenerResumenEmpresa().subscribe({
+      next: (data) => {
+        this.dashboardResumen = data;
+        console.log('[Empresa] Dashboard cargado:', data);
+      },
+      error: (err) => {
+        console.error('[Empresa] Error al cargar dashboard:', err);
+      }
+    });
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -317,12 +332,12 @@ export class EmpresaHomeComponent implements OnInit {
    * ═════════════════════════════════════════════════════ */
   toggleTheme(): void {
     this.preferences.darkMode = !this.preferences.darkMode;
-    localStorage.setItem('darkMode', String(this.preferences.darkMode));
+    safeLocalStorageSet('darkMode', String(this.preferences.darkMode));
     this.applyTheme();
   }
 
   private loadThemePreference(): void {
-    this.preferences.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.preferences.darkMode = safeLocalStorageGet('darkMode') === 'true';
     this.applyTheme();
   }
 
