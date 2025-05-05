@@ -56,6 +56,7 @@ export class SuperadminComponent implements OnInit {
   adminData = {
     nombre: '',
     email: '',
+    newEmail: '',
   };
 
   // Gestión de usuarios
@@ -177,6 +178,7 @@ export class SuperadminComponent implements OnInit {
             this.adminData = {
               nombre: dto.nombre,
               email: dto.email,
+              newEmail: dto.email,
             };
             this.errorMessage = null;
           },
@@ -198,6 +200,7 @@ export class SuperadminComponent implements OnInit {
     const dto = {
       nombre: this.adminData.nombre,
       email: this.adminData.email,
+      newEmail: this.adminData.newEmail,
     };
 
     this.usuarioService.actualizarUsuarioPorId(this.id, dto, rol).subscribe({

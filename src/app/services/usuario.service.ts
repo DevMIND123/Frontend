@@ -62,11 +62,12 @@ export class UsuarioService {
   actualizarUsuario(userData: {
     nombre: string;
     email: string;
+    newEmail?: string;
     departamento: string;
     especialidad: string;
   }): Observable<any> {
     const rol = sessionStorage.getItem('user-role');
-    const email = userData.email;
+    const email = userData.newEmail;
 
     if (!rol) return throwError(() => new Error('Rol no encontrado en sesión'));
     if (!email) return throwError(() => new Error('Email no proporcionado'));

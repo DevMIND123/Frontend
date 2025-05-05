@@ -64,6 +64,7 @@ export class EmpresaHomeComponent implements OnInit {
     nombreRepresentante: '',
     numeroDocumento: '',
     email: '',
+    newEmail: '',
     departamento: '',
     especialidad: '',
     nit: '',
@@ -164,6 +165,7 @@ export class EmpresaHomeComponent implements OnInit {
               nombreRepresentante: dto.nombreRepresentante,
               numeroDocumento: dto.numeroDocumento,
               email: dto.email,
+              newEmail: dto.email,
               departamento: dto.departamento,
               especialidad: dto.especialidad,
               nit: dto.nit,
@@ -247,6 +249,7 @@ export class EmpresaHomeComponent implements OnInit {
       nit: this.companyData.nit,
       nombreRepresentante: this.companyData.nombreRepresentante,
       email: this.companyData.email,
+      newEmail: this.companyData.newEmail,
     };
     const rol = this.authService.getRole();
 

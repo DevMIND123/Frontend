@@ -65,6 +65,7 @@ export class ClientComponent implements OnInit {
     nombre: '',
     email: '',
     sexo: '',
+    newEmail: '',
     departamento: '',
     especialidad: '',
   };
@@ -130,6 +131,7 @@ export class ClientComponent implements OnInit {
               nombre: dto.nombre ?? '',
               email: dto.email ?? '',
               sexo: dto.sexo ?? '',
+              newEmail: dto.email ?? '',
               departamento: dto.departamento ?? '',
               especialidad: dto.especialidad ?? '',
             };
@@ -270,6 +272,7 @@ export class ClientComponent implements OnInit {
   }
 
   updateProfile(): void {
+    console.log('Actualizando perfil:', this.userData);
     this.usuarioService.actualizarUsuario(this.userData).subscribe({
       next: () => {
         this.successMessage = 'Perfil actualizado exitosamente';
