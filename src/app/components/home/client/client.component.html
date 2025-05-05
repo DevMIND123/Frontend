@@ -190,7 +190,7 @@
       </div>
 
       <!-- Habit Card - Ciclo Menstrual -->
-      <div class="col-md-4">
+      <div class="col-md-4" *ngIf="userData.sexo === 'FEMENINO'">
         <div class="habit-card" (click)="abrirSwalCicloMenstrual()">
           <div class="habit-icon menstrual-icon">
             <i class="bi bi-droplet-half text-danger"></i>

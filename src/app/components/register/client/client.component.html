@@ -17,6 +17,20 @@
             </div>
 
             <div class="mb-4 form-floating">
+              <select class="form-select" id="sexo" [(ngModel)]="sexo" name="sexo" required #sexoInput="ngModel">
+                  <option value="" disabled selected>Seleccione su sexo</option>
+                  <option value="MASCULINO">Masculino</option>
+                  <option value="FEMENINO">Femenino</option>
+                  <option value="OTRO">Otro</option>
+              </select>
+              <label for="sexo">Sexo</label>
+              <div *ngIf="sexoInput.invalid && (sexoInput.dirty || sexoInput.touched)" class="text-danger small mt-1">
+                  <div *ngIf="sexoInput.errors?.['required']">El sexo es requerido</div>
+              </div>
+          </div>
+
+
+            <div class="mb-4 form-floating">
                 <input type="email" class="form-control" id="email" [(ngModel)]="email" name="email" placeholder="nombre@ejemplo.com" required #emailInput="ngModel">
                 <label for="email">Correo electrónico</label>
                 <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="text-danger small mt-1">

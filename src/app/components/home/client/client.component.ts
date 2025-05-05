@@ -48,6 +48,7 @@ export class ClientComponent implements OnInit {
   userData = {
     nombre: '',
     email: '',
+    sexo: '',
     departamento: '',
     especialidad: '',
   };
@@ -107,9 +108,11 @@ export class ClientComponent implements OnInit {
             this.userData = {
               nombre: dto.nombre ?? '',
               email: dto.email ?? '',
+              sexo: dto.sexo ?? '',
               departamento: dto.departamento ?? '',
               especialidad: dto.especialidad ?? '',
             };
+
             localStorage.setItem('userName', this.userData.nombre);
             this.errorMessage = '';
           },
@@ -568,10 +571,10 @@ export class ClientComponent implements OnInit {
       `,
       showConfirmButton: false,
       didOpen: () => {
-        const btnCiclo     = document.getElementById('btn-ciclo');
-        const btnEvento    = document.getElementById('btn-evento');
-        const btnSintoma   = document.getElementById('btn-sintoma');
-        const btnCalendario= document.getElementById('btn-calendario');
+        const btnCiclo = document.getElementById('btn-ciclo');
+        const btnEvento = document.getElementById('btn-evento');
+        const btnSintoma = document.getElementById('btn-sintoma');
+        const btnCalendario = document.getElementById('btn-calendario');
 
         /* ---------- Registrar ciclo ---------- */
         btnCiclo?.addEventListener('click', () => {
@@ -582,8 +585,8 @@ export class ClientComponent implements OnInit {
               <input id="menstruacion"  class="swal2-input" type="number" placeholder="Duración menstruación (días)">
             `,
             preConfirm: () => {
-              const duracion      = +(document.getElementById('duracion')     as HTMLInputElement).value;
-              const menstruacion  = +(document.getElementById('menstruacion') as HTMLInputElement).value;
+              const duracion = +(document.getElementById('duracion') as HTMLInputElement).value;
+              const menstruacion = +(document.getElementById('menstruacion') as HTMLInputElement).value;
               const hoy = new Date().toISOString().split('T')[0];
 
               if (!duracion || !menstruacion) {
@@ -627,8 +630,8 @@ export class ClientComponent implements OnInit {
               <input id="obs" class="swal2-input" placeholder="Observaciones (opcional)">
             `,
             preConfirm: () => {
-              const tipo          = (document.getElementById('evento') as HTMLSelectElement).value;
-              const observaciones = (document.getElementById('obs')    as HTMLInputElement).value;
+              const tipo = (document.getElementById('evento') as HTMLSelectElement).value;
+              const observaciones = (document.getElementById('obs') as HTMLInputElement).value;
               const fecha = new Date().toISOString().split('T')[0];
 
               if (!tipo) {
@@ -667,7 +670,7 @@ export class ClientComponent implements OnInit {
               <input id="intensidad" class="swal2-input" placeholder="Intensidad (baja, media, alta)">
             `,
             preConfirm: () => {
-              const tipo       = (document.getElementById('sintoma')    as HTMLSelectElement).value;
+              const tipo = (document.getElementById('sintoma') as HTMLSelectElement).value;
               const intensidad = (document.getElementById('intensidad') as HTMLInputElement).value;
               const fecha = new Date().toISOString().split('T')[0];
 
@@ -697,8 +700,6 @@ export class ClientComponent implements OnInit {
             this.cicloMenstrualService.obtenerCiclosPorUsuario(email)
           ]).subscribe({
             next: ([eventos, sintomas, ciclos]) => {
-
-              console.log('Ciclos:', ciclos);
 
               /* 1️⃣ Eventos de backend → FullCalendar */
               const fullEvents = [
@@ -782,14 +783,14 @@ export class ClientComponent implements OnInit {
   private prettyEvento(tipo: EventoTipo): string {
     switch (tipo) {
       case 'INICIO_REGLA': return '🩸 Inicio Regla';
-      case 'FIN_REGLA':    return '✅ Fin Regla';
-      case 'OVULACION':    return '🌸 Ovulación';
-      default:             return '⚠️ ' + tipo.replace(/_/g, ' ');
+      case 'FIN_REGLA': return '✅ Fin Regla';
+      case 'OVULACION': return '🌸 Ovulación';
+      default: return '⚠️ ' + tipo.replace(/_/g, ' ');
     }
   }
   private colorEvento(tipo: EventoTipo): string {
     if (tipo === 'INICIO_REGLA' || tipo === 'FIN_REGLA') return '#e74c3c';
-    if (tipo === 'OVULACION')                            return '#3498db';
+    if (tipo === 'OVULACION') return '#3498db';
     return '#f39c12';
   }
   private prettySintoma(tipo: SintomaTipo, int?: string) {
