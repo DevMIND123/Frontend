@@ -49,3 +49,12 @@
 .faq-admin-accordion-item {
     margin: 15px 0 15px 20px;
 }
+
+@media screen and (max-width: 991px) {
+    .faq-admin-button__delete {
+        margin-top: 10px;
+    }
+    .faq-admin-button {
+        margin-left: 50px;
+    }
+}

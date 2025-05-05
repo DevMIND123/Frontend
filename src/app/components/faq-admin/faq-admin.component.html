@@ -41,8 +41,8 @@
               {{ faq.respuesta }}
             </div>
             <div>
-              <button class="btn btn-sm btn-warning me-2" (click)="editarFaq(i)">Editar</button>
-              <button class="btn btn-sm btn-danger" (click)="eliminarFaq(i)">Eliminar</button>
+              <button class="btn btn-sm btn-warning me-2 faq-admin-button" (click)="editarFaq(i)">Editar</button>
+              <button class="btn btn-sm btn-danger faq-admin-button__delete faq-admin-button" (click)="eliminarFaq(i)">Eliminar</button>
             </div>
           </li>
         </ul>
