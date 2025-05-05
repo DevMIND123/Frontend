@@ -1,12 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavbarComponent } from '../shared/navbar/navbar.component';
 import { CommonModule } from '@angular/common';
 import { FooterComponent } from '../shared/footer/footer.component';
 import { FormsModule } from '@angular/forms';
+import { FaqService } from '../../services/faq.service';
 
 interface FaqItem {
+  id?: number;
   pregunta: string;
   respuesta: string;
+  visible: boolean;
+  createdAt?: string;
 }
 
 @Component({
@@ -21,85 +25,125 @@ interface FaqItem {
     FormsModule
   ],
 })
-
-export class FaqAdminComponent {
-  faqs: FaqItem[] = [
-      {
-        pregunta: '¿Cómo puedo registrarme en la plataforma?',
-        respuesta: 'Para registrarte, haz clic en el botón "Registrarse" en la parte superior derecha y completa el formulario.'
-      },
-      {
-        pregunta: '¿Puedo cambiar mi contraseña?',
-        respuesta: 'Sí. Ve a tu perfil, haz clic en "Configuración" y luego en "Cambiar contraseña".'
-      },
-      {
-        pregunta: '¿Cómo contacto al soporte técnico?',
-        respuesta: 'Puedes escribirnos a soporte@tuempresa.com y responderemos en menos de 24 horas.'
-      },
-      {
-        pregunta: '¿Cómo puedo registrarme en la plataforma?',
-        respuesta: 'Para registrarte, haz clic en el botón "Registrarse" en la parte superior derecha y completa el formulario.'
-      },
-      {
-        pregunta: '¿Puedo cambiar mi contraseña?',
-        respuesta: 'Sí. Ve a tu perfil, haz clic en "Configuración" y luego en "Cambiar contraseña".'
-      },
-      {
-        pregunta: '¿Cómo contacto al soporte técnico?',
-        respuesta: 'Puedes escribirnos a soporte@tuempresa.com y responderemos en menos de 24 horas.'
-      },
-      {
-        pregunta: '¿Cómo puedo registrarme en la plataforma?',
-        respuesta: 'Para registrarte, haz clic en el botón "Registrarse" en la parte superior derecha y completa el formulario.'
-      },
-      {
-        pregunta: '¿Puedo cambiar mi contraseña?',
-        respuesta: 'Sí. Ve a tu perfil, haz clic en "Configuración" y luego en "Cambiar contraseña".'
-      },
-      {
-        pregunta: '¿Cómo contacto al soporte técnico?',
-        respuesta: 'Puedes escribirnos a soporte@tuempresa.com y responderemos en menos de 24 horas.'
-      }
-  ];
-
+export class FaqAdminComponent implements OnInit {
+  faqs: FaqItem[] = [];
   nuevaPregunta: string = '';
   nuevaRespuesta: string = '';
-
+  nuevaVisibilidad: boolean = true;
   editarIndex: number | null = null;
+  estaCargando: boolean = false;
+  mensajeError: string | null = null;
 
-  agregarFaq() {
-    if (this.nuevaPregunta && this.nuevaRespuesta) {
-      this.faqs.push({ pregunta: this.nuevaPregunta, respuesta: this.nuevaRespuesta });
-      this.nuevaPregunta = '';
-      this.nuevaRespuesta = '';
-    }
+  constructor(private faqService: FaqService) {}
+
+  ngOnInit(): void {
+    this.cargarFAQs();
   }
 
-  eliminarFaq(index: number) {
-    this.faqs.splice(index, 1);
+  cargarFAQs(): void {
+    this.estaCargando = true;
+    this.faqService.getFaqs().subscribe({
+      next: (data) => {
+        this.faqs = data;
+        this.estaCargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar FAQs', err);
+        this.mensajeError = 'Error al cargar las preguntas frecuentes';
+        this.estaCargando = false;
+      }
+    });
   }
 
-  editarFaq(index: number) {
-    this.editarIndex = index;
-    this.nuevaPregunta = this.faqs[index].pregunta;
-    this.nuevaRespuesta = this.faqs[index].respuesta;
-  }
-
-  guardarEdicion() {
-    if (this.editarIndex !== null) {
-      this.faqs[this.editarIndex] = {
+  agregarFaq(): void {
+    if (this.esFormularioValido()) {
+      const nuevaFaq: Omit<FaqItem, 'id' | 'createdAt'> = {
         pregunta: this.nuevaPregunta,
-        respuesta: this.nuevaRespuesta
+        respuesta: this.nuevaRespuesta,
+        visible: true
       };
-      this.editarIndex = null;
-      this.nuevaPregunta = '';
-      this.nuevaRespuesta = '';
+
+
+      this.faqService.createFaq(nuevaFaq).subscribe({
+        next: (faqCreada) => {
+          this.faqs.push(faqCreada);
+          this.resetearFormulario();
+          this.mensajeError = null;
+        },
+        error: (err) => {
+          console.error('Error al crear FAQ', err);
+          this.mensajeError = 'Error al crear la nueva pregunta';
+        }
+      });
     }
   }
 
-  cancelarEdicion() {
+  eliminarFaq(id: number, index: number): void {
+    if (confirm('¿Estás seguro de que deseas eliminar esta pregunta?')) {
+      this.faqService.deleteFaq(id).subscribe({
+        next: () => {
+          this.faqs.splice(index, 1);
+          this.mensajeError = null;
+        },
+        error: (err) => {
+          console.error('Error al eliminar FAQ', err);
+          this.mensajeError = 'Error al eliminar la pregunta';
+        }
+      });
+    }
+  }
+
+  editarFaq(index: number): void {
+    this.editarIndex = index;
+    const faq = this.faqs[index];
+    this.nuevaPregunta = faq.pregunta;
+    this.nuevaRespuesta = faq.respuesta;
+    this.nuevaVisibilidad = true;
+  }
+
+  guardarEdicion(): void {
+    if (this.editarIndex !== null) {
+      const id = this.faqs[this.editarIndex].id;
+      if (id == null) {
+        this.mensajeError = 'ID inválido para actualizar';
+        return;
+      }
+
+      const cambios: Partial<FaqItem> = {
+        pregunta: this.nuevaPregunta,
+        respuesta: this.nuevaRespuesta,
+        visible: this.nuevaVisibilidad
+      };
+
+      this.faqService.updateFaq(id, cambios).subscribe({
+        next: (faqActualizada) => {
+          this.faqs[this.editarIndex!] = faqActualizada;
+          this.cancelarEdicion();
+          this.mensajeError = null;
+        },
+        error: (err) => {
+          console.error('Error al actualizar FAQ', err);
+          this.mensajeError = 'Error al actualizar la pregunta';
+        }
+      });
+    }
+  }
+
+  cancelarEdicion(): void {
     this.editarIndex = null;
+    this.resetearFormulario();
+  }
+
+
+
+
+  private resetearFormulario(): void {
     this.nuevaPregunta = '';
     this.nuevaRespuesta = '';
+    this.nuevaVisibilidad = true;
+  }
+
+  private esFormularioValido(): boolean {
+    return this.nuevaPregunta.trim() !== '' && this.nuevaRespuesta.trim() !== '';
   }
 }
