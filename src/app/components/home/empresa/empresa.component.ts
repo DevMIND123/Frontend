@@ -13,6 +13,8 @@ import { UsuarioService } from '../../../services/usuario.service';
 import { AuthService } from '../../../services/auth.service';
 import { EmpresaUpdateDTO } from '../../../models/empresa';
 import Swal from 'sweetalert2';
+import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
+
 /* ─── Tipos “mock” usados en la vista ──────────────────── */
 import { EmpresaDashboardService } from '../../../services/empresa-dashboard.service';
 
@@ -330,12 +332,12 @@ export class EmpresaHomeComponent implements OnInit {
    * ═════════════════════════════════════════════════════ */
   toggleTheme(): void {
     this.preferences.darkMode = !this.preferences.darkMode;
-    localStorage.setItem('darkMode', String(this.preferences.darkMode));
+    safeLocalStorageSet('darkMode', String(this.preferences.darkMode));
     this.applyTheme();
   }
 
   private loadThemePreference(): void {
-    this.preferences.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.preferences.darkMode = safeLocalStorageGet('darkMode') === 'true';
     this.applyTheme();
   }
 
