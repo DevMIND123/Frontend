@@ -1,0 +1,54 @@
+<app-navbar></app-navbar>
+<div class="faq-admin">
+      <section class="hero-section">
+        <div class="hero-image">
+            <img src="assets/images/faqmain.jpg" class="img-fluid" alt="Amigos usando RetoChimba" />
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-4 animate-up text-white">
+                    <span class="text-light">Administrar Preguntas Frecuentes</span>
+                </h1>
+                <p class="lead mb-4 animate-up-delay-1 text-white">
+                    Aqui podes editar las preguntas frecuentes que tienen los usuarios de <b>RetoChimba</b>
+                </p>
+            </div>
+        </div>
+    </section>
+    <div class="container my-5">
+        <form (submit)="editarIndex !== null ? guardarEdicion() : agregarFaq()" class="mb-4">
+          <div class="mb-3">
+            <label for="pregunta" class="form-label">Pregunta</label>
+            <input type="text" id="pregunta" [(ngModel)]="nuevaPregunta" name="pregunta" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="respuesta" class="form-label">Respuesta</label>
+            <textarea id="respuesta" [(ngModel)]="nuevaRespuesta" name="respuesta" class="form-control" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary me-2">
+            {{ editarIndex !== null ? 'Guardar Cambios' : 'Agregar Pregunta' }}
+          </button>
+          <button *ngIf="editarIndex !== null" type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+            Cancelar
+          </button>
+        </form>
+
+        <ul class="list-group">
+          <li class="list-group-item d-flex justify-content-between align-items-start" *ngFor="let faq of faqs; let i = index">
+            <div>
+              <strong>{{ faq.pregunta }}</strong><br>
+              {{ faq.respuesta }}
+            </div>
+            <div>
+              <button class="btn btn-sm btn-warning me-2" (click)="editarFaq(i)">Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="eliminarFaq(i)">Eliminar</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+
+</div>
+
+<app-footer></app-footer>
