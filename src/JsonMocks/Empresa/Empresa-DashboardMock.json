@@ -1,0 +1,98 @@
+{
+    "empresa": {
+        "nombre": "SaludVital S.A.S.",
+        "nit": "900123456-7",
+        "sector": "Salud ocupacional",
+        "contacto": "contacto@saludvital.com",
+        "telefono": "+57 321 654 9870"
+    },
+    "resumenGeneral": {
+        "usuariosTotales": 312,
+        "usuariosActivosHoy": 124,
+        "nuevosUsuariosEstaSemana": 18,
+        "modulosActivos": 6,
+        "promedioSatisfaccion": 4.6,
+        "porcentajeCumplimientoRetos": 73.5
+    },
+    "actividadesRecientes": [
+        {
+            "fecha": "2025-05-01",
+            "descripcion": "Campaña de salud mental finalizada con 85% de participación.",
+            "tipo": "Campaña"
+        },
+        {
+            "fecha": "2025-04-28",
+            "descripcion": "Actualización masiva del módulo de nutrición.",
+            "tipo": "Actualización"
+        },
+        {
+            "fecha": "2025-04-25",
+            "descripcion": "Ingreso de 10 nuevos usuarios en sede Medellín.",
+            "tipo": "Ingreso"
+        }
+    ],
+    "indicadoresFinancieros": {
+        "ingresosMensualesCOP": 48000000,
+        "gastosOperativosCOP": 27800000,
+        "balanceCOP": 20200000,
+        "suscripcionesActivas": 45,
+        "proyeccionIngresosAnualCOP": 576000000
+    },
+    "modulosPopulares": [
+        {
+            "nombre": "Nutrición",
+            "usuariosActivos": 86,
+            "calificacionPromedio": 4.8,
+            "usoSemanalPromedio": "3.4 sesiones"
+        },
+        {
+            "nombre": "Salud Mental",
+            "usuariosActivos": 72,
+            "calificacionPromedio": 4.5,
+            "usoSemanalPromedio": "2.9 sesiones"
+        },
+        {
+            "nombre": "Actividad Física",
+            "usuariosActivos": 58,
+            "calificacionPromedio": 4.7,
+            "usoSemanalPromedio": "4.1 sesiones"
+        }
+    ],
+    "estadisticasPorSede": [
+        {
+            "sede": "Bogotá",
+            "usuarios": 130,
+            "retosCompletados": 78
+        },
+        {
+            "sede": "Medellín",
+            "usuarios": 92,
+            "retosCompletados": 54
+        },
+        {
+            "sede": "Cali",
+            "usuarios": 60,
+            "retosCompletados": 40
+        },
+        {
+            "sede": "Barranquilla",
+            "usuarios": 30,
+            "retosCompletados": 20
+        }
+    ],
+    "recomendaciones": [
+        "Iniciar campaña de pausas activas en sede Barranquilla.",
+        "Actualizar cuestionario de bienestar emocional.",
+        "Fomentar el uso del módulo de actividad física en sede Cali."
+    ],
+    "alertas": [
+        {
+            "nivel": "Alto",
+            "mensaje": "Disminución del 30% en el uso del módulo de salud mental esta semana."
+        },
+        {
+            "nivel": "Medio",
+            "mensaje": "Se recomienda renovar la suscripción de 8 empresas afiliadas."
+        }
+    ]
+}

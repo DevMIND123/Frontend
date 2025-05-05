@@ -21,8 +21,13 @@ import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import esLocale from '@fullcalendar/core/locales/es';
 import { forkJoin } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+
+import { HabitoEjercicioService } from '../../../services/habito-ejercicio.service';
+import { HabitoModaService } from '../../../services/habito-moda.service';
+import { HabitoBellezaService } from '../../../services/habito-belleza.service';
+import { HabitoDineroService } from '../../../services/habito-dinero.service';
 import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
-/* importa como namespace */
 
 @Component({
   selector: 'app-client',
@@ -44,7 +49,17 @@ export class ClientComponent implements OnInit {
   id: number = 0;
   successMessage: string | null = null;
   errorMessage: string | null = null;
+  // Alimentación
   alimentaciones: any[] = [];
+
+  // Mock Hábito: Ejercicio o Deporte
+  habitoEjercicio: any = null;
+  // Mock Hábito: Moda
+  habitoModa: any = null;
+  // Hábito: Belleza
+  habitoBelleza: any = null;
+  // Hábito: Dinero
+  habitoDinero: any = null;
 
   userData = {
     nombre: '',
@@ -70,8 +85,12 @@ export class ClientComponent implements OnInit {
     private authService: AuthService,
     private usuarioService: UsuarioService,
     private retoComidaService: RetoComidaService,
-    private cicloMenstrualService: CicloMenstrualService
-  ) {}
+    private cicloMenstrualService: CicloMenstrualService,
+    private habitoEjercicioService: HabitoEjercicioService,
+    private habitoModaService: HabitoModaService,
+    private habitoBellezaService: HabitoBellezaService,
+    private habitoDineroService: HabitoDineroService
+  ) { }
 
   /* =========================================================
    *  CICLO DE VIDA
@@ -79,6 +98,8 @@ export class ClientComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserData();
     this.loadThemePreference();
+
+    this.loadHabitos();
   }
 
   /* =========================================================
@@ -195,6 +216,40 @@ export class ClientComponent implements OnInit {
     return progreso < 0 ? 0 : progreso > 100 ? 100 : Math.round(progreso);
   }
 
+  private loadHabitos(): void {
+    this.habitoEjercicioService.obtenerHabitoEjercicio().subscribe({
+      next: (data) => {
+        this.habitoEjercicio = data;
+        console.log('[Hábito Ejercicio] Datos cargados:', data);
+      },
+      error: (err) => console.error('[Hábito Ejercicio] Error:', err)
+    });
+  
+    this.habitoModaService.obtenerHabitoModa().subscribe({
+      next: (data) => {
+        this.habitoModa = data;
+        console.log('[Hábito Moda] Datos cargados:', data);
+      },
+      error: (err) => console.error('[Hábito Moda] Error:', err)
+    });
+  
+    this.habitoBellezaService.obtenerHabitoBelleza().subscribe({
+      next: (data) => {
+        this.habitoBelleza = data;
+        console.log('[Hábito Belleza] Datos cargados:', data);
+      },
+      error: (err) => console.error('[Hábito Belleza] Error:', err)
+    });
+  
+    this.habitoDineroService.obtenerHabitoDinero().subscribe({
+      next: (data) => {
+        this.habitoDinero = data;
+        console.log('[Hábito Dinero] Datos cargados:', data);
+      },
+      error: (err) => console.error('[Hábito Dinero] Error:', err)
+    });
+  }
+  
   /* =========================================================
    *  EDICIÓN DE PERFIL
    * ======================================================= */

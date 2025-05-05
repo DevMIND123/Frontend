@@ -1,0 +1,60 @@
+{
+    "clienteId": "usr-789",
+    "habito": "Ejercicio o Deporte",
+    "activo": true,
+    "actividades": [
+        {
+            "actividadId": "act-001",
+            "tipo": "Ejercicio",
+            "nombre": "Correr",
+            "descripcion": "Carrera de 5 km al aire libre",
+            "frecuencia": {
+                "vecesPorSemana": 3,
+                "dias": [
+                    "Lunes",
+                    "Miércoles",
+                    "Viernes"
+                ]
+            },
+            "ultimaSesion": "2025-05-02T07:30:00-05:00",
+            "duracionMinutos": 45,
+            "intensidad": "Media",
+            "metricas": {
+                "distanciaKm": 5.2,
+                "caloriasQuemadas": 380
+            }
+        },
+        {
+            "actividadId": "act-002",
+            "tipo": "Deporte",
+            "nombre": "Natación",
+            "descripcion": "Piscina de 1500 metros",
+            "frecuencia": {
+                "vecesPorSemana": 2,
+                "dias": [
+                    "Martes",
+                    "Jueves"
+                ]
+            },
+            "ultimaSesion": "2025-04-30T18:00:00-05:00",
+            "duracionMinutos": 60,
+            "intensidad": "Alta",
+            "metricas": {
+                "longitudPiscinaMetros": 1500,
+                "caloriasQuemadas": 500
+            }
+        }
+    ],
+    "resumenMensual": {
+        "sesionesTotales": 9,
+        "caloriasTotales": 3210,
+        "tiempoTotalMinutos": 465
+    },
+    "recomendaciones": [
+        {
+            "mensaje": "Agrega una sesión de estiramientos para mejorar la recuperación",
+            "fecha": "2025-05-02",
+            "prioridad": "Alta"
+        }
+    ]
+}

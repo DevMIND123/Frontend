@@ -1,12 +1,28 @@
 /* Layout */
 .habit-icon.menstrual-icon {
-  background-color: #f8d7da;
-  color: #dc3545;
-  border-radius: 50%;
-  padding: 15px;
-  font-size: 1.5rem;
+    background-color: #f8d7da;
+    color: #dc3545;
+    border-radius: 50%;
+    padding: 15px;
+    font-size: 1.5rem;
 }
 
+/* Iconos personalizados para los nuevos hábitos */
+.habit-icon.ejercicio-icon {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+}
+
+.habit-icon.moda-icon {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+}
+
+.habit-icon.belleza-icon {
+    background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+}
+
+.habit-icon.dinero-icon {
+    background: linear-gradient(135deg, #ecc94b 0%, #d69e2e 100%);
+}
 
 :host {
     display: block;
@@ -124,6 +140,7 @@
     text-align: center;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
 }
 
 .habit-card:hover {
@@ -141,18 +158,6 @@
     margin: 0 auto 1rem;
     font-size: 1.5rem;
     color: white;
-}
-
-.food-icon {
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-}
-
-.time-icon {
-    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-}
-
-.finance-icon {
-    background: linear-gradient(135deg, #ecc94b 0%, #d69e2e 100%);
 }
 
 .habit-card h5 {
@@ -286,6 +291,7 @@
         margin-bottom: 1rem;
     }
 }
+
 /* Asegura que el host del componente tenga layout vertical */
 :host {
     display: flex;
