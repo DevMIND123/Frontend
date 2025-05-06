@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 /* ─── stand‑alone shared components ───────────────────── */
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
+import { GestionContenidoComponent } from '../gestion-contenido/gestion-contenido.component';
 
 /* ─── servicios y modelos ─────────────────────────────── */
 import { UsuarioService } from '../../../services/usuario.service';

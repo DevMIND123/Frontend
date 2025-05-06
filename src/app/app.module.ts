@@ -28,6 +28,7 @@ import { FooterComponent } from './components/shared/footer/footer.component';
 
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { AuthService } from './services/auth.service';
+import { GestionContenidoComponent } from './components/home/gestion-contenido/gestion-contenido.component';
 
 @NgModule({
   /* ❶ SOLO componentes NO‑stand‑alone */
@@ -58,7 +59,8 @@ import { AuthService } from './services/auth.service';
     ClientComponent,
     EmpresaHomeComponent,
     NavbarComponent,
-    FooterComponent
+    FooterComponent,
+    GestionContenidoComponent,
   ],
 
   providers: [
