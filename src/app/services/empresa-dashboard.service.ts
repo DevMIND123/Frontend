@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class EmpresaDashboardService {
 
-  private API_URL = 'http://10.43.103.209:8012/castlemock/mock/rest/project/NeOVAA/application/Ik851k/empresa-dashboard';
+  private API_URL = 'http://10.43.101.86:8011/castlemock/mock/rest/project/msKIAN/application/pAkR5J/datosempresa';
 
   constructor(private http: HttpClient) {}
 
