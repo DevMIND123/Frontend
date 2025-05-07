@@ -1,5 +1,5 @@
-export const environment = {
+export const environment = { 
   production: true,
-  apiUrl: 'http://localhost:8080/api.retochimba.com',
-  notificationUrl: 'http://localhost:5005/api.retochimba.com' // 🔥 este sí es el de notificaciones
+  apiUrl: 'http://10.43.103.60:8000/api.retochimba.com',
+  mocksUrl: 'http://10.43.103.60:8000'
 };

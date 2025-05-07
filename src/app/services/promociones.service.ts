@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PromocionService {
-  private baseUrl = `http://localhost:8091/api/promociones`;
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

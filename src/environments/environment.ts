@@ -1,8 +1,5 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api.retochimba.com', // otro backend
-  notificationUrl: 'http://localhost:5005/api.retochimba.com', // 🔥 este sí es el de notificaciones
-  retoUrl: 'http://localhost:8081', // otro backend
-  gestionContenidoUrl: 'http://localhost:8091' 
-};
-
+    production: false,
+    apiUrl: 'http://10.43.103.60:8000/api.retochimba.com',
+    mocksUrl: 'http://10.43.103.60:8000'
+  };

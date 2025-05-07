@@ -4,22 +4,20 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 /* ✅ Usamos notificationUrl directamente */
-const NOTIF_URL = environment.notificationUrl;
+const NOTIF_URL = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class NotificacionesService {
+  constructor(private readonly http: HttpClient) {}
 
-  constructor(private readonly http: HttpClient) { }
-
-  getNotificacionesPorUsuario(token: any): Observable<any[]> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-
+  getNotificacionesPorUsuario(idUsuario: number): Observable<any[]> {
     return this.http.get<any[]>(`${NOTIF_URL}/notificaciones`, { headers });
   }
 
   marcarComoLeida(idNotificacion: number): Observable<void> {
-    return this.http.patch<void>(`${NOTIF_URL}/notificaciones/${idNotificacion}/leida`, {});
+    return this.http.patch<void>(
+      `${NOTIF_URL}/notificaciones/${idNotificacion}/leida`,
+      {}
+    );
   }
 }

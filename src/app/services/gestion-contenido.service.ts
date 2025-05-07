@@ -2,8 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 export interface Bono {
     id: number;
@@ -16,7 +14,7 @@ export interface Bono {
 @Injectable({ providedIn: 'root' })
 export class GestionContenidoService {
   // URL específica para bonos, evitando colisiones
-    private bonosUrl = `${environment.gestionContenidoUrl}/api/bonos`;
+    private bonosUrl = `${environment.apiUrl}/api/bonos`;
 
     constructor(private http: HttpClient) {}
 
