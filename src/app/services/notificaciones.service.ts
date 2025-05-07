@@ -11,7 +11,7 @@ export class NotificacionesService {
   constructor(private readonly http: HttpClient) {}
 
   getNotificacionesPorUsuario(idUsuario: number): Observable<any[]> {
-    return this.http.get<any[]>(`${NOTIF_URL}/notificaciones/`);
+    return this.http.get<any[]>(`${NOTIF_URL}/notificaciones`);
   }
 
   marcarComoLeida(idNotificacion: number): Observable<void> {

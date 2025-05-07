@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
 })
 export class FinanzasService {
 
-  private API_URL = `${environment.apiUrl}/castlemock/mock/rest/project/NeOVAA/application/Ik851k/finanzas`;
+  private API_URL = `${environment.mocksUrl}/castlemock/mock/rest/project/NeOVAA/application/Ik851k/finanzas`;
 
   constructor(private http: HttpClient) { }
 
