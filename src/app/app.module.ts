@@ -28,6 +28,7 @@ import { FooterComponent } from './components/shared/footer/footer.component';
 
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { AuthService } from './services/auth.service';
+import { GestionContenidoComponent } from './components/home/gestion-contenido/gestion-contenido.component';
 import { FaqComponent } from './components/faq/faq.component';
 import { FaqAdminComponent } from './components/faq-admin/faq-admin.component';
 
@@ -61,6 +62,7 @@ import { FaqAdminComponent } from './components/faq-admin/faq-admin.component';
     EmpresaHomeComponent,
     NavbarComponent,
     FooterComponent,
+    GestionContenidoComponent,
     FaqAdminComponent,
     FaqComponent
   ],

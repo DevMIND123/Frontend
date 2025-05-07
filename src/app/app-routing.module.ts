@@ -12,8 +12,10 @@ import { SuperadminComponent } from './components/home/superadmin/superadmin.com
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PasswordChangeModalComponent } from './components/shared/password-change-modal/password-change-modal.component';
 import { EmpresaHomeComponent } from './components/home/empresa/empresa.component';
+import { GestionContenidoComponent } from './components/home/gestion-contenido/gestion-contenido.component';
 import { FaqComponent } from './components/faq/faq.component';
 import { FaqAdminComponent } from './components/faq-admin/faq-admin.component';
+
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'landing-page' },
@@ -27,9 +29,11 @@ const routes: Routes = [
   { path: 'home/soporte', component: SoporteHomeComponent }, // Cambiado aquí
   { path: 'home/empresa', component: EmpresaHomeComponent },
   { path: 'home/client', component: ClientComponent },
+  {path: 'gestion-contenido', component: GestionContenidoComponent},
   { path: 'about', component: AboutComponent },
   { path: 'password-change', component: PasswordChangeModalComponent },
   { path: 'not-found', component: NotFoundComponent },
+  { path: '**', redirectTo: 'not-found' } ,// 👈 fallback por si se va a una ruta inexistente
   { path: 'home/faq', component: FaqComponent },
   { path: 'home/faq-admin', component: FaqAdminComponent },
   { path: '**', redirectTo: 'not-found' } // 👈 fallback por si se va a una ruta inexistente
