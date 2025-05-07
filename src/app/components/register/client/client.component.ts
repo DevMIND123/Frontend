@@ -58,6 +58,7 @@ export class ClientComponent {
       sexo: this.sexo,
       rol: 'CLIENTE',
     };
+    console.log('Sexo: ', this.sexo);
     localStorage.setItem('sexoUsuario', this.sexo);
     this.authService.registerClient(userData).subscribe({
       next: () => {

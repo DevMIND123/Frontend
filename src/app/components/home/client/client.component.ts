@@ -139,6 +139,10 @@ export class ClientComponent implements OnInit {
               especialidad: dto.especialidad ?? '',
             };
 
+            console.log(
+              '[DEBUG] Sexo leído desde localStorage:',
+              this.userData.sexo
+            );
             localStorage.setItem('userName', this.userData.nombre);
             safeLocalStorageSet('userName', this.userData.nombre);
             this.errorMessage = '';
