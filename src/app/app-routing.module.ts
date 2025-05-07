@@ -33,7 +33,6 @@ const routes: Routes = [
   { path: 'about', component: AboutComponent },
   { path: 'password-change', component: PasswordChangeModalComponent },
   { path: 'not-found', component: NotFoundComponent },
-  { path: '**', redirectTo: 'not-found' } ,// 👈 fallback por si se va a una ruta inexistente
   { path: 'home/faq', component: FaqComponent },
   { path: 'home/faq-admin', component: FaqAdminComponent },
   { path: '**', redirectTo: 'not-found' } // 👈 fallback por si se va a una ruta inexistente
