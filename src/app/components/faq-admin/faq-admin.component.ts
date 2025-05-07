@@ -56,7 +56,7 @@ export class FaqAdminComponent implements OnInit {
   }
 
   agregarFaq(): void {
-    if (this.esFormularioValido()) {
+    if (this.esFormularioValido() && this.nuevaPregunta != null && this.nuevaRespuesta != null) {
       const nuevaFaq: Omit<FaqItem, 'id' | 'createdAt'> = {
         pregunta: this.nuevaPregunta,
         respuesta: this.nuevaRespuesta,
@@ -102,7 +102,7 @@ export class FaqAdminComponent implements OnInit {
   }
 
   guardarEdicion(): void {
-    if (this.editarIndex !== null) {
+    if (this.editarIndex !== null && this.nuevaPregunta != null && this.nuevaRespuesta != null) {
       const id = this.faqs[this.editarIndex].id;
       if (id == null) {
         this.mensajeError = 'ID inválido para actualizar';
