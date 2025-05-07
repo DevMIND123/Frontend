@@ -5,3 +5,4 @@ export const environment = {
   retoUrl: 'http://localhost:8081', // otro backend
   gestionContenidoUrl: 'http://localhost:8091' 
 };
+

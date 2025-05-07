@@ -29,6 +29,8 @@ import { FooterComponent } from './components/shared/footer/footer.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { AuthService } from './services/auth.service';
 import { GestionContenidoComponent } from './components/home/gestion-contenido/gestion-contenido.component';
+import { FaqComponent } from './components/faq/faq.component';
+import { FaqAdminComponent } from './components/faq-admin/faq-admin.component';
 
 @NgModule({
   /* ❶ SOLO componentes NO‑stand‑alone */
@@ -42,7 +44,7 @@ import { GestionContenidoComponent } from './components/home/gestion-contenido/g
     AuthLayoutComponent,
     PasswordChangeModalComponent,
     UserInfoPanelComponent,
-    LandingPageComponent
+    LandingPageComponent,
   ],
 
   /* ❷ Los stand‑alone van aquí */
@@ -61,6 +63,8 @@ import { GestionContenidoComponent } from './components/home/gestion-contenido/g
     NavbarComponent,
     FooterComponent,
     GestionContenidoComponent,
+    FaqAdminComponent,
+    FaqComponent
   ],
 
   providers: [
