@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
 })
 export class SoporteService {
   // Asegúrate que esta URL coincida con tu endpoint en CastleMock
-  private API_URL = `${environment.apiUrl}/castlemock/mock/rest/project/0zdcGK/application/SIKZ6F/soporte`;
+  private API_URL = `${environment.mocksUrl}/castlemock/mock/rest/project/0zdcGK/application/SIKZ6F/soporte`;
 
   constructor(private http: HttpClient) {}
 
