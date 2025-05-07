@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -11,7 +11,7 @@ export class NotificacionesService {
   constructor(private readonly http: HttpClient) {}
 
   getNotificacionesPorUsuario(idUsuario: number): Observable<any[]> {
-    return this.http.get<any[]>(`${NOTIF_URL}/notificaciones`);
+    return this.http.get<any[]>(`${NOTIF_URL}/notificaciones`, { headers });
   }
 
   marcarComoLeida(idNotificacion: number): Observable<void> {

@@ -361,53 +361,39 @@ export class ClientComponent implements OnInit {
     Swal.fire({
       title: 'Nuevo reto de alimentación',
       html: `
-        <select id="objetivo" class="swal2-input">
-          <option value="">Seleccione un objetivo</option>
-          <option value="Perder peso">Perder peso</option>
-          <option value="Ganar masa">Ganar masa</option>
-          <option value="Mantener peso">Mantener peso</option>
-        </select>
-        <input id="calorias" type="number" class="swal2-input" placeholder="Calorías diarias">
+        <input id="peso" type="number" class="swal2-input" placeholder="Peso (kg)">
+        <input id="altura" type="number" class="swal2-input" placeholder="Altura (cm)">
         <input id="fechaFin" type="date" class="swal2-input">
         <input id="descripcion" class="swal2-input" placeholder="Descripción del reto">
       `,
       confirmButtonText: 'Crear reto',
       focusConfirm: false,
       preConfirm: () => {
-        const objetivo = (
-          document.getElementById('objetivo') as HTMLSelectElement
-        ).value;
-        const calorias = +(
-          document.getElementById('calorias') as HTMLInputElement
-        ).value;
+        const peso = +(document.getElementById('peso') as HTMLInputElement).value;
+        const altura = +(document.getElementById('altura') as HTMLInputElement).value;
         const fechaInicio = new Date().toISOString().split('T')[0];
-        const fechaFin = (
-          document.getElementById('fechaFin') as HTMLInputElement
-        ).value;
-        const descripcion = (
-          document.getElementById('descripcion') as HTMLInputElement
-        ).value;
+        const fechaFin = (document.getElementById('fechaFin') as HTMLInputElement).value;
+        const descripcion = (document.getElementById('descripcion') as HTMLInputElement).value;
 
-        if (!objetivo || !calorias || !fechaFin || !descripcion) {
+        if (!peso || !altura || !fechaFin || !descripcion) {
           Swal.showValidationMessage('Todos los campos son obligatorios');
           return null;
         }
 
-        return { objetivo, calorias, fechaInicio, fechaFin, descripcion };
+        return { peso, altura, fechaInicio, fechaFin, descripcion };
       },
     }).then((result) => {
       if (!result.isConfirmed || !result.value) return;
 
-      const { objetivo, calorias, fechaInicio, fechaFin, descripcion } =
-        result.value;
+      const { peso, altura, fechaInicio, fechaFin, descripcion } = result.value;
 
       const alimentacion: AlimentacionDTO = {
         emailUsuario,
-        objetivo,
-        caloriasObjetivoDiarias: calorias,
+        peso,
+        altura,
         caloriasConsumidasHoy: 0,
         fechaInicio,
-        fechaFin,
+        fechaFin
       };
 
       this.retoComidaService.crearAlimentacion(alimentacion).subscribe({
@@ -422,28 +408,40 @@ export class ClientComponent implements OnInit {
 
           this.retoComidaService.asignarReto(alimentacionId, reto).subscribe({
             next: () => {
-              Swal.fire(
-                '¡Listo!',
-                'Se creó el reto de alimentación exitosamente.',
-                'success'
-              );
+              if (res.imc !== undefined && res.objetivo && res.caloriasObjetivoDiarias !== undefined) {
+                Swal.fire({
+                  icon: 'success',
+                  title: '¡Reto de alimentación creado!',
+                  html: `
+                    <p><strong>IMC calculado:</strong> ${res.imc.toFixed(2)}</p>
+                    <p><strong>Objetivo sugerido:</strong> ${res.objetivo}</p>
+                    <p><strong>Calorías diarias recomendadas:</strong> ${res.caloriasObjetivoDiarias}</p>
+                  `,
+                  confirmButtonText: 'Aceptar',
+                });
+              } else {
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Reto creado',
+                  text: 'Se creó el reto, pero no se pudo obtener información detallada.',
+                  confirmButtonText: 'Aceptar',
+                });
+              }
             },
-            error: () => {
-              Swal.fire('Error', 'No se pudo asignar el reto.', 'error');
-            },
+
           });
         },
         error: () => {
-          Swal.fire(
-            'Error',
-            'No se pudo crear el hábito de alimentación.',
-            'error'
-          );
+          Swal.fire('Error', 'No se pudo crear el hábito de alimentación.', 'error');
         },
       });
     });
-    this.loadUserData(); // Recargar datos después de crear el reto
+
+    this.loadUserData();
   }
+
+
+
 
   cambiarContrasena(): void {
     console.log('[Empresa] cambiarContrasena');
