@@ -1,0 +1,123 @@
+<app-navbar></app-navbar>
+<div class="faq">
+      <section class="hero-section">
+        <div class="hero-image">
+            <img src="assets/images/faqmain.jpg" class="img-fluid" alt="Amigos usando RetoChimba" />
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-4 animate-up text-white">
+                    <span class="text-light">Preguntas Frecuentes</span>
+                </h1>
+                <p class="lead mb-4 animate-up-delay-1 text-white">
+                    Aqui podes consultar las preguntas frecuentes que tienen los usuarios de <b>RetoChimba</b>
+                </p>
+                <div class="d-flex justify-content-center gap-3 mb-5 animate-up-delay-2">
+                    <button class="btn btn-info btn-lg pulse-effect" (click)="irASoporte()">
+                      <i class="bi bi-info-circle me-2"></i>
+                      Soporte
+                    </button>
+                  </div>
+            </div>
+        </div>
+    </section>
+      <div class="accordion faq-accordion" id="faqAccordion">
+        <div class="accordion-item faq-accordion-item" *ngFor="let faq of faqs; let i = index">
+          <h2 class="accordion-header" [attr.id]="'heading' + i">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    [attr.data-bs-target]="'#collapse' + i" aria-expanded="false"
+                    [attr.aria-controls]="'collapse' + i">
+              {{ faq.pregunta }}
+            </button>
+          </h2>
+          <div [attr.id]="'collapse' + i"
+               class="accordion-collapse collapse"
+               [attr.aria-labelledby]="'heading' + i"
+               data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+              {{ faq.respuesta }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Community Section -->
+<section class="community-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1">Comunidad RetoChimba</h2>
+            <p class="lead text-primary">Donde tus metas se vuelven colectivas</p>
+        </div>
+        <div class="row align-items-center g-4">
+            <div class="col-md-6">
+                <div class="community-features-new">
+                    <div class="community-card animate-slide-right">
+                        <div class="community-icon">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div class="community-content">
+                            <h3>💬 Grupos por intereses</h3>
+                            <p>Únete a personas que están en la misma que tú: desde comer mejor hasta organizar sus finanzas. Aquí nadie camina solo.</p>
+                        </div>
+                    </div>
+
+                    <div class="community-card animate-slide-right delay-1">
+                        <div class="community-icon">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </div>
+                        <div class="community-content">
+                            <h3>⚡ Chats en tiempo real</h3>
+                            <p>Habla, pregunta, celebra o desahógate. Siempre hay alguien del parche listo para escucharte y apoyarte.</p>
+                        </div>
+                    </div>
+
+                    <div class="community-card animate-slide-right delay-2">
+                        <div class="community-icon">
+                            <i class="bi bi-calendar-event-fill"></i>
+                        </div>
+                        <div class="community-content">
+                            <h3>🎉 Eventos y encuentros</h3>
+                            <p>Lánzate a experiencias reales o virtuales que te impulsan. Desde retos en grupo hasta espacios para aprender y compartir.</p>
+                        </div>
+                    </div>
+
+                    <div class="community-card animate-slide-right delay-3">
+                        <div class="community-icon">
+                            <i class="bi bi-trophy-fill"></i>
+                        </div>
+                        <div class="community-content">
+                            <h3>🏆 Comparte tus logros</h3>
+                            <p>Lo tuyo merece aplausos. Publica tus avances, gana reconocimiento y motiva a otros a seguir dándola toda.</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4 animate-slide-right delay-4">
+                        <p class="community-tagline">Somos comunidad, somos Chimba.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="community-image animate-float">
+                    <img src="assets/images/community-image.jpg" alt="Comunidad RetoChimba" class="img-fluid rounded-4 shadow-lg">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<section class="cta-section py-5 text-white text-center">
+    <div class="container">
+        <h2 class="display-4 mb-4">¿Estás listo para mejorar tu vida?</h2>
+        <p class="lead mb-5">Únete a miles que ya están transformando sus vidas con RetoChimba</p>
+        <button class="btn btn-light btn-lg pulse-effect" routerLink="/login">
+            <i class="bi bi-rocket-takeoff me-2"></i>
+            ¡Comienza tu aventura hoy!
+        </button>
+    </div>
+</section>
+
+</div>
+
+<app-footer></app-footer>
