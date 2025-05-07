@@ -415,7 +415,7 @@ export class ClientComponent implements OnInit {
                   html: `
                     <p><strong>IMC calculado:</strong> ${res.imc.toFixed(2)}</p>
                     <p><strong>Objetivo sugerido:</strong> ${res.objetivo}</p>
-                    <p><strong>Calorías diarias recomendadas:</strong> ${res.caloriasObjetivoDiarias}</p>
+                    <p><strong>Calorías diarias recomendadas :D:</strong> ${res.caloriasObjetivoDiarias}</p>
                   `,
                   confirmButtonText: 'Aceptar',
                 });
