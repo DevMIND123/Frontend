@@ -11,7 +11,7 @@ import { SintomaMenstrualDTO } from '../dto/sintoma-menstrual.dto';
   providedIn: 'root'
 })
 export class CicloMenstrualService {
-  private baseUrl = environment.retoUrl;
+  private baseUrl = environment.apiUrl;
   private jsonHeaders = new HttpHeaders({ 'Content-Type': 'application/json' });
 
   constructor(private http: HttpClient) {}
