@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { LoginDto } from '../dto/login-dto';
-import { Observable, tap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { JwtAuthenticationResponse } from '../dto/jwt-authentication-response';
 import { map } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -77,14 +77,7 @@ export class AuthService {
   }
 
   registerClient(usuario: any): Observable<any> {
-    console.log('registerClient', usuario);
-    return this.http.post<any>(`${environment.apiUrl}/clientes`, usuario).pipe(
-      tap((response) => {
-        if (response?.id) {
-          localStorage.setItem('sexoUsuario', usuario.sexo);
-        }
-      })
-    );
+    return this.http.post<any>(`${environment.apiUrl}/clientes`, usuario);
   }
 
   registerCompany(empresa: any): Observable<any> {
