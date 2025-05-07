@@ -64,6 +64,8 @@ export class ClientComponent implements OnInit {
   userData = {
     nombre: '',
     email: '',
+    sexo: '',
+    newEmail: '',
     departamento: '',
     especialidad: '',
   };
@@ -128,9 +130,13 @@ export class ClientComponent implements OnInit {
             this.userData = {
               nombre: dto.nombre ?? '',
               email: dto.email ?? '',
+              sexo: dto.sexo ?? '',
+              newEmail: dto.email ?? '',
               departamento: dto.departamento ?? '',
               especialidad: dto.especialidad ?? '',
             };
+
+            localStorage.setItem('userName', this.userData.nombre);
             safeLocalStorageSet('userName', this.userData.nombre);
             this.errorMessage = '';
           },
@@ -224,7 +230,7 @@ export class ClientComponent implements OnInit {
       },
       error: (err) => console.error('[Hábito Ejercicio] Error:', err)
     });
-  
+
     this.habitoModaService.obtenerHabitoModa().subscribe({
       next: (data) => {
         this.habitoModa = data;
@@ -232,7 +238,7 @@ export class ClientComponent implements OnInit {
       },
       error: (err) => console.error('[Hábito Moda] Error:', err)
     });
-  
+
     this.habitoBellezaService.obtenerHabitoBelleza().subscribe({
       next: (data) => {
         this.habitoBelleza = data;
@@ -240,7 +246,7 @@ export class ClientComponent implements OnInit {
       },
       error: (err) => console.error('[Hábito Belleza] Error:', err)
     });
-  
+
     this.habitoDineroService.obtenerHabitoDinero().subscribe({
       next: (data) => {
         this.habitoDinero = data;
@@ -249,7 +255,7 @@ export class ClientComponent implements OnInit {
       error: (err) => console.error('[Hábito Dinero] Error:', err)
     });
   }
-  
+
   /* =========================================================
    *  EDICIÓN DE PERFIL
    * ======================================================= */
@@ -266,6 +272,7 @@ export class ClientComponent implements OnInit {
   }
 
   updateProfile(): void {
+    console.log('Actualizando perfil:', this.userData);
     this.usuarioService.actualizarUsuario(this.userData).subscribe({
       next: () => {
         this.successMessage = 'Perfil actualizado exitosamente';
@@ -660,12 +667,9 @@ export class ClientComponent implements OnInit {
               <input id="menstruacion"  class="swal2-input" type="number" placeholder="Duración menstruación (días)">
             `,
             preConfirm: () => {
-              const duracion = +(
-                document.getElementById('duracion') as HTMLInputElement
-              ).value;
-              const menstruacion = +(
-                document.getElementById('menstruacion') as HTMLInputElement
-              ).value;
+              const duracion = +(document.getElementById('duracion') as HTMLInputElement).value;
+              const menstruacion = +(document.getElementById('menstruacion') as HTMLInputElement).value;
+
               const hoy = new Date().toISOString().split('T')[0];
 
               if (!duracion || !menstruacion) {
@@ -715,12 +719,9 @@ export class ClientComponent implements OnInit {
               <input id="obs" class="swal2-input" placeholder="Observaciones (opcional)">
             `,
             preConfirm: () => {
-              const tipo = (
-                document.getElementById('evento') as HTMLSelectElement
-              ).value;
-              const observaciones = (
-                document.getElementById('obs') as HTMLInputElement
-              ).value;
+              const tipo = (document.getElementById('evento') as HTMLSelectElement).value;
+              const observaciones = (document.getElementById('obs') as HTMLInputElement).value;
+
               const fecha = new Date().toISOString().split('T')[0];
 
               if (!tipo) {
@@ -761,12 +762,9 @@ export class ClientComponent implements OnInit {
               <input id="intensidad" class="swal2-input" placeholder="Intensidad (baja, media, alta)">
             `,
             preConfirm: () => {
-              const tipo = (
-                document.getElementById('sintoma') as HTMLSelectElement
-              ).value;
-              const intensidad = (
-                document.getElementById('intensidad') as HTMLInputElement
-              ).value;
+              const tipo = (document.getElementById('sintoma') as HTMLSelectElement).value;
+              const intensidad = (document.getElementById('intensidad') as HTMLInputElement).value;
+
               const fecha = new Date().toISOString().split('T')[0];
 
               if (!tipo || !intensidad) {
@@ -798,7 +796,6 @@ export class ClientComponent implements OnInit {
           ]).subscribe({
             next: ([eventos, sintomas, ciclos]) => {
               console.log('Ciclos:', ciclos);
-
               /* 1️⃣ Eventos de backend → FullCalendar */
               const fullEvents = [
                 /* eventos puntuales */
@@ -884,14 +881,10 @@ export class ClientComponent implements OnInit {
   /* Helpers colorear y titular */
   private prettyEvento(tipo: EventoTipo): string {
     switch (tipo) {
-      case 'INICIO_REGLA':
-        return '🩸 Inicio Regla';
-      case 'FIN_REGLA':
-        return '✅ Fin Regla';
-      case 'OVULACION':
-        return '🌸 Ovulación';
-      default:
-        return '⚠️ ' + tipo.replace(/_/g, ' ');
+      case 'INICIO_REGLA': return '🩸 Inicio Regla';
+      case 'FIN_REGLA': return '✅ Fin Regla';
+      case 'OVULACION': return '🌸 Ovulación';
+      default: return '⚠️ ' + tipo.replace(/_/g, ' ');
     }
   }
   private colorEvento(tipo: EventoTipo): string {

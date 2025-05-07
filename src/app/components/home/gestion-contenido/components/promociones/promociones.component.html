@@ -1,0 +1,56 @@
+<!-- promociones.component.html -->
+<div class="bg-pastel-yellow p-4 rounded mb-5">
+    <!-- Cabecera de la sección -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="fw-bold">Promociones Programadas</h2>
+      <button class="btn btn-danger" (click)="crearPromocion()">
+        <i class="bi bi-calendar-plus me-2"></i>Crear Promoción
+      </button>
+    </div>
+  
+    <!-- Mensaje cuando no hay promociones -->
+    <div *ngIf="promociones.length === 0" class="alert alert-info">
+      No hay promociones aún.
+    </div>
+  
+    <span class="text-muted d-flex align-items-center">
+        <i class="bi bi-calendar2-event me-2"></i> {{ promociones.length }} Promociones
+    </span><br>
+    
+    <!-- Listado de promociones -->
+    <div class="row g-4" *ngIf="promociones.length > 0">
+      <div class="col-md-6 col-lg-4" *ngFor="let p of promociones">
+        <div class="card h-100 shadow-sm">
+  
+          <!-- Header de la tarjeta con estado ya calculado -->
+          <div class="card-header d-flex justify-content-between">
+            <span>{{ p.nombre }}</span>
+            <span class="badge" [ngClass]="p.isActive ? 'bg-success' : 'bg-secondary'">
+              {{ p.isActive ? 'Activa' : 'Inactiva' }}
+            </span>
+          </div>
+  
+          <!-- Cuerpo de la tarjeta -->
+          <div class="card-body">
+            <p>{{ p.descripcion }}</p>
+            <p><strong>Descuento:</strong> {{ p.porcentajeDescuento }}%</p>
+            <p class="text-muted">
+              {{ p.fechaInicio | date:'dd/MM/yyyy' }} – {{ p.fechaFin | date:'dd/MM/yyyy' }}
+            </p>
+          </div>
+  
+          <!-- Pie de la tarjeta con acciones -->
+          <div class="card-footer text-end">
+            <button class="btn btn-outline-primary btn-sm me-2" (click)="verDetalle(p)">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-outline-success btn-sm" (click)="editarPromocion(p)">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  

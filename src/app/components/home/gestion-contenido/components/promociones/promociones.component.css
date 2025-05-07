@@ -1,0 +1,14 @@
+.bg-pastel-yellow {
+    background-color: #FDFFAE;
+  }
+  
+  .card:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s;
+  }
+  
+  .btn-danger:hover {
+    background-color: #b71c1c;
+    border-color: #880e4f;
+  }
+  

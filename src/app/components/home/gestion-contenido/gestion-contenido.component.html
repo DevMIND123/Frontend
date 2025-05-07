@@ -1,0 +1,58 @@
+<app-navbar></app-navbar>
+
+<!-- Page Title más abajo -->
+<div class="bg-primary text-white py-4 mb-4" style="margin-top: 90px;">
+  <div class="container">
+    <h1 class="h3 mb-0">Gestión de Contenido</h1>
+  </div>
+</div>
+
+<!-- Contenedor principal -->
+<div class="container mb-5">
+
+  <!-- Botón Crear Bono -->
+  <div class="d-flex justify-content-end mb-4">
+    <button type="button" class="btn btn-danger" (click)="crearBono()">
+      <i class="bi bi-plus-circle me-2"></i>Crear Bono
+    </button>
+  </div>
+
+  <!-- Carrusel de Bonos -->
+  <div id="gestionContenidoCarousel" class="carousel slide" data-bs-ride="carousel" [attr.data-bs-interval]="carouselInterval">
+    <div class="carousel-inner">
+      <div *ngFor="let bono of bonos; let i = index" class="carousel-item" [class.active]="i === 0">
+        <div class="d-flex justify-content-center">
+          <div class="card shadow-sm rounded bono-card" style="width: 22rem;" (click)="mostrarDetalle(bono)">
+            <div class="card-body text-center">
+              <h5 class="card-title fw-bold">{{ bono.nombre }}</h5>
+              <p class="mb-1"><strong>ID:</strong> {{ bono.id }}</p>
+              <p class="mb-1"><strong>Valor:</strong> {{ bono.valor | currency:'COP':'symbol':'1.0-0' }}</p>
+              <p class="mb-0"><strong>Expiración:</strong> {{ bono.fechaExpiracion | date:'dd/MM/yyyy' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles del Carrusel -->
+    <button type="button" class="carousel-control-prev" data-bs-target="#gestionContenidoCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Anterior</span>
+    </button>
+    <button type="button" class="carousel-control-next" data-bs-target="#gestionContenidoCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Siguiente</span>
+    </button>
+  
+  </div><br>
+
+
+  <div class="container mt-5">
+    <app-membresia></app-membresia>
+  </div><br>
+
+  <div class="mt-5">
+    <app-promociones></app-promociones>
+  </div><br>
+
+<app-footer></app-footer>

@@ -25,6 +25,8 @@ export class ClientComponent {
   password = '';
   confirmPassword = '';
   fullName = '';
+  sexo: string = '';
+
   acceptTerms = false;
   errorMessage = '';
   isLoading = false;
@@ -56,6 +58,7 @@ export class ClientComponent {
       nombre: this.fullName,
       email: this.email,
       password: this.password,
+      sexo: this.sexo,
       rol: 'CLIENTE'
     };
 
