@@ -66,9 +66,11 @@ export class NavbarComponent implements OnInit {
 
   private cargarNotificaciones(): void {
     console.log('Cargando notificaciones para el usuario:', this.idUsuario);
+    // token en el sessionStorage jwt-token
+    const token = sessionStorage.getItem('jwt-token');
 
     this.notificacionesService
-      .getNotificacionesPorUsuario(this.idUsuario)
+      .getNotificacionesPorUsuario(token)
       .subscribe({
         next: (notificaciones: any[]) => {
           // Suponiendo que cada notificación tiene un campo "leida"
