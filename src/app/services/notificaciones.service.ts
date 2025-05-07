@@ -10,7 +10,10 @@ const NOTIF_URL = environment.apiUrl;
 export class NotificacionesService {
   constructor(private readonly http: HttpClient) {}
 
-  getNotificacionesPorUsuario(idUsuario: number): Observable<any[]> {
+  getNotificacionesPorUsuario(token: any): Observable<any[]> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
     return this.http.get<any[]>(`${NOTIF_URL}/notificaciones`, { headers });
   }
 
