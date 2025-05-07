@@ -408,11 +408,27 @@ export class ClientComponent implements OnInit {
 
           this.retoComidaService.asignarReto(alimentacionId, reto).subscribe({
             next: () => {
-              Swal.fire('¡Listo!', 'Se creó el reto de alimentación exitosamente.', 'success');
+              if (res.imc !== undefined && res.objetivo && res.caloriasObjetivoDiarias !== undefined) {
+                Swal.fire({
+                  icon: 'success',
+                  title: '¡Reto de alimentación creado!',
+                  html: `
+                    <p><strong>IMC calculado:</strong> ${res.imc.toFixed(2)}</p>
+                    <p><strong>Objetivo sugerido:</strong> ${res.objetivo}</p>
+                    <p><strong>Calorías diarias recomendadas:</strong> ${res.caloriasObjetivoDiarias}</p>
+                  `,
+                  confirmButtonText: 'Aceptar',
+                });
+              } else {
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Reto creado',
+                  text: 'Se creó el reto, pero no se pudo obtener información detallada.',
+                  confirmButtonText: 'Aceptar',
+                });
+              }
             },
-            error: () => {
-              Swal.fire('Error', 'No se pudo asignar el reto.', 'error');
-            },
+
           });
         },
         error: () => {
@@ -423,6 +439,7 @@ export class ClientComponent implements OnInit {
 
     this.loadUserData();
   }
+
 
 
 
