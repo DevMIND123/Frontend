@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 })
 export class MembresiaService {
 
-  private baseUrl = environment.apiUrl;
+  private baseUrl = `${environment.apiUrl}/precios`;
 
   constructor(private http: HttpClient) {}
 

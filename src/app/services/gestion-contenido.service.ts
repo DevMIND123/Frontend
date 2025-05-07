@@ -14,7 +14,7 @@ export interface Bono {
 @Injectable({ providedIn: 'root' })
 export class GestionContenidoService {
   // URL específica para bonos, evitando colisiones
-    private bonosUrl = `${environment.apiUrl}/api/bonos`;
+    private bonosUrl = `${environment.apiUrl}/bonos`;
 
     constructor(private http: HttpClient) {}
 

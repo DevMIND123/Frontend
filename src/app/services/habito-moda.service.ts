@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class HabitoModaService {
-  private API_URL = `${environment.mocksUrl}/castlemock/mock/rest/project/NeOVAA/application/Ik851k/habito-moda`;
+  private API_URL = `${environment.mocksUrl}/castlemock/mock/rest/project/msKIAN/application/pAkR5J/moda`;
 
   constructor(private http: HttpClient) {}
 

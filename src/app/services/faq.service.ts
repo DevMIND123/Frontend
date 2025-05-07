@@ -15,7 +15,7 @@ interface FaqDTO {
   providedIn: 'root'
 })
 export class FaqService {
-  private apiUrl = environment.apiUrl;
+  private apiUrl = `${environment.apiUrl}/faqs`;
 
   constructor(private http: HttpClient) { }
 
