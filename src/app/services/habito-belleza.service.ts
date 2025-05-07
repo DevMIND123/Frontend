@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class HabitoBellezaService {
-  private API_URL = 'https://tu-castlemock.com/mock/rest/project/.../habito-belleza';
+  private API_URL = 'http://10.43.101.86:8011/castlemock/mock/rest/project/msKIAN/application/pAkR5J/belleza';
 
   constructor(private http: HttpClient) {}
 
