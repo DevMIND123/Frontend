@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HabitoEjercicioService {
-  private API_URL = 'https://tu-castlemock.com/mock/rest/project/.../habito-ejercicio';
+  private API_URL = `${environment.apiUrl}/castlemock/mock/rest/project/NeOVAA/application/Ik851k/habito-ejercicio`;
 
   constructor(private http: HttpClient) {}
 
