@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 interface FaqDTO {
   id?: number;
@@ -10,12 +11,11 @@ interface FaqDTO {
   visible: boolean;
   createdAt?: string;
 }
-// !! Update URL for deployment !!
 @Injectable({
   providedIn: 'root'
 })
 export class FaqService {
-  private apiUrl = 'http://localhost:8091/api/faqs';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
@@ -44,4 +44,3 @@ export class FaqService {
     });
   }
 }
-f

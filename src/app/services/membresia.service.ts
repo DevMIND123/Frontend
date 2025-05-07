@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PrecioMembresia } from '../models/membresia';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
-// !! Update URL for deployment !!
 export class MembresiaService {
 
-  private baseUrl = 'http://localhost:8091/api/precios';
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
