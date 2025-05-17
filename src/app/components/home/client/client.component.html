@@ -212,6 +212,22 @@
         </div>
       </div>
 
+     <!-- Hábito: Embarazo (solo mujeres) -->
+      <div class="col-md-4" *ngIf="userData.sexo === 'FEMENINO'">
+        <div class="habit-card" (click)="abrirSwalRegistroEmbarazo()">
+          <div class="habit-icon">
+            <i class="bi bi-heart-pulse text-danger"></i>
+          </div>
+          <h5>Embarazo</h5>
+          <div class="habit-streak">
+            <i class="bi bi-calendar-plus me-2"></i>
+            <span>Registrar embarazo</span>
+          </div>
+        </div>
+      </div>
+
+
+
       <!-- Hábito: Ejercicio o Deporte -->
       <div class="card shadow-sm mb-4" *ngIf="habitoEjercicio">
         <div class="card-body">

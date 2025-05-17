@@ -28,6 +28,7 @@ import { HabitoModaService } from '../../../services/habito-moda.service';
 import { HabitoBellezaService } from '../../../services/habito-belleza.service';
 import { HabitoDineroService } from '../../../services/habito-dinero.service';
 import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
+import { EmbarazoService, EmbarazoRequestDTO } from '../../../services/embarazo.service';
 
 @Component({
   selector: 'app-client',
@@ -91,7 +92,8 @@ export class ClientComponent implements OnInit {
     private habitoEjercicioService: HabitoEjercicioService,
     private habitoModaService: HabitoModaService,
     private habitoBellezaService: HabitoBellezaService,
-    private habitoDineroService: HabitoDineroService
+    private habitoDineroService: HabitoDineroService,
+    private embarazoService: EmbarazoService
   ) { }
 
   /* =========================================================
@@ -894,4 +896,48 @@ export class ClientComponent implements OnInit {
     const base = tipo.replace(/_/g, ' ').toLowerCase();
     return `🤒 ${base}${int ? ' (' + int + ')' : ''}`;
   }
+
+  abrirSwalRegistroEmbarazo(): void {
+    const email = this.userData.email;
+    if (!email) {
+      Swal.fire('Error', 'No se encontró el correo del usuario.', 'error');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Registrar Embarazo',
+      html: `
+        <input type="date" id="fechaInicio" class="swal2-input" placeholder="Fecha de inicio">
+        <textarea id="sintomas" class="swal2-textarea" placeholder="Síntomas iniciales"></textarea>
+      `,
+      confirmButtonText: 'Registrar',
+      focusConfirm: false,
+      preConfirm: () => {
+        const fechaInicio = (document.getElementById('fechaInicio') as HTMLInputElement).value;
+        const sintomas = (document.getElementById('sintomas') as HTMLTextAreaElement).value;
+
+        if (!fechaInicio) {
+          Swal.showValidationMessage('La fecha de inicio es obligatoria');
+          return;
+        }
+
+        const dto: EmbarazoRequestDTO = {
+          emailUsuario: email,
+          fechaInicio: fechaInicio,
+          sintomas: sintomas || ''
+        };
+
+        return this.embarazoService.registrarEmbarazo(dto).toPromise();
+      }
+    }).then((res) => {
+      if (res.isConfirmed) {
+        Swal.fire('¡Registrado!', 'El embarazo fue registrado correctamente.', 'success');
+      }
+    }).catch(err => {
+      console.error('Error al registrar embarazo:', err);
+      Swal.fire('Error', 'Ocurrió un error al registrar el embarazo.', 'error');
+    });
+  }
+
 }
+
