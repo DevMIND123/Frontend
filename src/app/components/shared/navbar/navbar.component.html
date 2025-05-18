@@ -60,14 +60,12 @@
         </div>
         
         <!-- Selector de rol para superadmin -->
-         @if (this.esSuperAdmin) {
-          <div class="ms-3">
-            <label for="rolSelect" class="form-label me-2">Ver como:</label>
-            <select id="rolSelect" class="form-select d-inline w-auto" (change)="onSeleccionarRol($event)">
-              <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
-            </select>
-          </div>
-         }
+        <select *ngIf="esSuperAdmin"
+          [(ngModel)]="rolSeleccionado" (change)="onSeleccionarRol($event)">
+          (change)="onSeleccionarRol($event)">
+          <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
+        </select>
+
         
         <!-- Menú de perfil -->
         <div class="dropdown">

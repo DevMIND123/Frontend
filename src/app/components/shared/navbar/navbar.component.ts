@@ -5,20 +5,21 @@ import { AuthService } from '../../../services/auth.service';
 import { NotificacionesService } from '../../../services/notificaciones.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { switchMap } from 'rxjs/operators'; //daba error al importar el operador switchMap
-
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
 })
 export class NavbarComponent implements OnInit {
   isScrolled = false;
   isAuthenticated = false;
   userEmail: string | null = null;
   //variable para el rol 
+  rolSeleccionado: string = ''; //propiedad rol seleccionado
   rolesDisponibles = ['SOPORTE', 'MARKETING', 'CLIENTE', 'EMPRESA']; 
   esSuperAdmin: boolean = false;
 
@@ -47,7 +48,38 @@ export class NavbarComponent implements OnInit {
       const rol = this.authService.getRole();
       this.esSuperAdmin = rol?.toUpperCase() === 'ADMINISTRADOR' || rol?.toUpperCase() === 'SUPER_ADMIN';
     }
+    this.setRolDesdeRuta(this.router.url);
+
+    this.router.events.subscribe(() => {
+    this.setRolDesdeRuta(this.router.url);
+    });
+    const ruta = this.router.url;
+
+    if (ruta.includes('soporte')) {
+      this.rolSeleccionado = 'SOPORTE';
+    } else if (ruta.includes('marketing')) {
+      this.rolSeleccionado = 'MARKETING';
+    } else if (ruta.includes('client')) {
+      this.rolSeleccionado = 'CLIENTE';
+    } else if (ruta.includes('empresa')) {
+      this.rolSeleccionado = 'EMPRESA';
+    } else if (ruta.includes('superadmin')) {
+      this.rolSeleccionado = 'ADMINISTRADOR';
+    }
   }
+  
+  private setRolDesdeRuta(url: string) {
+  if (url.includes('/home/soporte')) {
+    this.rolSeleccionado = 'SOPORTE';
+  } else if (url.includes('/home/marketing')) {
+    this.rolSeleccionado = 'MARKETING';
+  } else if (url.includes('/home/cliente')) {
+    this.rolSeleccionado = 'CLIENTE';
+  } else if (url.includes('/home/empresa')) {
+    this.rolSeleccionado = 'EMPRESA';
+  }
+}
+
   private checkAuthStatus(): void {
     this.isAuthenticated = this.authService.isAuthenticated();
     this.userEmail = this.authService.getEmail();
@@ -117,8 +149,8 @@ export class NavbarComponent implements OnInit {
 
   onSeleccionarRol(event: Event) {
   const selectElement = event.target as HTMLSelectElement;
-  const rol = selectElement.value;
-  const ruta = this.getRutaPorRol(rol);
+  this.rolSeleccionado = selectElement.value
+  const ruta = this.getRutaPorRol(this.rolSeleccionado);
   this.router.navigate([`/${ruta}`]);
   }
 
