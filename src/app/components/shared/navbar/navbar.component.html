@@ -20,6 +20,9 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/about" routerLinkActive="active">Acerca de</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" *ngIf="isAuthenticated && esSuperAdmin" routerLink="/home/faq-admin" routerLinkActive="active">Preguntas Frecuentes</a>
+        </li>
       </ul>
 
       <!-- Usuario autenticado -->
