@@ -45,10 +45,9 @@ export class NavbarComponent implements OnInit {
 
       //verificar el rol del usuario
       const rol = this.authService.getRole();
-      this.esSuperAdmin = rol?.toUpperCase() === 'ADMINISTRADOR'; // O SUPER_ADMIN
+      this.esSuperAdmin = rol?.toUpperCase() === 'ADMINISTRADOR' || rol?.toUpperCase() === 'SUPER_ADMIN';
     }
   }
-
   private checkAuthStatus(): void {
     this.isAuthenticated = this.authService.isAuthenticated();
     this.userEmail = this.authService.getEmail();
