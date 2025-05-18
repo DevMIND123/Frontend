@@ -186,15 +186,78 @@
                 </div>
             </div>
 
-            <!-- Tabla de Tickets -->
+            <!-- =================== Historial Detallado por Usuario =================== -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Historial de Soporte por Usuario</h4>
+
+                    <!-- Filtro de usuario -->
+                    <div class="mb-3">
+                        <label class="form-label">Selecciona un usuario:</label>
+                        <select class="form-select" [(ngModel)]="usuarioSeleccionado"
+                            (change)="filtrarHistorialUsuario()">
+                            <option [ngValue]="null">-- Selecciona --</option>
+                            <option *ngFor="let id of usuariosDisponibles" [ngValue]="id">{{ id }}</option>
+                        </select>
+                    </div>
+
+                    <div *ngIf="usuarioSeleccionado">
+                        <!-- Filtros por categoría y estado -->
+                        <div class="historial-filtros mb-3 d-flex gap-3 flex-wrap">
+                            <select class="form-select" [(ngModel)]="filtroHistorialCategoria"
+                                (change)="filtrarHistorialUsuario()">
+                                <option value="">Todas las categorías</option>
+                                <option *ngFor="let cat of categoriasDisponibles">{{ cat }}</option>
+                            </select>
+
+                            <select class="form-select" [(ngModel)]="filtroHistorialEstado"
+                                (change)="filtrarHistorialUsuario()">
+                                <option value="">Todos los estados</option>
+                                <option value="Abierto">Abierto</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Cerrado">Cerrado</option>
+                            </select>
+                        </div>
+
+                        <!-- Resultados -->
+                        <ul class="list-group" *ngIf="historialFiltrado.length > 0">
+                            <li class="list-group-item" *ngFor="let t of historialFiltrado">
+                                <strong>{{ t.asunto }}</strong> <br />
+                                <span class="text-muted">Estado: {{ t.estado }} | Categoría: {{ t.categoria || 'Sin
+                                    categoría' }} | Fecha: {{ t.fechaCreacion }}</span>
+                                <ul class="mt-2" *ngIf="t.respuestas?.length > 0">
+                                    <li *ngFor="let r of t.respuestas">📅 {{ r.fecha }}: {{ r.mensaje }}</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <div *ngIf="historialFiltrado.length === 0" class="sin-historial">
+                            Este usuario no tiene historial de soporte registrado con esos filtros.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- =================== Tabla de Tickets General =================== -->
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="card-title">Tickets</h4>
-                        <button class="btn btn-primary" (click)="createTicket()">
-                            <i class="bi bi-plus-lg me-2"></i>Nuevo Ticket
-                        </button>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" style="max-width: 200px" [(ngModel)]="filtroEstado"
+                                (change)="aplicarFiltroPorEstado(filtroEstado)">
+                                <option value="Todos">Todos</option>
+                                <option value="Abierto">Abierto</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Cerrado">Cerrado</option>
+                            </select>
+                            <button class="btn btn-primary" (click)="createTicket()">
+                                <i class="bi bi-plus-lg me-2"></i>Nuevo Ticket
+                            </button>
+                        </div>
                     </div>
+
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -204,21 +267,39 @@
                                     <th>Asunto</th>
                                     <th>Estado</th>
                                     <th>Categoría</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let ticket of tickets">
+                                <tr *ngFor="let ticket of ticketsFiltrados">
                                     <td>{{ ticket.ticketId }}</td>
                                     <td>{{ ticket.usuarioId }}</td>
                                     <td>{{ ticket.asunto }}</td>
                                     <td>{{ ticket.estado }}</td>
-                                    <td>{{ ticket.categoria }}</td>
+                                    <td>{{ ticket.categoria || 'Sin categoría' }}</td>
+                                    <td>{{ ticket.fechaCreacion }}</td>
+                                    <td class="ticket-actions">
+                                        <button class="btn btn-sm btn-outline-info"
+                                            (click)="responderTicket(ticket.ticketId, 'Gracias por tu reporte')">
+                                            <i class="bi bi-reply-fill"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success"
+                                            (click)="cambiarEstado(ticket.ticketId, 'En proceso')">
+                                            <i class="bi bi-arrow-repeat"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-dark"
+                                            (click)="cambiarEstado(ticket.ticketId, 'Cerrado', 'Resuelto y cerrado')">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+
 
             <!-- Preguntas Frecuentes -->
             <div class="card shadow-sm mb-4 faq-card" *ngIf="faq.length > 0">

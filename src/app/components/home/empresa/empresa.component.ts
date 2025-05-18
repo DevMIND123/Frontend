@@ -267,6 +267,12 @@ export class EmpresaHomeComponent implements OnInit {
     });
   }
 
+  // Moculo "Promocionar Empresa"
+
+  promocionarEmpresa(): void {
+  this.mostrarPlanesPromocion = !this.mostrarPlanesPromocion;
+}
+
   /* ═══════════════════════════════════════════════════════
    *  CAMBIO DE CONTRASEÑA
    * ═════════════════════════════════════════════════════ */
@@ -392,4 +398,48 @@ export class EmpresaHomeComponent implements OnInit {
   viewClientDetails(client: ClientItem): void {
     alert(`Detalles de ${client.name}`);
   }
+
+//Modulo "Quiero Promocionarme"
+
+mostrarPlanesPromocion: boolean = false;
+
+planesPromocion = [
+  {
+    nombre: 'Básico',
+    descripcion: 'Ideal para empresas que inician en la plataforma.',
+    precio: 0,
+    color: 'secondary',
+    beneficios: [
+      'Aparición en resultados de búsqueda',
+      'Logo en perfil empresarial',
+      'Acceso limitado a estadísticas'
+    ]
+  },
+  {
+    nombre: 'Profesional',
+    descripcion: 'Recomendado para empresas con crecimiento activo.',
+    precio: 59000,
+    color: 'primary',
+    beneficios: [
+      'Mayor visibilidad en la plataforma',
+      'Destacado en listados por 30 días',
+      'Estadísticas avanzadas',
+      'Soporte prioritario'
+    ]
+  },
+  {
+    nombre: 'Premium',
+    descripcion: 'Para empresas líderes que quieren destacar al máximo.',
+    precio: 129000,
+    color: 'warning',
+    beneficios: [
+      'Posición destacada en toda la app',
+      'Promociones destacadas en correo',
+      'Banner personalizado',
+      'Reportes personalizados',
+      'Atención exclusiva'
+    ]
+  }
+];
+
 }
