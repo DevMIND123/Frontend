@@ -36,6 +36,8 @@ export class NavbarComponent implements OnInit {
     private readonly usuarioService: UsuarioService
   ) {}
 
+  //detecta si el usuario tiene rol de "super_admin" al cargar el componente.
+  //Al cambiar el valor de un <select>, redirige al usuario a otra URL.
   ngOnInit(): void {
     this.checkAuthStatus();
     if (this.isAuthenticated) {
@@ -43,7 +45,7 @@ export class NavbarComponent implements OnInit {
 
       //verificar el rol del usuario
       const rol = this.authService.getRole();
-      this.esSuperAdmin = rol?.toUpperCase() === 'ADMINISTRADOR'; // O SUPER_ADMIN, según lo que venga
+      this.esSuperAdmin = rol?.toUpperCase() === 'ADMINISTRADOR'; // O SUPER_ADMIN
     }
   }
 
