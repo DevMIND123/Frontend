@@ -20,7 +20,7 @@ export class NavbarComponent implements OnInit {
   userEmail: string | null = null;
   //variable para el rol 
   rolSeleccionado: string = ''; //propiedad rol seleccionado
-  rolesDisponibles = ['SOPORTE', 'MARKETING', 'CLIENTE', 'EMPRESA']; 
+  rolesDisponibles = ['SOPORTE', 'MARKETING', 'CLIENTE', 'EMPRESA', 'ADMINISTRADOR']; 
   esSuperAdmin: boolean = false;
 
 
@@ -67,7 +67,7 @@ export class NavbarComponent implements OnInit {
       this.rolSeleccionado = 'ADMINISTRADOR';
     }
   }
-  
+
   private setRolDesdeRuta(url: string) {
   if (url.includes('/home/soporte')) {
     this.rolSeleccionado = 'SOPORTE';
