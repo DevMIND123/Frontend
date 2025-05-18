@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 import { NotificacionesService } from '../../../services/notificaciones.service';
 import { UsuarioService } from '../../../services/usuario.service';
-import { switchMap } from 'rxjs';
+import { switchMap } from 'rxjs/operators'; //daba error al importar el operador switchMap
+
 
 @Component({
   selector: 'app-navbar',
@@ -17,6 +18,10 @@ export class NavbarComponent implements OnInit {
   isScrolled = false;
   isAuthenticated = false;
   userEmail: string | null = null;
+  //variable para el rol 
+  rolesDisponibles = ['SOPORTE', 'MARKETING', 'CLIENTE', 'EMPRESA']; 
+  esSuperAdmin: boolean = false;
+
 
   unreadNotifications: any[] = [];
   readNotifications: any[] = [];
@@ -31,10 +36,16 @@ export class NavbarComponent implements OnInit {
     private readonly usuarioService: UsuarioService
   ) {}
 
+  //detecta si el usuario tiene rol de "super_admin" al cargar el componente.
+  //Al cambiar el valor de un <select>, redirige al usuario a otra URL.
   ngOnInit(): void {
     this.checkAuthStatus();
     if (this.isAuthenticated) {
       this.obtenerIdUsuario();
+
+      //verificar el rol del usuario
+      const rol = this.authService.getRole();
+      this.esSuperAdmin = rol?.toUpperCase() === 'ADMINISTRADOR'; // O SUPER_ADMIN
     }
   }
 
@@ -55,7 +66,7 @@ export class NavbarComponent implements OnInit {
           console.log('ID del usuario:', this.idUsuario);
           this.cargarNotificaciones();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Error al obtener el ID del usuario:', err);
         },
       });
@@ -104,6 +115,14 @@ export class NavbarComponent implements OnInit {
     this.isAuthenticated = false;
     this.router.navigate(['/']);
   }
+
+  onSeleccionarRol(event: Event) {
+  const selectElement = event.target as HTMLSelectElement;
+  const rol = selectElement.value;
+  const ruta = this.getRutaPorRol(rol);
+  this.router.navigate([`/${ruta}`]);
+  }
+
 
   marcarComoLeida(notificacion: any): void {
     console.log('Marcando como leída:', notificacion);
