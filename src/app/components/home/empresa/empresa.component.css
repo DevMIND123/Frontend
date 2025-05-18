@@ -78,6 +78,25 @@
   color: #2d3748;
 }
 
+/* Icono oscuro para dashboardResumen */
+.card-icon.bg-dark {
+  background-color: #343a40;
+}
+
+/* Progreso de satisfacción */
+.progress {
+  height: 1rem;
+  background-color: #e2e8f0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+}
+
 /* Stat Cards */
 .stat-card {
   background: white;
@@ -287,4 +306,30 @@
   .table-responsive {
     margin-top: 1rem;
   }
+}
+
+.btn-colombian {
+  background: linear-gradient(
+    90deg,
+    #FFD700 33%,
+    #0033A0 33% 66%,
+    #CE1126 66%
+  );
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-colombian i {
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+
+.btn-colombian:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }

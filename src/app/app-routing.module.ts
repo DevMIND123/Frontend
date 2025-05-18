@@ -12,6 +12,10 @@ import { SuperadminComponent } from './components/home/superadmin/superadmin.com
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PasswordChangeModalComponent } from './components/shared/password-change-modal/password-change-modal.component';
 import { EmpresaHomeComponent } from './components/home/empresa/empresa.component';
+import { GestionContenidoComponent } from './components/home/gestion-contenido/gestion-contenido.component';
+import { FaqComponent } from './components/faq/faq.component';
+import { FaqAdminComponent } from './components/faq-admin/faq-admin.component';
+
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'landing-page' },
@@ -19,15 +23,18 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterViewComponent },
   { path: 'register/company', loadComponent: () => import('./components/register/company/company.component').then(m => m.CompanyComponent) },
-  { path: 'register/client', loadComponent: () => import('./components/register/client/client.component').then(m => m.ClientComponent) }, 
+  { path: 'register/client', loadComponent: () => import('./components/register/client/client.component').then(m => m.ClientComponent) },
   { path: 'home/superadmin', loadComponent: () => import('./components/home/superadmin/superadmin.component').then(m => m.SuperadminComponent) },
   { path: 'home/marketing', loadComponent: () => import('./components/home/marketing/marketing.component').then(m => m.MarketingComponent) },
   { path: 'home/soporte', component: SoporteHomeComponent }, // Cambiado aquí
   { path: 'home/empresa', component: EmpresaHomeComponent },
   { path: 'home/client', component: ClientComponent },
+  {path: 'gestion-contenido', component: GestionContenidoComponent},
   { path: 'about', component: AboutComponent },
   { path: 'password-change', component: PasswordChangeModalComponent },
   { path: 'not-found', component: NotFoundComponent },
+  { path: 'home/faq', component: FaqComponent },
+  { path: 'home/faq-admin', component: FaqAdminComponent },
   { path: '**', redirectTo: 'not-found' } // 👈 fallback por si se va a una ruta inexistente
 ];
 

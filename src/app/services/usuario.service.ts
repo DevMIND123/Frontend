@@ -33,21 +33,41 @@ export class UsuarioService {
     return this.http.get<number>(`${BASE_URL}/${ruta}/email/${email}`);
   }
 
-  actualizarUsuarioPorId(id: any, dto: any, rol: any): Observable<any> {
+  actualizarUsuarioPorId(
+    id: any,
+    dto: any,
+    rol: any
+  ): Observable<string> {
     const ruta = this.getRutaPorRol(rol);
-    return this.http.patch(`${BASE_URL}/${ruta}/actualizar/${id}`, dto, {
-      headers: this.jsonHeaders,
-    });
+
+    // 👇 1) sin el <string>
+    // 👇 2) sin "observe" (el valor por defecto es 'body')
+    // 👇 3) solo responseType: 'text'
+    return this.http.patch(
+      `${BASE_URL}/${ruta}/actualizar/${id}`,
+      dto,
+      {
+        headers: this.jsonHeaders,
+        responseType: 'text',       // <-- literal exacto
+      }
+    ) as Observable<string>;        // <-- casteo opcional si lo prefieres
   }
+
+
+
+
+
+
 
   actualizarUsuario(userData: {
     nombre: string;
     email: string;
+    newEmail?: string;
     departamento: string;
     especialidad: string;
   }): Observable<any> {
     const rol = sessionStorage.getItem('user-role');
-    const email = userData.email;
+    const email = userData.newEmail;
 
     if (!rol) return throwError(() => new Error('Rol no encontrado en sesión'));
     if (!email) return throwError(() => new Error('Email no proporcionado'));

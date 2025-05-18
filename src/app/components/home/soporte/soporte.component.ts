@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import Swal from 'sweetalert2';
 
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
@@ -11,6 +10,8 @@ import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { UsuarioUpdateDTO } from '../../../models/usuario';
 import { SoporteService } from '../../../services/soporte.service'; // 👈 nuevo servicio CastleMock
+import Swal from 'sweetalert2';
+import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
 
 interface Ticket {
   id: string;
@@ -40,7 +41,7 @@ export class SoporteHomeComponent implements OnInit {
   showPasswordForm = false;
   id = 0;
   successMessage = '';
-  errorMessage = '';
+  errorMessage: any;
 
   userData = {
     nombre: '',
@@ -81,7 +82,7 @@ export class SoporteHomeComponent implements OnInit {
     private usuarioService: UsuarioService,
     private soporteService: SoporteService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadUserData();
@@ -115,7 +116,7 @@ export class SoporteHomeComponent implements OnInit {
             };
 
             console.log('[Empresa] loadCompanyData (by ID):', this.userData);
-            this.errorMessage = '';
+            this.errorMessage = null;
           },
           error: (err) => {
             this.errorMessage = 'Error al cargar los datos de la empresa.';
@@ -137,7 +138,8 @@ export class SoporteHomeComponent implements OnInit {
         const soporte = data.moduloSoporte;
         this.documentosSubidos = soporte.validacionEmpresa.documentosSubidos;
         this.estadoValidacion = soporte.validacionEmpresa.estadoValidacion;
-        this.notificacionEnviada = soporte.validacionEmpresa.notificacionEnviada;
+        this.notificacionEnviada =
+          soporte.validacionEmpresa.notificacionEnviada;
         this.historialSoporteUsuario = soporte.historialSoporteUsuario;
         this.reportesEficiencia = soporte.reportesEficiencia;
         this.faq = soporte.faq;
@@ -147,7 +149,7 @@ export class SoporteHomeComponent implements OnInit {
       error: (err) => {
         console.error('Error cargando datos de CastleMock:', err);
         this.errorMessage = 'No se pudo obtener la información de soporte';
-      }
+      },
     });
   }
 
@@ -171,7 +173,7 @@ export class SoporteHomeComponent implements OnInit {
       next: () => {
         this.successMessage = 'Datos actualizados correctamente';
         this.isEditing = false;
-        this.errorMessage = '';
+        this.errorMessage = null;
       },
       error: (err) => {
         this.errorMessage = 'Error al actualizar los datos.';
@@ -192,8 +194,6 @@ export class SoporteHomeComponent implements OnInit {
   }
 
   changePassword(): void {
-
-
     const email = this.authService.getEmail();
     if (!email) return;
 
@@ -215,7 +215,12 @@ export class SoporteHomeComponent implements OnInit {
   }
 
   deleteAccount(): void {
-    if (!confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) return;
+    if (
+      !confirm(
+        '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.'
+      )
+    )
+      return;
 
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
@@ -245,12 +250,12 @@ export class SoporteHomeComponent implements OnInit {
 
   toggleTheme(): void {
     this.preferences.darkMode = !this.preferences.darkMode;
-    localStorage.setItem('darkMode', String(this.preferences.darkMode));
+    safeLocalStorageSet('darkMode', String(this.preferences.darkMode));
     this.applyTheme();
   }
 
   private loadThemePreference(): void {
-    this.preferences.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.preferences.darkMode = safeLocalStorageGet('darkMode') === 'true';
     this.applyTheme();
   }
 
@@ -259,43 +264,57 @@ export class SoporteHomeComponent implements OnInit {
   }
 
   private calculateStats(): void {
-    this.activeTickets = this.tickets.filter((t) => t.estado === 'Abierto').length;
-    this.inProgressTickets = this.tickets.filter((t) => t.estado === 'En Progreso').length;
-    this.resolvedTickets = this.tickets.filter((t) => t.estado === 'Cerrado').length;
+    this.activeTickets = this.tickets.filter(
+      (t) => t.estado === 'Abierto'
+    ).length;
+    this.inProgressTickets = this.tickets.filter(
+      (t) => t.estado === 'En Progreso'
+    ).length;
+    this.resolvedTickets = this.tickets.filter(
+      (t) => t.estado === 'Cerrado'
+    ).length;
   }
 
   getStatusClass(status: string): string {
-    return {
-      'Abierto': 'bg-danger',
-      'En Progreso': 'bg-warning',
-      'Cerrado': 'bg-success',
-      'Resuelto': 'bg-success'
-    }[status] || 'bg-secondary';
+    return (
+      {
+        Abierto: 'bg-danger',
+        'En Progreso': 'bg-warning',
+        Cerrado: 'bg-success',
+        Resuelto: 'bg-success',
+      }[status] || 'bg-secondary'
+    );
   }
 
   getPriorityClass(priority: string): string {
-    return {
-      'Baja': 'bg-info',
-      'Media': 'bg-warning',
-      'Alta': 'bg-danger'
-    }[priority] || 'bg-secondary';
+    return (
+      {
+        Baja: 'bg-info',
+        Media: 'bg-warning',
+        Alta: 'bg-danger',
+      }[priority] || 'bg-secondary'
+    );
   }
 
   getStatusLabel(status: string): string {
-    return {
-      'Abierto': 'Abierto',
-      'En Progreso': 'En progreso',
-      'Cerrado': 'Cerrado',
-      'Resuelto': 'Resuelto'
-    }[status] || status;
+    return (
+      {
+        Abierto: 'Abierto',
+        'En Progreso': 'En progreso',
+        Cerrado: 'Cerrado',
+        Resuelto: 'Resuelto',
+      }[status] || status
+    );
   }
 
   getPriorityLabel(priority: string): string {
-    return {
-      'Baja': 'Baja',
-      'Media': 'Media',
-      'Alta': 'Alta'
-    }[priority] || priority;
+    return (
+      {
+        Baja: 'Baja',
+        Media: 'Media',
+        Alta: 'Alta',
+      }[priority] || priority
+    );
   }
 
   createTicket(): void {
@@ -350,5 +369,4 @@ export class SoporteHomeComponent implements OnInit {
       },
     });
   }
-
 }

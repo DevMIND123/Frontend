@@ -21,70 +21,36 @@
           </div>
 
           <!-- Success/Error Messages -->
-          <div
-            *ngIf="successMessage"
-            class="alert alert-success alert-dismissible fade show"
-            role="alert"
-          >
+          <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
             {{ successMessage }}
-            <button
-              type="button"
-              class="btn-close"
-              (click)="successMessage = ''"
-            ></button>
+            <button type="button" class="btn-close" (click)="successMessage = ''"></button>
           </div>
 
-          <div
-            *ngIf="errorMessage"
-            class="alert alert-danger alert-dismissible fade show"
-            role="alert"
-          >
+          <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ errorMessage }}
-            <button
-              type="button"
-              class="btn-close"
-              (click)="errorMessage = ''"
-            ></button>
+            <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
           </div>
 
           <!-- Profile Form -->
           <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
             <div class="mb-3">
               <label class="form-label">Nombre completo</label>
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="userData.nombre"
-                name="nombre"
-                [readonly]="!isEditing"
-              />
+              <input type="text" class="form-control" [(ngModel)]="userData.nombre" name="nombre"
+                [readonly]="!isEditing" />
             </div>
 
             <div class="mb-3">
               <label class="form-label">Correo electrónico</label>
-              <input
-                type="email"
-                class="form-control"
-                [(ngModel)]="userData.email"
-                name="email"
-                [readonly]="!isEditing"
-              />
+              <input type="email" class="form-control" [(ngModel)]="userData.email" name="email"
+                [readonly]="!isEditing" />
             </div>
 
             <div class="d-flex gap-2">
-              <button
-                type="button"
-                class="btn btn-outline-primary flex-grow-1"
-                (click)="toggleEdit()"
-              >
+              <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="toggleEdit()">
                 <i class="bi" [class]="isEditing ? 'bi-x-lg' : 'bi-pencil'"></i>
                 {{ isEditing ? "Cancelar" : "Editar" }}
               </button>
-              <button
-                *ngIf="isEditing"
-                type="submit"
-                class="btn btn-primary flex-grow-1"
-              >
+              <button *ngIf="isEditing" type="submit" class="btn btn-primary flex-grow-1">
                 <i class="bi bi-save"></i>
                 Guardar
               </button>
@@ -95,31 +61,26 @@
 
           <!-- Settings Section -->
           <h4 class="mb-3">Configuración</h4>
-          <div class="form-check form-switch mb-3">
-            <input
+          <!--
+            <div class="form-check form-switch mb-3">
+              <input
               class="form-check-input"
               type="checkbox"
               [(ngModel)]="darkMode"
               (change)="toggleTheme()"
-            />
-            <label class="form-check-label">Modo Oscuro</label>
-          </div>
+              />
+              <label class="form-check-label">Modo Oscuro</label>
+            </div>
+            -->
           <div class="form-check form-switch mb-4">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              [(ngModel)]="notificationsEnabled"
-            />
+            <input class="form-check-input" type="checkbox" [(ngModel)]="notificationsEnabled" />
             <label class="form-check-label">Notificaciones</label>
           </div>
 
           <!-- Account Actions -->
           <h4 class="mb-3">Seguridad</h4>
           <div class="d-grid gap-2">
-            <button
-              class="btn btn-outline-primary"
-              (click)="togglePasswordForm()"
-            >
+            <button class="btn btn-outline-primary" (click)="togglePasswordForm()">
               <i class="bi bi-key me-2"></i>
               Cambiar Contraseña
             </button>
@@ -130,34 +91,21 @@
           </div>
 
           <!-- ======== Password Change Form ======== -->
-          <div *ngIf="showPasswordForm" class="password-form mt-4"  >
+          <div *ngIf="showPasswordForm" class="password-form mt-4">
             <h5 class="mb-3">Cambiar Contraseña</h5>
-            <form  #passwordForm="ngForm">
+            <form #passwordForm="ngForm">
               <div class="mb-3">
                 <label class="form-label">Nueva Contraseña</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  [(ngModel)]="passwordData.newPassword"
-                  name="newPassword"
-                  required
-                />
+                <input type="password" class="form-control" [(ngModel)]="passwordData.newPassword" name="newPassword"
+                  required />
               </div>
 
               <div class="d-flex gap-2">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary flex-grow-1"
-                  (click)="togglePasswordForm()"
-                >
+                <button type="button" class="btn btn-outline-secondary flex-grow-1" (click)="togglePasswordForm()">
                   Cancelar
                 </button>
-                <button
-                  type="button"
-                  (click)="cambiarContrasena()"
-                  class="btn btn-primary flex-grow-1"
-                  [disabled]="!passwordForm.form.valid"
-                >
+                <button type="button" (click)="cambiarContrasena()" class="btn btn-primary flex-grow-1"
+                  [disabled]="!passwordForm.form.valid">
                   Actualizar Contraseña
                 </button>
               </div>
@@ -175,194 +123,170 @@
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="d-flex align-items-center">
               <div class="card-icon bg-success me-3">
-                <i class="bi bi-trophy"></i>
+                <i class="bi bi-apple"></i>
               </div>
-              <h3 class="card-title mb-0">Retos Activos</h3>
+              <h3 class="card-title mb-0">Retos Alimentación</h3>
             </div>
             <button class="btn btn-success" (click)="createChallenge()">
               <i class="bi bi-plus-lg me-2"></i>Nuevo Reto
             </button>
           </div>
 
-          <div class="row g-4">
-            <!-- Challenge Card 1 -->
-            <div class="col-md-6">
-              <div class="challenge-card">
-                <div class="challenge-header">
-                  <h4>30 Días Sin Azúcar</h4>
-                  <span class="badge bg-success">Día 19</span>
-                </div>
-                <div class="progress-info">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-2"
-                  >
-                    <span>Progreso</span>
-                    <span class="text-success">65%</span>
-                  </div>
-                  <div class="progress">
-                    <div
-                      class="progress-bar bg-success"
-                      role="progressbar"
-                      style="width: 65%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="challenge-stats">
-                  <div class="stat-item">
-                    <i class="bi bi-calendar-check text-success"></i>
-                    <span>11 días restantes</span>
-                  </div>
-                  <div class="stat-item">
-                    <i class="bi bi-lightning-charge text-warning"></i>
-                    <span>Racha: 19 días</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="row g-4" *ngIf="alimentaciones.length > 0; else noHayDatos">
+            <div class="col-md-6" *ngFor="let item of alimentaciones">
+              <div class="challenge-card" (click)="abrirSwalRegistroComida(item)">
 
-            <!-- Challenge Card 2 -->
-            <div class="col-md-6">
-              <div class="challenge-card">
-                <div class="challenge-header">
-                  <h4>Madrugador</h4>
-                  <span class="badge bg-warning">Día 8</span>
+                <!-- ENCABEZADO -->
+                <div class="challenge-header d-flex justify-content-between align-items-center">
+                  <h4>{{ item.objetivo }}</h4>
+                  <div>
+                    <span class="badge" [ngClass]="getBadgeColor(item.progreso)">
+                      Día {{ item.diasTranscurridos }}
+                    </span>
+                    <i class="bi bi-eye ms-2 text-primary" style="cursor: pointer;"
+                      (click)="verComidas(item, $event)"></i>
+                  </div>
                 </div>
+
+
+                <!-- BARRA DE PROGRESO -->
                 <div class="progress-info">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-2"
-                  >
+                  <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>Progreso</span>
-                    <span class="text-warning">40%</span>
+                    <span [ngClass]="getTextColor(item.progreso)">
+                      {{ item.progreso }}%
+                    </span>
                   </div>
                   <div class="progress">
-                    <div
-                      class="progress-bar bg-warning"
-                      role="progressbar"
-                      style="width: 40%"
-                    ></div>
+                    <div class="progress-bar" [ngClass]="getBarColor(item.progreso)" role="progressbar"
+                      [style.width.%]="item.progreso"></div>
                   </div>
                 </div>
+
+                <!-- ESTADÍSTICAS -->
                 <div class="challenge-stats">
                   <div class="stat-item">
-                    <i class="bi bi-calendar-check text-warning"></i>
-                    <span>12 días restantes</span>
+                    <i class="bi bi-calendar-check text-secondary"></i>
+                    <span>{{ item.diasRestantes }} días restantes</span>
                   </div>
                   <div class="stat-item">
-                    <i class="bi bi-lightning-charge text-warning"></i>
-                    <span>Racha: 8 días</span>
+                    <i class="bi bi-fire text-warning"></i>
+                    <span>
+                      Calorías: {{ item.caloriasConsumidasHoy || 0 }}/{{ item.caloriasObjetivoDiarias }}
+                    </span>
                   </div>
                 </div>
+
               </div>
             </div>
+          </div>
+
+          <ng-template #noHayDatos>
+            <p class="text-muted">No hay hábitos de alimentación registrados aún.</p>
+          </ng-template>
+
+
+        </div>
+      </div>
+
+      <!-- Habit Card - Ciclo Menstrual -->
+      <div class="col-md-4" *ngIf="userData.sexo === 'FEMENINO'">
+        <div class="habit-card" (click)="abrirSwalCicloMenstrual()">
+          <div class="habit-icon menstrual-icon">
+            <i class="bi bi-droplet-half text-danger"></i>
+          </div>
+          <h5>Ciclo Menstrual</h5>
+          <div class="habit-progress">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span>Último ciclo</span>
+              <span class="text-danger">28 días</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
+            </div>
+          </div>
+          <div class="habit-streak">
+            <i class="bi bi-calendar-event-fill text-danger me-2"></i>
+            <span>Ver calendario menstrual</span>
           </div>
         </div>
       </div>
 
-      <!-- Habits Section -->
-      <div class="card shadow-sm">
+     <!-- Hábito: Embarazo (solo mujeres) -->
+      <div class="col-md-4" *ngIf="userData.sexo === 'FEMENINO'">
+        <div class="habit-card" (click)="abrirSwalRegistroEmbarazo()">
+          <div class="habit-icon">
+            <i class="bi bi-heart-pulse text-danger"></i>
+          </div>
+          <h5>Embarazo</h5>
+          <div class="habit-streak">
+            <i class="bi bi-calendar-plus me-2"></i>
+            <span>Registrar embarazo</span>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Hábito: Ejercicio o Deporte -->
+      <div class="card shadow-sm mb-4" *ngIf="habitoEjercicio">
         <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center">
-              <div class="card-icon bg-primary me-3">
-                <i class="bi bi-check2-circle"></i>
-              </div>
-              <h3 class="card-title mb-0">Mis Hábitos</h3>
-            </div>
-            <button class="btn btn-primary" (click)="createHabit()">
-              <i class="bi bi-plus-lg me-2"></i>Nuevo Hábito
-            </button>
-          </div>
-
-          <div class="row g-4">
-            <!-- Habit Card - Alimentación -->
-            <div class="col-md-4">
-              <div class="habit-card">
-                <div class="habit-icon food-icon">
-                  <i class="bi bi-apple"></i>
-                </div>
-                <h5>Alimentación</h5>
-                <div class="habit-progress">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-2"
-                  >
-                    <span>Progreso</span>
-                    <span class="text-success">75%</span>
-                  </div>
-                  <div class="progress">
-                    <div
-                      class="progress-bar bg-success"
-                      role="progressbar"
-                      style="width: 75%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="habit-streak">
-                  <i class="bi bi-lightning-charge-fill text-warning"></i>
-                  <span>12 días consecutivos</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Habit Card - Tiempo -->
-            <div class="col-md-4">
-              <div class="habit-card">
-                <div class="habit-icon time-icon">
-                  <i class="bi bi-clock"></i>
-                </div>
-                <h5>Tiempo</h5>
-                <div class="habit-progress">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-2"
-                  >
-                    <span>Progreso</span>
-                    <span class="text-info">60%</span>
-                  </div>
-                  <div class="progress">
-                    <div
-                      class="progress-bar bg-info"
-                      role="progressbar"
-                      style="width: 60%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="habit-streak">
-                  <i class="bi bi-lightning-charge-fill text-warning"></i>
-                  <span>8 días consecutivos</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Habit Card - Finanzas -->
-            <div class="col-md-4">
-              <div class="habit-card">
-                <div class="habit-icon finance-icon">
-                  <i class="bi bi-piggy-bank"></i>
-                </div>
-                <h5>Finanzas</h5>
-                <div class="habit-progress">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-2"
-                  >
-                    <span>Progreso</span>
-                    <span class="text-warning">45%</span>
-                  </div>
-                  <div class="progress">
-                    <div
-                      class="progress-bar bg-warning"
-                      role="progressbar"
-                      style="width: 45%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="habit-streak">
-                  <i class="bi bi-lightning-charge-fill text-warning"></i>
-                  <span>5 días consecutivos</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <h4 class="card-title">Ejercicio o Deporte</h4>
+          <p class="text-muted">Actividad reciente: {{ habitoEjercicio.ultimaActividad }}</p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" *ngFor="let actividad of habitoEjercicio.actividades">
+              <strong>{{ actividad.tipo }}</strong> - {{ actividad.duracion }} minutos ({{ actividad.frecuencia }}
+              veces/semana)
+            </li>
+          </ul>
         </div>
       </div>
+
+      <!-- Hábito: Moda -->
+      <div class="card shadow-sm mb-4" *ngIf="habitoModa">
+        <div class="card-body">
+          <h4 class="card-title">Moda</h4>
+          <p class="text-muted">Estilo preferido: {{ habitoModa.estilo }}</p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" *ngFor="let outfit of habitoModa.outfitsRecientes">
+              <strong>{{ outfit.fecha }}</strong>: {{ outfit.descripcion }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Hábito: Belleza -->
+      <div class="card shadow-sm mb-4" *ngIf="habitoBelleza">
+        <div class="card-body">
+          <h4 class="card-title">Belleza y productos de belleza</h4>
+          <p class="text-muted">Rutinas activas: {{ habitoBelleza.rutinas.length }}</p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" *ngFor="let rutina of habitoBelleza.rutinas">
+              <strong>{{ rutina.nombre }}</strong> - {{ rutina.frecuencia.vecesPorSemana }} veces/semana
+              <div *ngIf="rutina.productosUsados?.length">
+                <small class="text-muted">Productos:</small>
+                <ul>
+                  <li *ngFor="let p of rutina.productosUsados">{{ p.producto }} ({{ p.marca }})</li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Hábito: Dinero -->
+      <div class="card shadow-sm mb-4" *ngIf="habitoDinero">
+        <div class="card-body">
+          <h4 class="card-title">Dinero</h4>
+          <p class="text-muted">Ahorro mensual: COP {{ habitoDinero.resumenFinanciero.ahorroMensualCOP }}</p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" *ngFor="let mov of habitoDinero.movimientosRecientes">
+              <strong>{{ mov.fecha }}</strong>: {{ mov.tipo }} - {{ mov.concepto }} (COP {{ mov.monto }})
+            </li>
+          </ul>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

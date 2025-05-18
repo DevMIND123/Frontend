@@ -10,6 +10,7 @@ import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { UsuarioUpdateDTO } from '../../../models/usuario';
 import { MarketingService } from '../../../services/marketing.service'; // nuevo servicio
+import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
 
 interface Campaign {
   campañaId: string;
@@ -72,7 +73,7 @@ export class MarketingComponent implements OnInit {
     private usuarioService: UsuarioService,
     private marketingService: MarketingService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadUserData();
@@ -90,7 +91,7 @@ export class MarketingComponent implements OnInit {
       error: (err) => {
         console.error('Error cargando campañas desde CastleMock:', err);
         this.errorMessage = 'No se pudo obtener información de campañas';
-      }
+      },
     });
   }
 
@@ -152,7 +153,7 @@ export class MarketingComponent implements OnInit {
         this.successMessage = 'Perfil actualizado exitosamente';
         this.isEditing = false;
         this.errorMessage = null;
-        localStorage.setItem('userName', this.userData.nombre);
+        safeLocalStorageSet('userName', this.userData.nombre);
       },
       error: (err) => {
         console.error('Error updating profile:', err);
@@ -173,7 +174,6 @@ export class MarketingComponent implements OnInit {
   }
 
   changePassword(): void {
-
     const email = this.authService.getEmail();
     if (!email) return;
 
@@ -220,12 +220,12 @@ export class MarketingComponent implements OnInit {
 
   toggleTheme(): void {
     this.preferences.darkMode = !this.preferences.darkMode;
-    localStorage.setItem('darkMode', String(this.preferences.darkMode));
+    safeLocalStorageSet('darkMode', String(this.preferences.darkMode));
     this.applyTheme();
   }
 
   private loadThemePreference(): void {
-    this.preferences.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.preferences.darkMode = safeLocalStorageGet('darkMode') === 'true';
     this.applyTheme();
   }
 
@@ -237,8 +237,14 @@ export class MarketingComponent implements OnInit {
     this.activeCampaigns = this.campaigns.filter(
       (c) => c.estado === 'Activa'
     ).length;
-    this.totalReach = this.campaigns.reduce((sum, c) => sum + (c.clicks || 0), 0);
-    this.totalBudget = this.campaigns.reduce((sum, c) => sum + (c.gananciasTotales || 0), 0);
+    this.totalReach = this.campaigns.reduce(
+      (sum, c) => sum + (c.clicks || 0),
+      0
+    );
+    this.totalBudget = this.campaigns.reduce(
+      (sum, c) => sum + (c.gananciasTotales || 0),
+      0
+    );
   }
 
   getStatusClass(estado: string): string {

@@ -20,7 +20,7 @@ export class AdminService {
     'Content-Type': 'application/json',
   });
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /** Crea un nuevo administrador */
   createAdmin(adminData: AdministradorDTO): Observable<AdministradorDTO> {
@@ -44,17 +44,20 @@ export class AdminService {
     );
   }
 
-  /** Actualiza un administrador por ID (usa PUT) */
-  updateAdmin(id: string, adminData: Partial<AdministradorDTO>): Observable<any> {
-    return this.http.put<any>(
+  /** Actualiza un administrador por ID (usa PATCH) */
+  updateAdmin(id: string, adminData: Partial<AdministradorDTO>): Observable<string> {
+    return this.http.patch(
       `${this.baseUrl}/actualizar/${id}`,
       adminData,
       {
         headers: this.jsonHeaders,
-        responseType: 'text' as 'json',
+        responseType: 'text', // ✅ sin 'as json'
       }
     );
   }
+
+
+
 
   /** Elimina un administrador por ID */
   deleteAdmin(id: string): Observable<any> {
@@ -66,13 +69,22 @@ export class AdminService {
 
   /** Obtiene todos los usuarios (para superadmin dashboard) */
   obtenerUsuarios(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}`);
+    return this.http.get<any[]>(`${environment.apiUrl}/administradores`);
+  }
+
+  obtenerClientes(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/clientes`);
+  }
+
+  obtenerEmpresas(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/empresas`);
   }
 
   /** Obtiene datos de un administrador por email (mockSoporte) */
   obtenerAdminPorEmail(email: string): Observable<{ nombre: string; email: string }> {
     return this.http.get<{ nombre: string; email: string }>(
-      `${this.baseUrl}/email/${email}`
+      `${environment.apiUrl}/admin/email/${email}`
     );
   }
+
 }

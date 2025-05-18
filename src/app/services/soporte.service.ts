@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class SoporteService {
+  // Asegúrate que esta URL coincida con tu endpoint en CastleMock
   private API_URL = `${environment.mocksUrl}/castlemock/mock/rest/project/Dae1c6/application/lhz925/soporte`;
 
   constructor(private http: HttpClient) {}

@@ -11,6 +11,8 @@ import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { FinanzasService } from '../../../services/finanzas.service';
 
+import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
+
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
 
@@ -54,6 +56,7 @@ export class SuperadminComponent implements OnInit {
   adminData = {
     nombre: '',
     email: '',
+    newEmail: '',
   };
 
   // Gestión de usuarios
@@ -89,10 +92,47 @@ export class SuperadminComponent implements OnInit {
 
   /* ============ Carga de usuarios reales ============ */
   private loadUsers(): void {
-    this.adminService.obtenerUsuarios().subscribe({
-      next: (usuarios) => {
-        this.filteredUsers = usuarios;
-        this.allUsers = usuarios;
+    forkJoin({
+      admins: this.adminService.obtenerUsuarios(),
+      clientes: this.adminService.obtenerClientes(),
+      empresas: this.adminService.obtenerEmpresas(),
+    }).subscribe({
+      next: ({ admins, clientes, empresas }) => {
+        const mappedAdmins: User[] = admins.map((a) => ({
+          id: a.id,
+          name: a.nombre,
+          email: a.email,
+          role: a.rol, // Asume que ya es 'SOPORTE', 'MARKETING', etc.
+          status: a.estadoCuenta === 'Activo' ? 'active' : 'inactive',
+          createdAt: new Date(), // Ajusta si tienes un campo de fecha
+        }));
+
+        const mappedClientes: User[] = clientes.map((c) => ({
+          id: c.id,
+          name: c.nombre,
+          email: c.email,
+          role: 'CLIENTE',
+          status: c.estadoCuenta === 'Activo' ? 'active' : 'inactive',
+          createdAt: new Date(), // Ajusta si tienes fecha
+        }));
+
+        const mappedEmpresas: User[] = empresas.map((e) => ({
+          id: e.id,
+          name: e.nombre,
+          email: e.email,
+          role: 'EMPRESA',
+          status: e.estadoCuenta === 'Activo' ? 'active' : 'inactive',
+          createdAt: new Date(), // Ajusta si tienes fecha
+        }));
+
+        const allUsers = [
+          ...mappedAdmins,
+          ...mappedClientes,
+          ...mappedEmpresas,
+        ];
+
+        this.allUsers = allUsers;
+        this.filteredUsers = allUsers;
       },
       error: (err) => console.error('Error al cargar usuarios:', err),
     });
@@ -114,8 +154,7 @@ export class SuperadminComponent implements OnInit {
       next: (data) => {
         this.datosFinancieros = data.moduloFinanzas;
       },
-      error: (err) =>
-        console.error('Error cargando datos financieros:', err),
+      error: (err) => console.error('Error cargando datos financieros:', err),
     });
   }
 
@@ -139,6 +178,7 @@ export class SuperadminComponent implements OnInit {
             this.adminData = {
               nombre: dto.nombre,
               email: dto.email,
+              newEmail: dto.email,
             };
             this.errorMessage = null;
           },
@@ -160,6 +200,7 @@ export class SuperadminComponent implements OnInit {
     const dto = {
       nombre: this.adminData.nombre,
       email: this.adminData.email,
+      newEmail: this.adminData.newEmail,
     };
 
     this.usuarioService.actualizarUsuarioPorId(this.id, dto, rol).subscribe({
@@ -184,18 +225,18 @@ export class SuperadminComponent implements OnInit {
   /* ================== Preferencias ================== */
   toggleTheme(): void {
     this.darkMode = !this.darkMode;
-    localStorage.setItem('darkMode', String(this.darkMode));
+    safeLocalStorageSet('darkMode', String(this.darkMode));
     this.applyDarkMode();
   }
 
   toggleNotifications(): void {
-    localStorage.setItem('notifications', String(this.notificationsEnabled));
+    safeLocalStorageSet('notifications', String(this.notificationsEnabled));
   }
 
   private loadSettings(): void {
-    this.darkMode = localStorage.getItem('darkMode') === 'true';
+    this.darkMode = safeLocalStorageGet('darkMode') === 'true';
     this.notificationsEnabled =
-      localStorage.getItem('notifications') !== 'false';
+      safeLocalStorageGet('notifications') !== 'false';
     this.applyDarkMode();
   }
 
@@ -205,11 +246,63 @@ export class SuperadminComponent implements OnInit {
 
   /* ================== Acciones sobre usuarios ================== */
   editUser(user: User): void {
-    console.log('Editar usuario:', user);
+    Swal.fire({
+      title: 'Editar usuario',
+      html:
+        `<input id="swal-input-nombre" class="swal2-input" placeholder="Nombre" value="${user.name}">` +
+        `<input id="swal-input-email" class="swal2-input" value="${user.email}" disabled>`,
+      focusConfirm: false,
+      preConfirm: () => {
+        const nombre = (
+          document.getElementById('swal-input-nombre') as HTMLInputElement
+        ).value;
+        const email = user.email; // No editable, pero se envía
+        if (!nombre.trim()) {
+          Swal.showValidationMessage('El nombre no puede estar vacío');
+          return false;
+        }
+        return { nombre, email };
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const rol = this.authService.getRole(); // Asumiendo que ya lo tienes
+        const dto = {
+          nombre: result.value.nombre,
+          email: result.value.email,
+        };
+
+        this.usuarioService
+          .actualizarUsuarioPorId(user.id, dto, rol)
+          .subscribe({
+            next: () => {
+              Swal.fire('Éxito', 'Datos actualizados correctamente', 'success');
+              // Aquí puedes actualizar la lista local si lo deseas
+              user.name = result.value.nombre;
+            },
+            error: (err) => {
+              console.error('Error al actualizar:', err);
+              Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
+            },
+          });
+      }
+    });
   }
 
   deleteUser(user: User): void {
     console.log('Eliminar usuario:', user);
+    this.adminService.deleteAdmin(user.id).subscribe({
+      next: () => {
+        Swal.fire('Éxito', 'Usuario eliminado correctamente', 'success');
+        this.loadUsers(); // Actualizar lista de usuarios
+      },
+      error: (err) => {
+        console.error('Error al eliminar usuario:', err);
+        Swal.fire('Error', 'No se pudo eliminar el usuario', 'error');
+      },
+    });
   }
 
   getRoleBadgeClass(role: string): string {
@@ -241,10 +334,17 @@ export class SuperadminComponent implements OnInit {
       confirmButtonText: 'Crear',
       cancelButtonText: 'Cancelar',
       preConfirm: () => {
-        const email = (document.getElementById('swal-email') as HTMLInputElement).value;
-        const nombre = (document.getElementById('swal-nombre') as HTMLInputElement).value;
-        const password = (document.getElementById('swal-password') as HTMLInputElement).value;
-        const rol = (document.getElementById('swal-rol') as HTMLSelectElement).value;
+        const email = (
+          document.getElementById('swal-email') as HTMLInputElement
+        ).value;
+        const nombre = (
+          document.getElementById('swal-nombre') as HTMLInputElement
+        ).value;
+        const password = (
+          document.getElementById('swal-password') as HTMLInputElement
+        ).value;
+        const rol = (document.getElementById('swal-rol') as HTMLSelectElement)
+          .value;
         if (!email || !nombre || !password) {
           Swal.showValidationMessage('✱ Todos los campos son obligatorios');
         }
