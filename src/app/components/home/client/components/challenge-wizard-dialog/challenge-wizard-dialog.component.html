@@ -1,0 +1,203 @@
+<h2 mat-dialog-title>
+  <mat-icon class="me-2">flag</mat-icon>
+  Asistente para Crear Nuevo Reto
+</h2>
+
+<mat-dialog-content class="pt-0">
+
+  <mat-horizontal-stepper #stepper>
+    <!-- Paso 1 – Bienvenida -->
+    <mat-step>
+      <ng-template matStepLabel>Bienvenida</ng-template>
+
+      <h4 class="mb-3 text-primary">
+        <mat-icon class="me-2">stars</mat-icon>
+        ¡Empecemos un Nuevo Reto!
+      </h4>
+
+      <p>
+        Este asistente te guiará para configurar tu próximo reto personal. Los retos te ayudan a
+        enfocarte en metas específicas y a construir hábitos duraderos.
+      </p>
+      <p>
+        Nos enfocaremos en retos de <strong>alimentación y bienestar físico</strong>, donde
+        entender tu cuerpo es el primer paso.
+      </p>
+
+      <div class="alert alert-info small">
+        <mat-icon class="me-1" inline>info</mat-icon>
+        Sigue los pasos para personalizar tu experiencia.
+      </div>
+
+      <div mat-dialog-actions>
+        <button mat-raised-button color="primary" (click)="stepper.next()">Siguiente</button>
+      </div>
+    </mat-step>
+
+    <!-- Paso 2 – Información de por qué se piden datos -->
+    <mat-step>
+      <ng-template matStepLabel>Info. Datos</ng-template>
+
+      <h4 class="mb-3 text-primary">
+        <mat-icon class="me-2">clipboard</mat-icon>
+        ¿Por qué pedimos tus datos?
+      </h4>
+
+      <p>
+        Para ofrecerte recomendaciones personalizadas en retos de alimentación y bienestar,
+        necesitamos algunos datos básicos como tu <strong>altura y peso</strong>. Esta información
+        nos permite:
+      </p>
+
+      <ul>
+        <li>
+          Calcular tu <strong>Índice de Masa Corporal (IMC)</strong>, un indicador general de tu
+          estado nutricional.
+        </li>
+        <li>
+          Sugerirte un tipo de reto (ej.&nbsp;perder peso, ganar masa muscular) y una ingesta
+          calórica diaria aproximada.
+        </li>
+        <li>
+          Ayudarte a llevar un seguimiento de tu progreso de forma más efectiva.
+        </li>
+      </ul>
+
+      <p class="text-muted small">
+        Tus datos se manejan con confidencialidad y solo se usan para mejorar tu experiencia con la
+        aplicación.
+      </p>
+
+      <div mat-dialog-actions>
+        <button mat-button matStepperPrevious>Anterior</button>
+        <button mat-raised-button color="primary" matStepperNext>Siguiente</button>
+      </div>
+    </mat-step>
+
+    <!-- Paso 3 – Formulario de datos físicos -->
+    <mat-step [stepControl]="datosForm">
+      <ng-template matStepLabel>Tus Datos</ng-template>
+
+      <form [formGroup]="datosForm" class="w-100">
+        <br> <br>
+        <div class="row">
+          <div class="col-6 pe-2">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Tu Altura (cm)</mat-label>
+              <input matInput type="number" formControlName="height" placeholder="Ej: 170">
+              <mat-error>Requerido (100–250)</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="col-6 ps-2">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Tu Peso Actual (kg)</mat-label>
+              <input matInput type="number" step="0.1" formControlName="weight" placeholder="Ej: 70.5">
+              <mat-error>Requerido (30–300)</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Fecha objetivo -->
+          <div class="col-12 mt-3">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Fecha objetivo</mat-label>
+
+              <!-- input del datepicker -->
+              <input matInput [matDatepicker]="picker" placeholder="Selecciona una fecha" formControlName="targetDate">
+
+              <!-- icono calendario -->
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+
+              <mat-error *ngIf="retoForm.get('targetDate')?.hasError('required')">
+                Requerido
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+
+
+        </div>
+      </form>
+
+      <div mat-dialog-actions>
+        <button mat-button matStepperPrevious>Anterior</button>
+        <button mat-raised-button color="primary" [disabled]="datosForm.invalid || cargando"
+          (click)="onStep3Next(); stepper.next()">
+          Siguiente
+        </button>
+
+      </div>
+    </mat-step>
+
+    <!-- Paso 4 – Configurar reto -->
+    <mat-step [stepControl]="retoForm">
+      <ng-template matStepLabel>¡Tu Reto!</ng-template>
+
+      <h4 class="mb-3 text-primary">
+        <mat-icon class="me-2">tune</mat-icon>
+        ¡Define e Inicia tu Reto!
+      </h4>
+
+      <div class="mb-3 p-3 bg-success-subtle border border-success-subtle rounded">
+        <h6 class="fs-sm fw-semibold text-success-emphasis mb-2">
+          <mat-icon class="me-1">lightbulb</mat-icon>
+          Sugerencias Personalizadas
+        </h6>
+
+        <p class="small mb-1">
+          Objetivo sugerido:
+          <span class="fw-bold">{{ alimentacionCreada?.objetivo || '---' }}</span>
+        </p>
+
+        <p class="small mb-1">
+          Calorías diarias recomendadas:
+          <span class="fw-bold">{{ alimentacionCreada?.caloriasObjetivoDiarias || '---' }} kcal</span>
+        </p>
+
+        <p class="small text-muted mb-0">
+          IMC Estimado (basado en datos del paso anterior):
+          <span id="estimatedIMC" class="fw-bold">
+            {{ alimentacionCreada?.imc?.toFixed(2) || '---' }}
+          </span>
+        </p>
+
+      </div>
+
+      <p class="small text-muted mb-3">
+        Revisa las sugerencias y ajusta el tipo de reto y tu meta calórica según tus preferencias y
+        necesidades. ¡Tú tienes el control!
+      </p>
+
+      <form [formGroup]="retoForm" class="w-100">
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Tipo de reto</mat-label>
+          <mat-select formControlName="type" required>
+            <mat-option value="perderPeso">Perder Peso</mat-option>
+            <mat-option value="ganarPeso">Ganar Peso</mat-option>
+            <mat-option value="ganarMasa">Ganar Masa Muscular</mat-option>
+            <mat-option value="mantener">Mantener Peso / Alimentación Saludable</mat-option>
+            <mat-option value="otro">Otro (personalizado)</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Meta calórica diaria (kcal)</mat-label>
+          <input matInput type="number" formControlName="calories" placeholder="Ej: 1800">
+        </mat-form-field>
+
+        <p class="form-text">
+          Puedes ajustar tus metas en cualquier momento desde la configuración de tu hábito.
+        </p>
+      </form>
+
+      <div mat-dialog-actions>
+        <button mat-button matStepperPrevious>Anterior</button>
+        <button mat-raised-button color="primary" [disabled]="retoForm.invalid" (click)="finish()">
+          Comenzar Reto
+        </button>
+      </div>
+    </mat-step>
+  </mat-horizontal-stepper>
+
+</mat-dialog-content>
