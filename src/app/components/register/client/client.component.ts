@@ -14,10 +14,10 @@ import { FooterComponent } from '../../shared/footer/footer.component';
     RouterModule,
     FormsModule,
     NavbarComponent,
-    FooterComponent
+    FooterComponent,
   ],
   templateUrl: './client.component.html',
-  styleUrls: ['./client.component.css']
+  styleUrls: ['./client.component.css'],
 })
 export class ClientComponent {
   showPassword = false;
@@ -31,10 +31,7 @@ export class ClientComponent {
   errorMessage = '';
   isLoading = false;
 
-  constructor(
-    private router: Router,
-    private authService: AuthService
-  ) { }
+  constructor(private router: Router, private authService: AuthService) {}
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
@@ -59,17 +56,18 @@ export class ClientComponent {
       email: this.email,
       password: this.password,
       sexo: this.sexo,
-      rol: 'CLIENTE'
+      rol: 'CLIENTE',
     };
-
+    localStorage.setItem('sexoUsuario', this.sexo);
     this.authService.registerClient(userData).subscribe({
       next: () => {
         this.router.navigate(['/login']);
       },
       error: (error) => {
-        this.errorMessage = error?.error?.message || 'Error al registrar. Inténtalo de nuevo.';
+        this.errorMessage =
+          error?.error?.message || 'Error al registrar. Inténtalo de nuevo.';
         this.isLoading = false;
-      }
+      },
     });
   }
 }
