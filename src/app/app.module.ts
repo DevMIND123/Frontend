@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule, provideHttpClient, withFetch } from '@angular/common/http';
@@ -31,6 +31,9 @@ import { AuthService } from './services/auth.service';
 import { GestionContenidoComponent } from './components/home/gestion-contenido/gestion-contenido.component';
 import { FaqComponent } from './components/faq/faq.component';
 import { FaqAdminComponent } from './components/faq-admin/faq-admin.component';
+import { registerLocaleData } from '@angular/common';
+import localeEsCO from '@angular/common/locales/es-CO';
+registerLocaleData(localeEsCO);
 
 @NgModule({
   /* ❶ SOLO componentes NO‑stand‑alone */
@@ -70,8 +73,8 @@ import { FaqAdminComponent } from './components/faq-admin/faq-admin.component';
   providers: [
     AuthService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-    /* Angular ≥ 17 */
-    provideHttpClient(withFetch())
+    provideHttpClient(withFetch()),
+    { provide: LOCALE_ID, useValue: 'es-CO' } // ✅ esto soluciona NG0701
   ],
   bootstrap: [AppComponent]
 })

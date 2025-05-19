@@ -4,6 +4,8 @@
 <div class="bg-success text-white py-4 mb-4">
   <div class="container">
     <h1 class="h3 mb-0">Mi Dashboard</h1>
+    <p routerLink="/home/empresa">Dashboard empresa</p>
+    <p></p>
   </div>
 </div>
 
@@ -143,8 +145,7 @@
                     <span class="badge" [ngClass]="getBadgeColor(item.progreso)">
                       Día {{ item.diasTranscurridos }}
                     </span>
-                    <i class="bi bi-eye ms-2 text-primary" style="cursor: pointer;"
-                      (click)="verComidas(item, $event)"></i>
+                    <i class="bi bi-eye ms-2 text-primary" style="cursor: pointer;" (click)="verComidas()"></i>
                   </div>
                 </div>
 
@@ -186,8 +187,232 @@
           </ng-template>
 
 
+
+
         </div>
       </div>
+
+      <!-- 🔁 Mostrar solo si NO hay retos aún -->
+      <div class="food-challenge-overlay text-center" *ngIf="!alimentaciones || alimentaciones.length === 0"
+        (click)="openWizard()">
+        <i class="bi bi-egg-fried display-1 mb-3 text-warning"></i>
+        <h3>Reto de Alimentacióaan</h3>
+        <p>Transforma tu relación con la comida y alcanza tus metas de baienestar.</p>
+        <button mat-raised-button color="accent" class="btn-start-new-life">
+          ✨ Comienza tu Nueva Vida ✨
+        </button>
+      </div>
+
+      <!-- ✅ Mostrar solo si hay un reto activo -->
+      <div class="food-challenge-card-wrapper" *ngIf="alimentaciones && alimentaciones.length > 0 ">
+
+
+        <div class="food-challenge-content p-3 p-md-4">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="challenge-date-header">
+              <h5 class="mb-0 d-flex align-items-center card-title" style="color: black;">
+                Mi Reto de Alimentación
+                <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill ms-2 badge-goal-type">
+                  {{ alimentaciones[0]?.objetivo || '---' }}
+                </span>
+              </h5>
+              <div class="date-display-group mt-1">
+                <span class="fw-medium">para Hoy: </span>
+                <i class="bi bi-calendar3" title="Seleccionar otra fecha"></i>
+              </div>
+              <small class="text-muted">
+                Meta diaria: {{ alimentaciones[0]?.caloriasObjetivoDiarias || 0 }} kcal
+              </small>
+            </div>
+            <div class="habit-icon food-icon active mx-0 mt-1">
+              <i class="bi bi-apple"></i>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between small mb-1 fw-medium">
+              <span>Consumido:
+                <strong>{{ alimentaciones[0]?.caloriasConsumidasHoy || 0 }} kcal</strong>
+              </span>
+              <span>Restante:
+                <strong>
+                  {{
+                  (alimentaciones[0]?.caloriasObjetivoDiarias || 0) -
+                  (alimentaciones[0]?.caloriasConsumidasHoy || 0)
+                  }}
+                  kcal
+                </strong>
+              </span>
+            </div>
+
+            <div class="progress" role="progressbar" [attr.aria-valuenow]="alimentaciones[0]?.progreso"
+              aria-valuemin="0" [attr.aria-valuemax]="100">
+              <div class="progress-bar bg-success overflow-visible" [style.width.%]="alimentaciones[0]?.progreso">
+                {{ alimentaciones[0]?.progreso?.toFixed(1) }}%
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h6 class="mb-3 fw-semibold fs-sm"><i class="bi bi-journal-plus me-2"
+            *ngIf="alimentaciones.length > 0; else noHayDatos"></i>Registrar Nueva Comida</h6>
+        <form [formGroup]="comidaForm" (ngSubmit)="registrarComida()"
+          *ngIf="alimentaciones.length > 0; else noHayDatos">
+          <div class="row g-3 align-items-end">
+            <div class="col-sm-5">
+              <label for="foodNameStatic" class="form-label visually-hidden">Nombre Comida</label>
+              <input type="text" id="foodNameStatic" formControlName="nombre" class="form-control form-control-sm"
+                placeholder="Ej: Pechuga de pollo a la plancha" required>
+            </div>
+
+            <div class="col-sm-2">
+              <label for="foodCaloriesStatic" class="form-label visually-hidden">Calorías</label>
+              <input type="number" id="foodCaloriesStatic" formControlName="calorias"
+                class="form-control form-control-sm" placeholder="kcal" required min="1">
+            </div>
+            <div class="col-sm-2 d-grid">
+              <button type="submit" class="btn btn-primary btn-sm"> <i class="bi bi-plus-lg"></i> <span
+                  class="d-none d-md-inline">Añadir</span> </button>
+            </div>
+          </div>
+        </form>
+
+        <h6 class="fw-semibold fs-sm mb-2">
+          <i class="bi bi-list-task me-2"></i>
+          Comidas Registradas Hoy ({{ comidasRegistradas.length }})
+        </h6>
+
+        <ul class="list-group list-group-flush mt-1">
+          <li *ngFor="let comida of comidasRegistradas"
+            class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+            <div>
+              <strong class="fw-medium">{{ comida.nombre }}</strong>
+              <!-- Puedes añadir una categoría si la tienes en el futuro -->
+              <br>
+              <span class="text-muted small">
+                {{ comida.calorias }} kcal - {{ comida.fechaHoraRegistro | date:'shortTime' }}
+              </span>
+            </div>
+            <div class="food-item-actions">
+              <button type="button" class="btn btn-sm btn-outline-secondary me-1" title="Editar Comida">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar Comida">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </li>
+        </ul>
+
+        <div class="row">
+          <!-- 🗓️ Calendario -->
+          <div class="col-lg-6 mb-4">
+            <h6 class="fw-semibold fs-sm mb-3">
+              <i class="bi bi-calendar3-week me-2"></i>
+              Calendario Mensual de Progreso (Mayo 2025)
+            </h6>
+
+            <table class="calendar-table">
+              <thead>
+                <tr>
+                  <th>Lun</th>
+                  <th>Mar</th>
+                  <th>Mié</th>
+                  <th>Jue</th>
+                  <th>Vie</th>
+                  <th>Sáb</th>
+                  <th>Dom</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let semana of calendario">
+                  <td *ngFor="let dia of semana" [class.other-month]="dia.esOtroMes">
+                    <ng-container *ngIf="!dia.esOtroMes">
+                      <span class="day-number">{{ dia.dia }}</span>
+                      <ng-container [ngSwitch]="dia.estado">
+                        <i *ngSwitchCase="'cumplido'" class="bi bi-check-circle-fill day-icon text-success"
+                          [title]="dia.dia + ': cumplido'"></i>
+                        <i *ngSwitchCase="'noCumplido'" class="bi bi-x-circle-fill day-icon text-danger"
+                          [title]="dia.dia + ': no cumplido'"></i>
+                        <i *ngSwitchDefault class="bi bi-dash-circle-fill day-icon text-secondary"
+                          title="sin datos"></i>
+                      </ng-container>
+                    </ng-container>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ⚖️ IMC -->
+          <div class="col-lg-6 mb-4" *ngIf="alimentaciones.length > 0">
+            <h6 class="fw-semibold fs-sm mb-2">
+              <i class="bi bi-heart-pulse me-2"></i>
+              Control de Peso e IMC
+            </h6>
+
+            <div class="p-3 border rounded weight-log-section position-relative">
+              <div class="text-center mb-2">
+                <div class="current-imc-display-container d-inline-block">
+                  <span class="current-imc-display" [ngClass]="getIMCClass(alimentaciones[0].imc)">
+                    {{ alimentaciones[0].imc | number:'1.1-1' }}
+                  </span>
+
+                  <!-- Ícono que activa el panel -->
+                  <i class="bi bi-question-circle-fill ms-2" style="cursor: pointer"
+                    (click)="mostrarInfoIMC = !mostrarInfoIMC" title="Ver clasificación IMC">
+                  </i>
+                </div>
+
+                <!-- Panel tipo tooltip con HTML -->
+                <div *ngIf="mostrarInfoIMC" class="imc-panel-tooltip">
+                  <strong class="d-block mb-2">Clasificación IMC:</strong>
+                  <div><span class="dot dot-underweight"></span> &lt; 18.5: Bajo peso</div>
+                  <div><span class="dot dot-healthy"></span> 18.5–24.9: Saludable</div>
+                  <div><span class="dot dot-overweight"></span> 25–29.9: Sobrepeso</div>
+                  <div><span class="dot dot-obese"></span> 30–34.9: Obesidad</div>
+                  <div><span class="dot dot-extreme"></span> ≥ 35: Obesidad extrema</div>
+                </div>
+
+                <p class="mb-0 small text-muted">
+                  IMC Actual ({{ alimentaciones[0].fechaInicio | date:'dd/MM/yyyy' }})
+                </p>
+                <p class="mb-1 small">
+                  Peso: <strong>{{ alimentaciones[0].peso }} kg</strong>
+                </p>
+              </div>
+
+              <!-- Formulario para registrar nuevo peso -->
+              <form class="mb-2">
+                <div class="input-group input-group-sm">
+                  <input type="number" step="0.1" class="form-control" placeholder="Nuevo peso (kg)"
+                    aria-label="Nuevo peso">
+                  <button class="btn btn-outline-secondary" type="button" title="Guardar Peso">
+                    <i class="bi bi-floppy"></i>
+                  </button>
+                </div>
+              </form>
+
+              <!-- Historial de peso -->
+              <ul class="list-group list-group-flush list-group-sm weight-history-list">
+                <li class="list-group-item d-flex justify-content-between px-0 py-1">
+                  <span>{{ alimentaciones[0].fechaInicio | date:'dd/MM' }}: {{ alimentaciones[0].peso }} kg</span>
+                  <span class="text-danger small"><i class="bi bi-arrow-up-short"></i>Subida</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+
+      </div>
+
+
+      <br> <br> <br>
 
       <!-- Habit Card - Ciclo Menstrual -->
       <div class="col-md-4" *ngIf="userData.sexo === 'FEMENINO'">
