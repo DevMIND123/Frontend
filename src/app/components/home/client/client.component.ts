@@ -1,8 +1,8 @@
 /* src/app/components/home/client/client.component.ts */
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { CommonModule, formatDate } from '@angular/common';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
@@ -27,10 +27,20 @@ import { HabitoEjercicioService } from '../../../services/habito-ejercicio.servi
 import { HabitoModaService } from '../../../services/habito-moda.service';
 import { HabitoBellezaService } from '../../../services/habito-belleza.service';
 import { HabitoDineroService } from '../../../services/habito-dinero.service';
-import {
-  safeLocalStorageGet,
-  safeLocalStorageSet,
-} from '../../../shared/utils/utils';
+
+import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ChallengeWizardDialogComponent } from './components/challenge-wizard-dialog/challenge-wizard-dialog.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+
+type EstadoDia = 'cumplido' | 'noCumplido' | 'sinDato';
+
+interface DiaCalendario {
+  dia: number;
+  estado: EstadoDia;
+  esOtroMes?: boolean;
+}
 
 @Component({
   selector: 'app-client',
@@ -41,6 +51,10 @@ import {
     RouterModule,
     NavbarComponent,
     FooterComponent,
+    MatDialogModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    ReactiveFormsModule
   ],
   templateUrl: './client.component.html',
   styleUrls: ['./client.component.css'],
@@ -76,6 +90,10 @@ export class ClientComponent implements OnInit {
   /* ------------ preferencias ------------ */
   darkMode = false;
   notificationsEnabled = true;
+  comidasRegistradas: RegistroComidaDTO[] = [];
+  comidaForm!: FormGroup;
+  calendario: DiaCalendario[][] = [];
+mostrarInfoIMC = false;
 
   /* ------------ password modal ------------ */
   /** formulario de cambio de contraseña */
@@ -94,23 +112,147 @@ export class ClientComponent implements OnInit {
     private habitoEjercicioService: HabitoEjercicioService,
     private habitoModaService: HabitoModaService,
     private habitoBellezaService: HabitoBellezaService,
-    private habitoDineroService: HabitoDineroService
-  ) {}
+    private habitoDineroService: HabitoDineroService,
+    private dialog: MatDialog,
+    private http: HttpClient,
+    private fb: FormBuilder
+  ) {
+    this.comidaForm = this.fb.group({
+      nombre: ['', Validators.required],
+      calorias: [null, [Validators.required, Validators.min(1)]]
+    });
+  }
 
   /* =========================================================
    *  CICLO DE VIDA
    * ======================================================= */
-  ngOnInit(): void {
-    this.loadUserData();
+  async ngOnInit(): Promise<void> {
+    await this.loadUserData();
     this.loadThemePreference();
 
     this.loadHabitos();
+
+
+
+  }
+
+  registrarComida(): void {
+    console.log('Formulario de comida:', this.alimentaciones);
+    if (this.comidaForm.valid) {
+      const comida: RegistroComidaDTO = {
+        nombre: this.comidaForm.value.nombre,
+        calorias: this.comidaForm.value.calorias,
+        fechaHoraRegistro: new Date().toISOString()
+      };
+
+      // Asegúrate de que haya al menos una alimentación activa
+      if (!this.alimentaciones || this.alimentaciones.length === 0) {
+        console.warn('No hay un reto de alimentación activo');
+        return;
+      }
+
+      const idAlimentacion = this.alimentaciones[0].id;
+
+      this.retoComidaService.registrarComida(idAlimentacion, comida).subscribe({
+        next: () => {
+          console.log('Comida registrada exitosamente:', comida);
+          this.comidaForm.reset(); // Limpiar el formulario
+        },
+        error: () => {
+          console.error('Error al registrar la comida');
+        }
+      });
+    } else {
+      console.warn('Formulario inválido');
+    }
+  }
+
+
+ generarCalendario(): void {
+    if (!this.alimentaciones?.length) return;
+
+    const caloriasObjetivo = this.alimentaciones[0].caloriasObjetivoDiarias;
+    if (!caloriasObjetivo) return;
+
+    const hoy  = new Date();
+    const año  = hoy.getFullYear();
+    const mes  = hoy.getMonth();            // 0-based
+    const dia0 = new Date(año, mes, 1);
+    const nDias= new Date(año, mes + 1, 0).getDate();
+    const primerCol = (dia0.getDay() || 7); // Lun=1 … Dom=7
+
+    /* ---------- 1. agrupar calorías por día ---------- */
+    const caloriasPorDia: Record<string, number> = {};
+    this.comidasRegistradas.forEach(c => {
+      const k = this.formatLocal(new Date(c.fechaHoraRegistro));
+      caloriasPorDia[k] = (caloriasPorDia[k] ?? 0) + c.calorias;
+    });
+
+    /* ---------- 2. construir matriz del calendario ---------- */
+    const calendario: DiaCalendario[][] = [];
+    let semana: DiaCalendario[] = [];
+
+    // huecos del mes anterior
+    for (let i = 1; i < primerCol; i++) {
+      semana.push({ dia: 0, estado: 'sinDato', esOtroMes: true });
+    }
+
+    // días del mes actual
+    for (let d = 1; d <= nDias; d++) {
+      const fecha = new Date(año, mes, d);
+      const k     = this.formatLocal(fecha);
+      const tot   = caloriasPorDia[k] ?? 0;
+
+      let estado: EstadoDia = 'sinDato';
+      if (k in caloriasPorDia)
+        estado = tot >= caloriasObjetivo ? 'cumplido' : 'noCumplido';
+
+      semana.push({ dia: d, estado });
+
+      if (semana.length === 7) {
+        calendario.push(semana);
+        semana = [];
+      }
+    }
+
+    // relleno final
+    if (semana.length) {
+      while (semana.length < 7) {
+        semana.push({ dia: 0, estado: 'sinDato', esOtroMes: true });
+      }
+      calendario.push(semana);
+    }
+
+    this.calendario = calendario;
+  }
+
+  getIMCClass(imc: number): string {
+  if (imc < 18.5) return 'imc-display-underweight';
+  if (imc < 25) return 'imc-display-healthy';
+  if (imc < 30) return 'imc-display-overweight';
+  if (imc < 35) return 'imc-display-obese';
+  return 'imc-display-extremely-obese';
+}
+
+
+  formatLocal(date: Date): string {
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const d = date.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;   // YYYY-MM-DD (sin cambio a UTC)
+  }
+
+  obtenerEstadoSimulado(dia: number): EstadoDia {
+    // Simula progreso: alternar entre cumplido / no cumplido / sinDato
+    if (dia % 3 === 0) return 'noCumplido';
+    if (dia % 2 === 0) return 'cumplido';
+    return 'sinDato';
   }
 
   /* =========================================================
    *  CARGA DE DATOS
    * ======================================================= */
-  private loadUserData(): void {
+  async loadUserData(): Promise<void> {
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
 
@@ -157,25 +299,60 @@ export class ClientComponent implements OnInit {
 
     this.retoComidaService.obtenerAlimentacionPorEmail(email).subscribe({
       next: (res) => {
-        console.log('Alimentación encontrada:', res);
-        this.alimentaciones = res.map((alimentacion: any) => ({
-          ...alimentacion,
-          diasTranscurridos: this.calcularDiasTranscurridos(
-            alimentacion.fechaInicio
-          ),
-          diasRestantes: this.calcularDiasRestantes(alimentacion.fechaFin),
-          progreso: this.calcularProgreso(
-            alimentacion.caloriasConsumidasHoy,
-            alimentacion.caloriasObjetivoDiarias
-          ),
-        }));
-        console.log('Alimentaciones:', this.alimentaciones);
+        console.log('Alimentación obtenida:', res);
+        if (!res || res.length === 0) {
+          this.alimentaciones = [];
+          return;
+        }
+
+        // Buscar la alimentación con el id más alto
+        const alimentacion = res.reduce((max: any, current: any) =>
+          current.id > max.id ? current : max
+        );
+
+        this.alimentaciones = [
+          {
+            ...alimentacion,
+            diasTranscurridos: this.calcularDiasTranscurridos(alimentacion.fechaInicio),
+            diasRestantes: this.calcularDiasRestantes(alimentacion.fechaFin),
+            progreso: this.calcularProgreso(
+              alimentacion.caloriasConsumidasHoy,
+              alimentacion.caloriasObjetivoDiarias
+            )
+          }
+        ];
+
+        console.log('Última alimentación procesada (por ID):', this.alimentaciones);
+        this.verComidas();
+
       },
       error: (err) => {
         console.error('Error al cargar la alimentación:', err);
+      }
+    });
+
+
+  }
+
+  verComidas(): void {
+    const alimentacion = this.alimentaciones?.[0];
+
+    if (!alimentacion || !alimentacion.id) {
+      return; // No hay alimentación activa
+    }
+
+    this.retoComidaService.obtenerComidasPorAlimentacion(alimentacion.id).subscribe({
+      next: (comidas) => {
+        this.comidasRegistradas = comidas ?? [];
+        console.log('Comidas registradas:', this.comidasRegistradas);
+                this.generarCalendario();
       },
+      error: () => {
+        this.comidasRegistradas = []; // Limpiar en caso de error
+      }
     });
   }
+
 
   getBadgeColor(progreso: number): string {
     if (progreso >= 75) return 'bg-success';
@@ -216,8 +393,8 @@ export class ClientComponent implements OnInit {
   }
 
   calcularProgreso(
-    caloriasConsumidas: number,
-    caloriasObjetivo: number
+    caloriasConsumidas: any,
+    caloriasObjetivo?: number
   ): number {
     if (!caloriasObjetivo || caloriasObjetivo <= 0) return 0;
 
@@ -549,90 +726,7 @@ export class ClientComponent implements OnInit {
     });
   }
 
-  verComidas(alimentacion: any, event: MouseEvent): void {
-    event.stopPropagation();
 
-    this.retoComidaService
-      .obtenerComidasPorAlimentacion(alimentacion.id)
-      .subscribe({
-        next: (comidas) => {
-          if (!comidas.length) {
-            Swal.fire(
-              'Sin registros',
-              'No hay comidas registradas aún.',
-              'info'
-            );
-            return;
-          }
-
-          const comidasPorFecha: { [fecha: string]: RegistroComidaDTO[] } = {};
-          comidas.forEach((comida) => {
-            const fecha = comida.fechaHoraRegistro.split('T')[0];
-            if (!comidasPorFecha[fecha]) comidasPorFecha[fecha] = [];
-            comidasPorFecha[fecha].push(comida);
-          });
-
-          let html = '';
-          Object.keys(comidasPorFecha)
-            .sort()
-            .reverse()
-            .forEach((fecha) => {
-              html += `
-            <div style="margin-bottom: 1.5rem;">
-              <h5 style="margin-bottom: 0.6rem; color: #333; font-weight: 600; border-bottom: 1px solid #ddd; padding-bottom: 0.3rem;">
-                📅 ${fecha}
-              </h5>
-              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-          `;
-              comidasPorFecha[fecha].forEach((comida) => {
-                const hora = new Date(
-                  comida.fechaHoraRegistro
-                ).toLocaleTimeString('es-CO', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                });
-
-                html += `
-              <div style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                background: #f5f5f5;
-                padding: 0.6rem 1rem;
-                border-radius: 10px;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-              ">
-                <div style="display: flex; flex-direction: column;">
-                  <span style="font-weight: 600; font-size: 0.95rem; color: #222;">
-                    🍽️ ${comida.nombre}
-                  </span>
-                  <span style="font-size: 0.85rem; color: #777;">
-                    🕒 ${hora}
-                  </span>
-                </div>
-                <div style="font-weight: 600; font-size: 0.95rem; color: #4caf50;">
-                  🔥 ${comida.calorias} cal
-                </div>
-              </div>
-            `;
-              });
-
-              html += `</div></div>`;
-            });
-
-          Swal.fire({
-            title: 'Comidas registradas',
-            html: `<div style="max-height: 450px; overflow-y: auto; text-align: left;">${html}</div>`,
-            confirmButtonText: 'Cerrar',
-            width: 620,
-            scrollbarPadding: false,
-          });
-        },
-        error: () => {
-          Swal.fire('Error', 'No se pudieron cargar las comidas.', 'error');
-        },
-      });
-  }
 
   abrirSwalCicloMenstrual(): void {
     const email = sessionStorage.getItem('user');
@@ -913,4 +1007,35 @@ export class ClientComponent implements OnInit {
     const base = tipo.replace(/_/g, ' ').toLowerCase();
     return `🤒 ${base}${int ? ' (' + int + ')' : ''}`;
   }
+
+
+
+  openWizard(): void {
+    const dialogRef = this.dialog.open(ChallengeWizardDialogComponent, {
+      minWidth: '60vw'
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result || !result.alimentacion?.id) return;
+
+      const reto: RetoAlimentacionDTO = {
+        descripcion: result.reto.description || result.reto.type,
+        completado: false,
+        fechaInicio: result.alimentacion.fechaInicio,
+        fechaFin: result.alimentacion.fechaFin
+      };
+
+      this.retoComidaService.asignarReto(result.alimentacion.id, reto).subscribe({
+        next: () => {
+          Swal.fire('Reto asignado', 'Tu reto fue asignado correctamente.', 'success');
+          this.loadUserData?.();
+        },
+        error: () => {
+          Swal.fire('Error', 'No se pudo asignar el reto.', 'error');
+        }
+      });
+    });
+  }
+
+
 }
