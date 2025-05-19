@@ -338,3 +338,44 @@ app-footer {
     flex-shrink: 0;
     width: 100%;
 }
+
+/* ================= Filtros de Historial y Tickets ================= */
+.historial-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.historial-filtros select {
+    max-width: 200px;
+}
+
+/* ================= Mensaje sin historial ================= */
+.sin-historial {
+    font-style: italic;
+    color: #718096;
+    background-color: #fefefe;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px dashed #cbd5e0;
+    margin-top: 1rem;
+}
+
+/* ================= Ticket Actions ================= */
+.ticket-actions .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+}
+
+/* Responsive para historial */
+@media (max-width: 768px) {
+    .historial-filtros {
+        flex-direction: column;
+    }
+
+    .historial-filtros select {
+        width: 100%;
+        max-width: 100%;
+    }
+}
