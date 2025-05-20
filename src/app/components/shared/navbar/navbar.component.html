@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg fixed-top" [class.navbar-scrolled]="isScrolled">
+nav<nav class="navbar navbar-expand-lg fixed-top" [class.navbar-scrolled]="isScrolled">
   <div class="container">
     <!-- Logo -->
     <a class="navbar-brand" routerLink="/">
@@ -22,6 +22,9 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" *ngIf="isAuthenticated && esSuperAdmin" routerLink="/home/faq-admin" routerLinkActive="active">Preguntas Frecuentes</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" *ngIf="isAuthenticated && esClienteOEmpresa" routerLink="/home/faq" routerLinkActive="active">Preguntas Frecuentes</a>
         </li>
       </ul>
 
@@ -69,7 +72,6 @@
           <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
         </select>
 
-        
         <!-- Menú de perfil -->
         <div class="dropdown">
           <button class="btn btn-outline-primary dropdown-toggle" type="button"

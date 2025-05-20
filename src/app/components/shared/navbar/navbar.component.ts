@@ -22,6 +22,8 @@ export class NavbarComponent implements OnInit {
   rolSeleccionado: string = ''; //propiedad rol seleccionado
   rolesDisponibles = ['SOPORTE', 'MARKETING', 'CLIENTE', 'EMPRESA', 'ADMINISTRADOR']; 
   esSuperAdmin: boolean = false;
+  esClienteOEmpresa: boolean = false;
+
 
 
   unreadNotifications: any[] = [];
@@ -47,6 +49,7 @@ export class NavbarComponent implements OnInit {
       //verificar el rol del usuario
       const rol = this.authService.getRole();
       this.esSuperAdmin = rol?.toUpperCase() === 'ADMINISTRADOR' || rol?.toUpperCase() === 'SUPER_ADMIN';
+      this.esClienteOEmpresa = rol === 'CLIENTE' || rol === 'EMPRESA';
     }
     this.setRolDesdeRuta(this.router.url);
 
