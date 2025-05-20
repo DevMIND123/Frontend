@@ -10,7 +10,7 @@ import { RetoAlimentacionDTO } from '../dto/reto-alimentacion.dto';
   providedIn: 'root'
 })
 export class RetoComidaService {
-  private baseUrl = environment.apiUrlHabitos;
+  private baseUrl = environment.apiUrl;
   private jsonHeaders = new HttpHeaders({
     'Content-Type': 'application/json',
   });
