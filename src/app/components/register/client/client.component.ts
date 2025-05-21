@@ -58,11 +58,13 @@ export class ClientComponent {
       sexo: this.sexo,
       rol: 'CLIENTE',
     };
+    console.log('sexo',userData.sexo);
     localStorage.setItem('sexoUsuario', this.sexo);
     this.authService.registerClient(userData).subscribe({
       next: () => {
         this.router.navigate(['/login']);
       },
+      
       error: (error) => {
         this.errorMessage =
           error?.error?.message || 'Error al registrar. Inténtalo de nuevo.';
@@ -71,3 +73,5 @@ export class ClientComponent {
     });
   }
 }
+
+       
