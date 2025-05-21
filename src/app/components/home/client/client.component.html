@@ -212,7 +212,7 @@
         </div>
       </div>
 
-     <!-- Hábito: Embarazo (solo mujeres) -->
+      <!-- Hábito: Embarazo (solo mujeres) -->
       <div class="col-md-4" *ngIf="userData.sexo === 'FEMENINO'">
         <div class="habit-card" (click)="abrirSwalRegistroEmbarazo()">
           <div class="habit-icon">
@@ -227,22 +227,26 @@
       </div>
 
 
-
       <!-- Hábito: Ejercicio o Deporte -->
       <div class="card shadow-sm mb-4" *ngIf="habitoEjercicio">
         <div class="card-body">
-          <h4 class="card-title">Ejercicio o Deporte</h4>
-          <p class="text-muted">Actividad reciente: {{ habitoEjercicio.ultimaActividad }}</p>
+          <h4 class="card-title">{{ habitoEjercicio.habito }}</h4>
+          <p class="text-muted">
+            Actividad reciente: <strong>{{ habitoEjercicio.actividadReciente.nombre }}</strong> -
+            {{ habitoEjercicio.actividadReciente.minutos }} minutos ({{ habitoEjercicio.actividadReciente.frecuencia }}
+            veces/semana)
+          </p>
           <ul class="list-group list-group-flush">
             <li class="list-group-item" *ngFor="let actividad of habitoEjercicio.actividades">
-              <strong>{{ actividad.tipo }}</strong> - {{ actividad.duracion }} minutos ({{ actividad.frecuencia }}
+              <strong>{{ actividad.nombre }}</strong> - {{ actividad.minutos }} minutos ({{ actividad.frecuencia }}
               veces/semana)
             </li>
           </ul>
         </div>
       </div>
 
-      <!-- Hábito: Moda -->
+
+      <!-- Hábito: Moda
       <div class="card shadow-sm mb-4" *ngIf="habitoModa">
         <div class="card-body">
           <h4 class="card-title">Moda</h4>
@@ -253,7 +257,7 @@
             </li>
           </ul>
         </div>
-      </div>
+      </div> -->
 
       <!-- Hábito: Belleza -->
       <div class="card shadow-sm mb-4" *ngIf="habitoBelleza">
