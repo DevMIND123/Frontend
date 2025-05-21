@@ -14,12 +14,7 @@
     <!-- Enlaces y botones -->
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/landing-page" routerLinkActive="active">Inicio</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/about" routerLinkActive="active">Acerca de</a>
-        </li>
+
       </ul>
 
       <!-- Usuario autenticado -->
@@ -34,8 +29,8 @@
               {{ unreadNotifications.length }}
             </span>
           </button>
-          <ul class="dropdown-menu dropdown-menu-end animate slideIn"
-            [class.show]="mostrarDropdown" aria-labelledby="notificationDropdown">
+          <ul class="dropdown-menu dropdown-menu-end animate slideIn" [class.show]="mostrarDropdown"
+            aria-labelledby="notificationDropdown">
             <li *ngIf="unreadNotifications.length === 0">
               <span class="dropdown-item">Sin notificaciones nuevas</span>
             </li>
@@ -58,7 +53,7 @@
             </li>
           </ul>
         </div>
-        
+
         <!-- Selector de rol para superadmin -->
         <div *ngIf="esSuperAdmin" class="ms-3">
           <label for="rolSelect" class="form-label me-2">Ver como:</label>
@@ -69,19 +64,14 @@
         </div>
 
         <!-- Menú de perfil -->
-        <div class="dropdown">
-          <button class="btn btn-outline-primary dropdown-toggle" type="button"
-            id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            🧑
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end animate slideIn" aria-labelledby="profileDropdown">
-            <li><a class="dropdown-item" (click)="home()"><i class="bi bi-person me-2"></i>Perfil</a></li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li><a class="dropdown-item" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</a></li>
-          </ul>
-        </div>
+        <a class="btn btn-outline-primary" (click)="logout()">
+          <i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión
+        </a>
+
+
+
+
+
       </div>
 
       <!-- Usuario no autenticado -->
