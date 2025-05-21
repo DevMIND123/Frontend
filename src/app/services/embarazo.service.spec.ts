@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { EmbarazoService } from './embarazo.service';
+import { EmbarazoService, EmbarazoRequestDTO } from './embarazo.service';
 import { environment } from '../../environments/environment';
 
 describe('EmbarazoService', () => {
@@ -18,24 +18,27 @@ describe('EmbarazoService', () => {
   });
 
   afterEach(() => {
-    httpMock.verify(); // Verifica que no haya peticiones pendientes
+    httpMock.verify();
   });
 
-  it('debería enviar POST correctamente a /embarazo/registrar con datos del formulario', () => {
-    // Datos simulados del formulario
-    const formData = {
-      emailUsuario: 'ejemplo@correo.com',
-      fechaInicio: '2025-04-15',
-      sintomas: 'Náuseas y sensibilidad'
+  it('registrar embarazo con datos ingresados por la usuaria', () => {
+    const email = localStorage.getItem('emailUsuario') || 'default@email.com';
+    const fechaInicio = new Date().toISOString().split('T')[0]; // hoy por defecto
+    const sintomas = 'Fatiga, náuseas';
+
+    const requestData: EmbarazoRequestDTO = {
+      emailUsuario: email,
+      fechaInicio,
+      sintomas
     };
 
-    service.registrarEmbarazo(formData).subscribe(response => {
+    service.registrarEmbarazo(requestData).subscribe(response => {
       expect(response).toEqual('Embarazo registrado correctamente.');
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/embarazo/registrar`);
+    const req = httpMock.expectOne(`${environment.apiUrlHabitos}/embarazo/registrar`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(formData);
+    expect(req.request.body).toEqual(requestData);
 
     req.flush('Embarazo registrado correctamente.');
   });
