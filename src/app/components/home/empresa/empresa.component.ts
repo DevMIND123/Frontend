@@ -115,6 +115,7 @@ export class EmpresaHomeComponent implements OnInit {
   filteredClients: ClientItem[] = [...this.clients];
   searchTerm = '';
   dashboardResumen: any = null;
+  listaLeeds: any[] = [];
 
   /* ═══════════════════════════════════════════════════════
    *  CONSTRUCTOR & CICLO DE VIDA
@@ -124,69 +125,73 @@ export class EmpresaHomeComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly empresaDashboardService: EmpresaDashboardService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCompanyData();
     this.loadThemePreference();
     this.empresaDashboardService.obtenerResumenEmpresa().subscribe({
       next: (data) => {
-        this.dashboardResumen = data;
+        this.dashboardResumen = {
+          satisfaccionClientes: data.satisfaccionClientes,
+          clientesRetenidos: data.clientesRetenidos,
+          totalClientes: data.totalClientes,
+          tasaCrecimientoAnual: data.tasaCrecimientoAnual,
+          soportesAtendidosMes: data.soportesAtendidosMes,
+          comentarioGeneral: data.comentarioGeneral
+        };
+
+        this.listaLeeds = data.leedsPotenciales; // 👈 AGREGAR ESTA LÍNEA
+
         console.log('[Empresa] Dashboard cargado:', data);
       },
-      error: (err) => {
-        console.error('[Empresa] Error al cargar dashboard:', err);
-      }
-    });
-  }
 
-  /* ═══════════════════════════════════════════════════════
-   *  CARGA DE DATOS EMPRESA
-   * ═════════════════════════════════════════════════════ */
+    })
+  }
   private loadCompanyData(): void {
-    const email = this.authService.getEmail();
-    const rol = this.authService.getRole();
+  const email = this.authService.getEmail();
+  const rol = this.authService.getRole();
 
-    if (!email || !rol) {
-      this.errorMessage =
-        'No se encontró la sesión de la empresa. Inicia sesión nuevamente.';
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    this.usuarioService.obtenerUsuario(email, rol).subscribe({
-      next: (dto) => {
-        this.id = dto;
-
-        // ✅ Ya tienes this.id, ahora sí haces la segunda llamada
-        this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
-          next: (dto) => {
-            this.companyData = {
-              nombreEmpresa: dto.nombreEmpresa,
-              nombreRepresentante: dto.nombreRepresentante,
-              numeroDocumento: dto.numeroDocumento,
-              email: dto.email,
-              newEmail: dto.email,
-              departamento: dto.departamento,
-              especialidad: dto.especialidad,
-              nit: dto.nit,
-            };
-
-            console.log('[Empresa] loadCompanyData (by ID):', this.companyData);
-            this.errorMessage = null;
-          },
-          error: (err) => {
-            this.errorMessage = 'Error al cargar los datos de la empresa.';
-            console.error('[Empresa] loadCompanyData (by ID):', err);
-          },
-        });
-      },
-      error: (err) => {
-        this.errorMessage = 'Error al cargar los datos de la empresa.';
-        console.error('[Empresa] loadCompanyData:', err);
-      },
-    });
+  if (!email || !rol) {
+    this.errorMessage =
+      'No se encontró la sesión de la empresa. Inicia sesión nuevamente.';
+    this.router.navigate(['/login']);
+    return;
   }
+
+  this.usuarioService.obtenerUsuario(email, rol).subscribe({
+    next: (dto) => {
+      this.id = dto;
+
+      this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
+        next: (dto) => {
+          this.companyData = {
+            nombreEmpresa: dto.nombreEmpresa,
+            nombreRepresentante: dto.nombreRepresentante,
+            numeroDocumento: dto.numeroDocumento,
+            email: dto.email,
+            newEmail: dto.email,
+            departamento: dto.departamento,
+            especialidad: dto.especialidad,
+            nit: dto.nit,
+          };
+
+          console.log('[Empresa] loadCompanyData (by ID):', this.companyData);
+          this.errorMessage = null;
+        },
+        error: (err) => {
+          this.errorMessage = 'Error al cargar los datos de la empresa.';
+          console.error('[Empresa] loadCompanyData (by ID):', err);
+        },
+      });
+    },
+    error: (err) => {
+      this.errorMessage = 'Error al cargar los datos de la empresa.';
+      console.error('[Empresa] loadCompanyData:', err);
+    },
+  });
+}
+
 
   /* ═══════════════════════════════════════════════════════
    *  EDICIÓN DE PERFIL
@@ -270,8 +275,8 @@ export class EmpresaHomeComponent implements OnInit {
   // Moculo "Promocionar Empresa"
 
   promocionarEmpresa(): void {
-  this.mostrarPlanesPromocion = !this.mostrarPlanesPromocion;
-}
+    this.mostrarPlanesPromocion = !this.mostrarPlanesPromocion;
+  }
 
   /* ═══════════════════════════════════════════════════════
    *  CAMBIO DE CONTRASEÑA
@@ -399,47 +404,47 @@ export class EmpresaHomeComponent implements OnInit {
     alert(`Detalles de ${client.name}`);
   }
 
-//Modulo "Quiero Promocionarme"
+  //Modulo "Quiero Promocionarme"
 
-mostrarPlanesPromocion: boolean = false;
+  mostrarPlanesPromocion: boolean = false;
 
-planesPromocion = [
-  {
-    nombre: 'Básico',
-    descripcion: 'Ideal para empresas que inician en la plataforma.',
-    precio: 0,
-    color: 'secondary',
-    beneficios: [
-      'Aparición en resultados de búsqueda',
-      'Logo en perfil empresarial',
-      'Acceso limitado a estadísticas'
-    ]
-  },
-  {
-    nombre: 'Profesional',
-    descripcion: 'Recomendado para empresas con crecimiento activo.',
-    precio: 59000,
-    color: 'primary',
-    beneficios: [
-      'Mayor visibilidad en la plataforma',
-      'Destacado en listados por 30 días',
-      'Estadísticas avanzadas',
-      'Soporte prioritario'
-    ]
-  },
-  {
-    nombre: 'Premium',
-    descripcion: 'Para empresas líderes que quieren destacar al máximo.',
-    precio: 129000,
-    color: 'warning',
-    beneficios: [
-      'Posición destacada en toda la app',
-      'Promociones destacadas en correo',
-      'Banner personalizado',
-      'Reportes personalizados',
-      'Atención exclusiva'
-    ]
-  }
-];
+  planesPromocion = [
+    {
+      nombre: 'Básico',
+      descripcion: 'Ideal para empresas que inician en la plataforma.',
+      precio: 0,
+      color: 'secondary',
+      beneficios: [
+        'Aparición en resultados de búsqueda',
+        'Logo en perfil empresarial',
+        'Acceso limitado a estadísticas'
+      ]
+    },
+    {
+      nombre: 'Profesional',
+      descripcion: 'Recomendado para empresas con crecimiento activo.',
+      precio: 59000,
+      color: 'primary',
+      beneficios: [
+        'Mayor visibilidad en la plataforma',
+        'Destacado en listados por 30 días',
+        'Estadísticas avanzadas',
+        'Soporte prioritario'
+      ]
+    },
+    {
+      nombre: 'Premium',
+      descripcion: 'Para empresas líderes que quieren destacar al máximo.',
+      precio: 129000,
+      color: 'warning',
+      beneficios: [
+        'Posición destacada en toda la app',
+        'Promociones destacadas en correo',
+        'Banner personalizado',
+        'Reportes personalizados',
+        'Atención exclusiva'
+      ]
+    }
+  ];
 
 }
