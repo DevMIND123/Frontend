@@ -14,7 +14,18 @@
     <!-- Enlaces y botones -->
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
-
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/landing-page" routerLinkActive="active">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/about" routerLinkActive="active">Acerca de</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" *ngIf="isAuthenticated && esSuperAdmin" routerLink="/home/faq-admin" routerLinkActive="active">Preguntas Frecuentes</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" *ngIf="isAuthenticated && esClienteOEmpresa" routerLink="/home/faq" routerLinkActive="active">Preguntas Frecuentes</a>
+        </li>
       </ul>
 
       <!-- Usuario autenticado -->
@@ -55,13 +66,11 @@
         </div>
 
         <!-- Selector de rol para superadmin -->
-        <div *ngIf="esSuperAdmin" class="ms-3">
-          <label for="rolSelect" class="form-label me-2">Ver como:</label>
-          <select id="rolSelect" class="form-select d-inline w-auto" (change)="onSeleccionarRol($event)">
-            <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
-          </select>
-
-        </div>
+        <select *ngIf="esSuperAdmin"
+          [(ngModel)]="rolSeleccionado" (change)="onSeleccionarRol($event)">
+          (change)="onSeleccionarRol($event)">
+          <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
+        </select>
 
         <!-- Menú de perfil -->
         <a class="btn btn-outline-primary" (click)="logout()">
