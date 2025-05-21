@@ -44,6 +44,8 @@ export class MarketingComponent implements OnInit {
   errorMessage: string | null = null;
   id = 0;
 
+  showCampaignForm = false;
+
   userData = {
     nombre: '',
     email: '',

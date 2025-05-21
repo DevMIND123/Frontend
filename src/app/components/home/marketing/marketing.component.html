@@ -33,12 +33,14 @@
           <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
             <div class="mb-3">
               <label class="form-label">Nombre completo</label>
-              <input type="text" class="form-control" [(ngModel)]="userData.nombre" name="nombre" [readonly]="!isEditing" required />
+              <input type="text" class="form-control" [(ngModel)]="userData.nombre" name="nombre"
+                [readonly]="!isEditing" required />
             </div>
 
             <div class="mb-3">
               <label class="form-label">Correo electrónico</label>
-              <input type="email" class="form-control" [(ngModel)]="userData.email" name="email" [readonly]="!isEditing" required />
+              <input type="email" class="form-control" [(ngModel)]="userData.email" name="email" [readonly]="!isEditing"
+                required />
             </div>
 
             <div class="d-flex gap-2">
@@ -46,7 +48,8 @@
                 <i class="bi" [class]="isEditing ? 'bi-x-lg' : 'bi-pencil'"></i>
                 {{ isEditing ? "Cancelar" : "Editar" }}
               </button>
-              <button *ngIf="isEditing" type="submit" class="btn btn-primary flex-grow-1" [disabled]="!profileForm.form.valid">
+              <button *ngIf="isEditing" type="submit" class="btn btn-primary flex-grow-1"
+                [disabled]="!profileForm.form.valid">
                 <i class="bi bi-save"></i> Guardar
               </button>
             </div>
@@ -63,7 +66,8 @@
             -->
 
           <div class="form-check form-switch mb-4">
-            <input class="form-check-input" type="checkbox" [(ngModel)]="preferences.notifications" name="notifications" [ngModelOptions]="{ standalone: true }" />
+            <input class="form-check-input" type="checkbox" [(ngModel)]="preferences.notifications" name="notifications"
+              [ngModelOptions]="{ standalone: true }" />
             <label class="form-check-label">Notificaciones</label>
           </div>
 
@@ -82,12 +86,15 @@
             <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
               <div class="mb-3">
                 <label class="form-label">Nueva Contraseña</label>
-                <input type="password" class="form-control" [(ngModel)]="passwordData.newPassword" name="newPassword" required />
+                <input type="password" class="form-control" [(ngModel)]="passwordData.newPassword" name="newPassword"
+                  required />
               </div>
 
               <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-secondary flex-grow-1" (click)="togglePasswordForm()">Cancelar</button>
-                <button type="submit" class="btn btn-primary flex-grow-1" [disabled]="!passwordForm.form.valid">Actualizar Contraseña</button>
+                <button type="button" class="btn btn-outline-secondary flex-grow-1"
+                  (click)="togglePasswordForm()">Cancelar</button>
+                <button type="submit" class="btn btn-primary flex-grow-1"
+                  [disabled]="!passwordForm.form.valid">Actualizar Contraseña</button>
               </div>
             </form>
           </div>
@@ -129,6 +136,29 @@
             </button>
           </div>
 
+          <!-- Formulario crear nueva campaña -->
+          <div *ngIf="showCampaignForm" class="campaign-form">
+            <button type="button" class="btn-close" aria-label="Cerrar" (click)="showCampaignForm = false">
+            </button>
+
+            <h5 class="mb-3">Crear Nueva Campaña</h5>
+
+            <form>
+              <div class="mb-3">
+                <label for="campañaNombre" class="form-label">Nombre</label>
+                <input id="campañaNombre" type="text" class="form-control" placeholder="Escribe un nombre" />
+              </div>
+              <div class="mb-3">
+                <label for="campañaFechaInicio" class="form-label">Fecha inicio</label>
+                <input id="campañaFechaInicio" type="date" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label for="campañaFechaFin" class="form-label">Fecha fin</label>
+                <input id="campañaFechaFin" type="date" class="form-control" />
+              </div>
+            </form>
+          </div>
+4
           <div class="campaigns-list">
             <div *ngFor="let campaign of campaigns" class="campaign-card shadow-sm mb-3 p-3 rounded">
               <div class="d-flex justify-content-between align-items-center">

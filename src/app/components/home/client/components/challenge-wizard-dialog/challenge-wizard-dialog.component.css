@@ -1,0 +1,101 @@
+:host {
+  display: block;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica Neue, Arial, sans-serif;
+  color: #2d3748;
+}
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+h4 {
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────── */
+/* 2. Stepper – minimal y limpio */
+::ng-deep .mat-horizontal-stepper-header {
+  padding: 8px 12px;
+}
+
+::ng-deep .mat-step-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 0.75rem;
+  background: #e0e0e0;
+  color: #424242;
+}
+
+::ng-deep .mat-step-icon-selected {
+  background: var(--mdc-theme-primary, #1976d2);
+  color: #fff;
+}
+
+::ng-deep .mat-step-icon-state-done {
+  background: #2e7d32;
+  color: #fff;
+}
+
+::ng-deep .mat-step-label {
+  font-size: 0.8rem;
+}
+
+/* ─────────────────────────────────────────────── */
+/* 3. Dialog padding */
+.mat-dialog-content {
+  padding: 0 24px 24px;
+}
+
+/* ─────────────────────────────────────────────── */
+/* 4. Info “alert” */
+.alert {
+  background: #e8f4ff;
+  border-left: 4px solid #1976d2;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ─────────────────────────────────────────────── */
+/* 5. Grid para los campos de altura / peso */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.col-6 {
+  flex: 1 1 200px;
+  min-width: 0;          /* evita overflow en pantallas pequeñas */
+}
+
+/* ─────────────────────────────────────────────── */
+/* 6. Botones de acción (footer de cada paso) */
+[mat-dialog-actions] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 24px;
+}
+
+/* ─────────────────────────────────────────────── */
+/* 7. Utilidades */
+.full-width,
+.w-100 {
+  width: 100%;
+}
+
+/* Reduce padding en formularios Material */
+.mat-form-field {
+  margin-bottom: 12px;
+}

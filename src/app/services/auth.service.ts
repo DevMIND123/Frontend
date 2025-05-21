@@ -11,7 +11,6 @@ const USER = 'user';
 const ROLE = 'user-role';
 const USER_ID = 'userId';
 
-
 @Injectable({
   providedIn: 'root',
 })

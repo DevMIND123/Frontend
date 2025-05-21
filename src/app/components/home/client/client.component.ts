@@ -1,8 +1,8 @@
 /* src/app/components/home/client/client.component.ts */
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { CommonModule, formatDate } from '@angular/common';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
@@ -15,11 +15,13 @@ import { AlimentacionDTO } from '../../../dto/alimentacion.dto';
 import { RetoAlimentacionDTO } from '../../../dto/reto-alimentacion.dto';
 import { RegistroComidaDTO } from '../../../dto/registro-comida.dto';
 import { CicloMenstrualService } from '../../../services/ciclo-menstrual.service';
+import { EmbarazoService } from '../../../services/embarazo.service';
 import { EventoTipo } from '../../../dto/evento-menstrual.dto';
 import { SintomaTipo } from '../../../dto/sintoma-menstrual.dto';
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import esLocale from '@fullcalendar/core/locales/es';
+import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import { forkJoin } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
@@ -27,8 +29,21 @@ import { HabitoEjercicioService } from '../../../services/habito-ejercicio.servi
 import { HabitoModaService } from '../../../services/habito-moda.service';
 import { HabitoBellezaService } from '../../../services/habito-belleza.service';
 import { HabitoDineroService } from '../../../services/habito-dinero.service';
+
 import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/utils';
-import { EmbarazoService, EmbarazoRequestDTO } from '../../../services/embarazo.service';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ChallengeWizardDialogComponent } from './components/challenge-wizard-dialog/challenge-wizard-dialog.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+
+
+type EstadoDia = 'cumplido' | 'noCumplido' | 'sinDato';
+
+interface DiaCalendario {
+  dia: number;
+  estado: EstadoDia;
+  esOtroMes?: boolean;
+}
 
 @Component({
   selector: 'app-client',
@@ -39,6 +54,10 @@ import { EmbarazoService, EmbarazoRequestDTO } from '../../../services/embarazo.
     RouterModule,
     NavbarComponent,
     FooterComponent,
+    MatDialogModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    ReactiveFormsModule
   ],
   templateUrl: './client.component.html',
   styleUrls: ['./client.component.css'],
@@ -71,9 +90,20 @@ export class ClientComponent implements OnInit {
     especialidad: '',
   };
 
+  embarazo: {
+  fechaInicio: string;
+  semanaActual: number;
+  fechaPartoEstimada: string;
+} | null = null;
+
   /* ------------ preferencias ------------ */
   darkMode = false;
   notificationsEnabled = true;
+  comidasRegistradas: RegistroComidaDTO[] = [];
+  comidaForm!: FormGroup;
+  calendario: DiaCalendario[][] = [];
+  mostrarInfoIMC = false;
+  mostrarInfoRegistrarComida = false;
 
   /* ------------ password modal ------------ */
   /** formulario de cambio de contraseña */
@@ -93,23 +123,152 @@ export class ClientComponent implements OnInit {
     private habitoModaService: HabitoModaService,
     private habitoBellezaService: HabitoBellezaService,
     private habitoDineroService: HabitoDineroService,
+    private dialog: MatDialog,
+    private http: HttpClient,
+    private fb: FormBuilder,
     private embarazoService: EmbarazoService
-  ) { }
+  ) {
+    this.comidaForm = this.fb.group({
+      nombre: ['', Validators.required],
+      calorias: [null, [Validators.required, Validators.min(1)]]
+    });
+  }
 
   /* =========================================================
    *  CICLO DE VIDA
    * ======================================================= */
-  ngOnInit(): void {
-    this.loadUserData();
+  async ngOnInit(): Promise<void> {
+    await this.loadUserData();
     this.loadThemePreference();
 
     this.loadHabitos();
+
+
+
+  }
+
+  registrarComida(): void {
+    console.log('Formulario de comida:', this.alimentaciones);
+    if (this.comidaForm.valid) {
+      const comida: RegistroComidaDTO = {
+        nombre: this.comidaForm.value.nombre,
+        calorias: this.comidaForm.value.calorias,
+        fechaHoraRegistro: new Date().toISOString()
+      };
+
+      if (!this.alimentaciones || this.alimentaciones.length === 0) {
+        console.warn('No hay un reto de alimentación activo');
+        return;
+      }
+
+      const idAlimentacion = this.alimentaciones[0].id;
+
+      this.retoComidaService.registrarComida(idAlimentacion, comida).subscribe({
+        next: () => {
+          console.log('Comida registrada exitosamente:', comida);
+
+          // ✅ Agrega la nueva comida a la lista actual
+          this.comidasRegistradas.push({
+            ...comida
+          });
+
+          this.comidaForm.reset(); // Limpiar el formulario
+        },
+        error: () => {
+          console.error('Error al registrar la comida');
+        }
+      });
+    } else {
+      console.warn('Formulario inválido');
+    }
+  }
+
+
+  generarCalendario(): void {
+    if (!this.alimentaciones?.length) return;
+
+    const caloriasObjetivo = this.alimentaciones[0].caloriasObjetivoDiarias;
+    if (!caloriasObjetivo) return;
+
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const mes = hoy.getMonth();            // 0-based
+    const dia0 = new Date(año, mes, 1);
+    const nDias = new Date(año, mes + 1, 0).getDate();
+    const primerCol = (dia0.getDay() || 7); // Lun=1 … Dom=7
+
+    /* ---------- 1. agrupar calorías por día ---------- */
+    const caloriasPorDia: Record<string, number> = {};
+    this.comidasRegistradas.forEach(c => {
+      const k = this.formatLocal(new Date(c.fechaHoraRegistro));
+      caloriasPorDia[k] = (caloriasPorDia[k] ?? 0) + c.calorias;
+    });
+
+    /* ---------- 2. construir matriz del calendario ---------- */
+    const calendario: DiaCalendario[][] = [];
+    let semana: DiaCalendario[] = [];
+
+    // huecos del mes anterior
+    for (let i = 1; i < primerCol; i++) {
+      semana.push({ dia: 0, estado: 'sinDato', esOtroMes: true });
+    }
+
+    // días del mes actual
+    for (let d = 1; d <= nDias; d++) {
+      const fecha = new Date(año, mes, d);
+      const k = this.formatLocal(fecha);
+      const tot = caloriasPorDia[k] ?? 0;
+
+      let estado: EstadoDia = 'sinDato';
+      if (k in caloriasPorDia)
+        estado = tot >= caloriasObjetivo ? 'cumplido' : 'noCumplido';
+
+      semana.push({ dia: d, estado });
+
+      if (semana.length === 7) {
+        calendario.push(semana);
+        semana = [];
+      }
+    }
+
+    // relleno final
+    if (semana.length) {
+      while (semana.length < 7) {
+        semana.push({ dia: 0, estado: 'sinDato', esOtroMes: true });
+      }
+      calendario.push(semana);
+    }
+
+    this.calendario = calendario;
+  }
+
+  getIMCClass(imc: number): string {
+    if (imc < 18.5) return 'imc-display-underweight';
+    if (imc < 25) return 'imc-display-healthy';
+    if (imc < 30) return 'imc-display-overweight';
+    if (imc < 35) return 'imc-display-obese';
+    return 'imc-display-extremely-obese';
+  }
+
+
+  formatLocal(date: Date): string {
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const d = date.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;   // YYYY-MM-DD (sin cambio a UTC)
+  }
+
+  obtenerEstadoSimulado(dia: number): EstadoDia {
+    // Simula progreso: alternar entre cumplido / no cumplido / sinDato
+    if (dia % 3 === 0) return 'noCumplido';
+    if (dia % 2 === 0) return 'cumplido';
+    return 'sinDato';
   }
 
   /* =========================================================
    *  CARGA DE DATOS
    * ======================================================= */
-  private loadUserData(): void {
+  async loadUserData(): Promise<void> {
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
 
@@ -119,6 +278,8 @@ export class ClientComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+
+    this.cargarEmbarazo(email); //Carga la información de embarazo
 
     this.usuarioService.obtenerUsuario(email, rol).subscribe({
       next: (dto) => {
@@ -132,7 +293,7 @@ export class ClientComponent implements OnInit {
             this.userData = {
               nombre: dto.nombre ?? '',
               email: dto.email ?? '',
-              sexo: dto.sexo ?? '',
+              sexo: localStorage.getItem('sexoUsuario') ?? '',
               newEmail: dto.email ?? '',
               departamento: dto.departamento ?? '',
               especialidad: dto.especialidad ?? '',
@@ -156,25 +317,60 @@ export class ClientComponent implements OnInit {
 
     this.retoComidaService.obtenerAlimentacionPorEmail(email).subscribe({
       next: (res) => {
-        console.log('Alimentación encontrada:', res);
-        this.alimentaciones = res.map((alimentacion: any) => ({
-          ...alimentacion,
-          diasTranscurridos: this.calcularDiasTranscurridos(
-            alimentacion.fechaInicio
-          ),
-          diasRestantes: this.calcularDiasRestantes(alimentacion.fechaFin),
-          progreso: this.calcularProgreso(
-            alimentacion.caloriasConsumidasHoy,
-            alimentacion.caloriasObjetivoDiarias
-          ),
-        }));
-        console.log('Alimentaciones:', this.alimentaciones);
+        console.log('Alimentación obtenida:', res);
+        if (!res || res.length === 0) {
+          this.alimentaciones = [];
+          return;
+        }
+
+        // Buscar la alimentación con el id más alto
+        const alimentacion = res.reduce((max: any, current: any) =>
+          current.id > max.id ? current : max
+        );
+
+        this.alimentaciones = [
+          {
+            ...alimentacion,
+            diasTranscurridos: this.calcularDiasTranscurridos(alimentacion.fechaInicio),
+            diasRestantes: this.calcularDiasRestantes(alimentacion.fechaFin),
+            progreso: this.calcularProgreso(
+              alimentacion.caloriasConsumidasHoy,
+              alimentacion.caloriasObjetivoDiarias
+            )
+          }
+        ];
+
+        console.log('Última alimentación procesada (por ID):', this.alimentaciones);
+        this.verComidas();
+
       },
       error: (err) => {
         console.error('Error al cargar la alimentación:', err);
+      }
+    });
+
+
+  }
+
+  verComidas(): void {
+    const alimentacion = this.alimentaciones?.[0];
+
+    if (!alimentacion || !alimentacion.id) {
+      return; // No hay alimentación activa
+    }
+
+    this.retoComidaService.obtenerComidasPorAlimentacion(alimentacion.id).subscribe({
+      next: (comidas) => {
+        this.comidasRegistradas = comidas ?? [];
+        console.log('Comidas registradas:', this.comidasRegistradas);
+        this.generarCalendario();
       },
+      error: () => {
+        this.comidasRegistradas = []; // Limpiar en caso de error
+      }
     });
   }
+
 
   getBadgeColor(progreso: number): string {
     if (progreso >= 75) return 'bg-success';
@@ -215,8 +411,8 @@ export class ClientComponent implements OnInit {
   }
 
   calcularProgreso(
-    caloriasConsumidas: number,
-    caloriasObjetivo: number
+    caloriasConsumidas: any,
+    caloriasObjetivo?: number
   ): number {
     if (!caloriasObjetivo || caloriasObjetivo <= 0) return 0;
 
@@ -230,7 +426,7 @@ export class ClientComponent implements OnInit {
         this.habitoEjercicio = data;
         console.log('[Hábito Ejercicio] Datos cargados:', data);
       },
-      error: (err) => console.error('[Hábito Ejercicio] Error:', err)
+      error: (err) => console.error('[Hábito Ejercicio] Error:', err),
     });
 
     this.habitoModaService.obtenerHabitoModa().subscribe({
@@ -238,7 +434,7 @@ export class ClientComponent implements OnInit {
         this.habitoModa = data;
         console.log('[Hábito Moda] Datos cargados:', data);
       },
-      error: (err) => console.error('[Hábito Moda] Error:', err)
+      error: (err) => console.error('[Hábito Moda] Error:', err),
     });
 
     this.habitoBellezaService.obtenerHabitoBelleza().subscribe({
@@ -246,7 +442,7 @@ export class ClientComponent implements OnInit {
         this.habitoBelleza = data;
         console.log('[Hábito Belleza] Datos cargados:', data);
       },
-      error: (err) => console.error('[Hábito Belleza] Error:', err)
+      error: (err) => console.error('[Hábito Belleza] Error:', err),
     });
 
     this.habitoDineroService.obtenerHabitoDinero().subscribe({
@@ -254,7 +450,7 @@ export class ClientComponent implements OnInit {
         this.habitoDinero = data;
         console.log('[Hábito Dinero] Datos cargados:', data);
       },
-      error: (err) => console.error('[Hábito Dinero] Error:', err)
+      error: (err) => console.error('[Hábito Dinero] Error:', err),
     });
   }
 
@@ -420,6 +616,8 @@ export class ClientComponent implements OnInit {
                     <p><strong>Calorías diarias recomendadas :D:</strong> ${res.caloriasObjetivoDiarias}</p>
                   `,
                   confirmButtonText: 'Aceptar',
+                }).then(() => {
+                  this.loadUserData(); // ✅ ← aquí debes actualizar
                 });
               } else {
                 Swal.fire({
@@ -427,6 +625,8 @@ export class ClientComponent implements OnInit {
                   title: 'Reto creado',
                   text: 'Se creó el reto, pero no se pudo obtener información detallada.',
                   confirmButtonText: 'Aceptar',
+                }).then(() => {
+                  this.loadUserData(); // ✅ ← también aquí
                 });
               }
             },
@@ -548,90 +748,7 @@ export class ClientComponent implements OnInit {
     });
   }
 
-  verComidas(alimentacion: any, event: MouseEvent): void {
-    event.stopPropagation();
 
-    this.retoComidaService
-      .obtenerComidasPorAlimentacion(alimentacion.id)
-      .subscribe({
-        next: (comidas) => {
-          if (!comidas.length) {
-            Swal.fire(
-              'Sin registros',
-              'No hay comidas registradas aún.',
-              'info'
-            );
-            return;
-          }
-
-          const comidasPorFecha: { [fecha: string]: RegistroComidaDTO[] } = {};
-          comidas.forEach((comida) => {
-            const fecha = comida.fechaHoraRegistro.split('T')[0];
-            if (!comidasPorFecha[fecha]) comidasPorFecha[fecha] = [];
-            comidasPorFecha[fecha].push(comida);
-          });
-
-          let html = '';
-          Object.keys(comidasPorFecha)
-            .sort()
-            .reverse()
-            .forEach((fecha) => {
-              html += `
-            <div style="margin-bottom: 1.5rem;">
-              <h5 style="margin-bottom: 0.6rem; color: #333; font-weight: 600; border-bottom: 1px solid #ddd; padding-bottom: 0.3rem;">
-                📅 ${fecha}
-              </h5>
-              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-          `;
-              comidasPorFecha[fecha].forEach((comida) => {
-                const hora = new Date(
-                  comida.fechaHoraRegistro
-                ).toLocaleTimeString('es-CO', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                });
-
-                html += `
-              <div style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                background: #f5f5f5;
-                padding: 0.6rem 1rem;
-                border-radius: 10px;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-              ">
-                <div style="display: flex; flex-direction: column;">
-                  <span style="font-weight: 600; font-size: 0.95rem; color: #222;">
-                    🍽️ ${comida.nombre}
-                  </span>
-                  <span style="font-size: 0.85rem; color: #777;">
-                    🕒 ${hora}
-                  </span>
-                </div>
-                <div style="font-weight: 600; font-size: 0.95rem; color: #4caf50;">
-                  🔥 ${comida.calorias} cal
-                </div>
-              </div>
-            `;
-              });
-
-              html += `</div></div>`;
-            });
-
-          Swal.fire({
-            title: 'Comidas registradas',
-            html: `<div style="max-height: 450px; overflow-y: auto; text-align: left;">${html}</div>`,
-            confirmButtonText: 'Cerrar',
-            width: 620,
-            scrollbarPadding: false,
-          });
-        },
-        error: () => {
-          Swal.fire('Error', 'No se pudieron cargar las comidas.', 'error');
-        },
-      });
-  }
 
   abrirSwalCicloMenstrual(): void {
     const email = sessionStorage.getItem('user');
@@ -639,16 +756,26 @@ export class ClientComponent implements OnInit {
       Swal.fire('Error', 'No se encontró información del usuario.', 'error');
       return;
     }
-
+  
     Swal.fire({
-      title: 'Ciclo Menstrual',
+      title: '🌸 Ciclo Menstrual',
       html: `
-        <div class="text-start">
-          <p class="mb-2">¿Qué deseas hacer?</p>
-          <button id="btn-ciclo"     class="swal2-confirm swal2-styled" style="background:#d63384;margin:4px 0;">Registrar Ciclo</button>
-          <button id="btn-evento"    class="swal2-confirm swal2-styled" style="background:#6f42c1;margin:4px 0;">Registrar Evento</button>
-          <button id="btn-sintoma"   class="swal2-confirm swal2-styled" style="background:#20c997;margin:4px 0;">Registrar Síntoma</button>
-          <button id="btn-calendario"class="swal2-confirm swal2-styled" style="background:#0d6efd;margin:4px 0;">Ver Calendario</button>
+        <div style="text-align: left; font-size: 16px;">
+          <p style="text-align: center; font-size: 14px; color: #6f42c1; margin-bottom: 15px;">¿Qué deseas hacer?</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button id="btn-ciclo" class="swal2-styled" style="background-color: #f8bbd0; color: #6a1b9a;">
+              🩸 Registrar Ciclo
+            </button>
+            <button id="btn-evento" class="swal2-styled" style="background-color: #d1c4e9; color: #4527a0;">
+              ✍️ Cuida de ti
+            </button>
+            <button id="btn-sintoma" class="swal2-styled" style="background-color: #b2dfdb; color: #00695c;">
+              💬 Escucha tu cuerpo
+            </button>
+            <button id="btn-calendario" class="swal2-styled" style="background-color: #bbdefb; color: #0d47a1;">
+              📅 Ver Calendario
+            </button>
+          </div>
         </div>
       `,
       showConfirmButton: false,
@@ -657,137 +784,206 @@ export class ClientComponent implements OnInit {
         const btnEvento = document.getElementById('btn-evento');
         const btnSintoma = document.getElementById('btn-sintoma');
         const btnCalendario = document.getElementById('btn-calendario');
-
-        /* ---------- Registrar ciclo ---------- */
+  
+        // --- CICLO ---
         btnCiclo?.addEventListener('click', () => {
           Swal.fire({
             title: 'Registrar Ciclo',
             html: `
-              <input id="duracion"      class="swal2-input" type="number" placeholder="Duración del ciclo (días)">
-              <input id="menstruacion"  class="swal2-input" type="number" placeholder="Duración menstruación (días)">
+              <br><p style="text-align: center; font-size: 14px; color: #6f42c1; margin-bottom: 15px;">
+                Aquí puedes anotar los datos clave de tu ciclo para entender mejor tu cuerpo y cuidarte con amor.
+              </p><br>
+              <div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
+                <label style="font-size: 14px; font-weight: 500;" for="fecha-inicio">📅 Fecha de inicio</label>
+                <input 
+                  id="fecha-inicio" 
+                  class="swal2-input" 
+                  type="date" 
+                  placeholder="Selecciona la fecha"
+                  style="padding: 10px; font-size: 14px; border-radius: 8px;"
+                >
+
+                <label style="font-size: 14px; font-weight: 500;" for="duracion">🔁 Duración del ciclo (días)</label>
+                <input 
+                  id="duracion" 
+                  class="swal2-input" 
+                  type="number" min="1" 
+                  placeholder="Ej: 28"
+                  style="padding: 10px; font-size: 14px; border-radius: 8px;"
+                >
+
+                <label style="font-size: 14px; font-weight: 500;" for="menstruacion">🩸 Duración de la menstruación (días)</label>
+                <input 
+                  id="menstruacion" 
+                  class="swal2-input" 
+                  type="number" min="1" 
+                  placeholder="Ej: 5"
+                  style="padding: 10px; font-size: 14px; border-radius: 8px;"
+                >
+              </div>
             `,
+            focusConfirm: false,
+            confirmButtonText: 'Guardar',
+            confirmButtonColor: '#d63384',
             preConfirm: () => {
+              const fechaInicioStr = (document.getElementById('fecha-inicio') as HTMLInputElement).value;
               const duracion = +(document.getElementById('duracion') as HTMLInputElement).value;
               const menstruacion = +(document.getElementById('menstruacion') as HTMLInputElement).value;
-
-              const hoy = new Date().toISOString().split('T')[0];
-
-              if (!duracion || !menstruacion) {
+  
+              if (!fechaInicioStr || !duracion || !menstruacion) {
                 Swal.showValidationMessage('Todos los campos son requeridos.');
                 return;
               }
-
-              return this.cicloMenstrualService
-                .registrarCiclo(
-                  {
-                    emailUsuario: email,
-                    fechaInicio: hoy,
-                    duracionCiclo: duracion,
-                    duracionMenstruacion: menstruacion,
-                  },
-                  `Bearer ${sessionStorage.getItem('token')}`
-                )
-                .toPromise();
+  
+              return this.cicloMenstrualService.registrarCiclo(
+                {
+                  emailUsuario: email,
+                  fechaInicio: fechaInicioStr,
+                  duracionCiclo: duracion,
+                  duracionMenstruacion: menstruacion,
+                },
+                `Bearer ${sessionStorage.getItem('token')}`
+              ).toPromise();
             },
           }).then((res) => {
             if (res.isConfirmed)
-              Swal.fire(
-                'Guardado',
-                'Ciclo registrado correctamente',
-                'success'
-              );
+              Swal.fire({
+                icon: 'success',
+                title: 'Ciclo registrado correctamente',
+                confirmButtonColor: '#20c997'
+              });
           });
         });
-
-        /* ---------- Registrar evento ---------- */
+  
+        // --- EVENTO ---
         btnEvento?.addEventListener('click', () => {
           Swal.fire({
-            title: 'Registrar Evento',
+            title: 'Cuida de ti',
             html: `
+              <br><p style="text-align: center; font-size: 14px; color: #6f42c1; margin-bottom: 15px;">
+                Este espacio es para que registres esos detalles que solo tú conoces. Cuida de ti misma, presta atención a tu cuerpo y déjate acompañar en este camino.
+              </p><br>
               <select id="evento" class="swal2-input">
                 <option value="">Seleccionar evento</option>
-                <option value="INICIO_REGLA">Inicio regla</option>
-                <option value="FIN_REGLA">Fin regla</option>
-                <option value="OVULACION">Ovulación</option>
-                <option value="SANGRADO_INTERMENSTRUAL">Sangrado intermenstrual</option>
-                <option value="DOLOR_INTENSO">Dolor intenso</option>
-                <option value="CAMBIO_ANIMO_BRUSCO">Cambio de ánimo brusco</option>
-                <option value="FLUJO_ANORMAL">Flujo anormal</option>
-                <option value="FIEBRE">Fiebre</option>
-                <option value="OTRO">Otro</option>
+                <option value="INICIO_REGLA">💧 Sangrado intermenstrual</option>
+                <option value="FIN_REGLA">❗ Relación sin protección</option>
+                <option value="OVULACION">👶 Prueba de embarazo positiva</option>
+                <option value="SANGRADO_INTERMENSTRUAL">🧪 Prueba de embarazo negativa</option>
+                <option value="DOLOR_INTENSO">🤰 Inicio embarazo confirmado</option>
+                <option value="CAMBIO_ANIMO_BRUSCO">🩺 Consulta ginecológica</option>
+                <option value="FLUJO_ANORMAL">💊 Inicio tratamiento hormonal</option>
+                <option value="FIEBRE">💔 Pérdida gestacional</option>
+                <option value="OTRO">🔎 Otro</option>
               </select>
-              <input id="obs" class="swal2-input" placeholder="Observaciones (opcional)">
+              <input 
+                id="obs" 
+                class="swal2-input" 
+                placeholder="Observaciones (opcional)"
+                style="padding: 10px; font-size: 14px; border-radius: 8px;"
+              >
             `,
+            focusConfirm: false,
+            confirmButtonText: 'Guardar',
+            confirmButtonColor: '#d63384',
             preConfirm: () => {
               const tipo = (document.getElementById('evento') as HTMLSelectElement).value;
               const observaciones = (document.getElementById('obs') as HTMLInputElement).value;
-
               const fecha = new Date().toISOString().split('T')[0];
-
+        
               if (!tipo) {
                 Swal.showValidationMessage('Debe seleccionar un evento');
                 return;
               }
-
-              return this.cicloMenstrualService
-                .registrarEvento({
-                  emailUsuario: email,
-                  tipo: tipo as EventoTipo,
-                  observaciones,
-                  fecha,
-                })
-                .toPromise();
+        
+              return this.cicloMenstrualService.registrarEvento({
+                emailUsuario: email,
+                tipo: tipo as EventoTipo,
+                observaciones,
+                fecha,
+              }).toPromise();
             },
           }).then((res) => {
             if (res.isConfirmed)
-              Swal.fire('Guardado', 'Evento registrado', 'success');
+              Swal.fire({
+                icon: 'success',
+                title: 'Evento registrado',
+                confirmButtonColor: '#20c997'
+              });
           });
         });
-
-        /* ---------- Registrar síntoma ---------- */
+        
+        
+  
+        // --- SÍNTOMA ---
         btnSintoma?.addEventListener('click', () => {
           Swal.fire({
-            title: 'Registrar Síntoma',
+            title: 'Escucha tu cuerpo',
             html: `
+              <br><p style="text-align: center; font-size: 14px; color: #6f42c1; margin-bottom: 15px;">
+                Cuéntanos cómo te sientes, porque conocer tu cuerpo es el primer paso para cuidarte con amor y confianza.
+              </p><br>
               <select id="sintoma" class="swal2-input">
                 <option value="">Seleccionar síntoma</option>
-                <option value="COLICOS">Cólicos</option> <option value="MIGRAÑA">Migraña</option>
-                <option value="DOLOR_PELVICO">Dolor pélvico</option> <option value="ACNE">Acné</option>
-                <option value="CAMBIO_ANIMO">Cambio de ánimo</option> <option value="FATIGA">Fatiga</option>
-                <option value="ANSIEDAD">Ansiedad</option> <option value="DEPRESION">Depresión</option>
-                <option value="NAUSEAS">Náuseas</option> <option value="PECHOS_SENSIBLES">Pechos sensibles</option>
-                <option value="INSOMNIO">Insomnio</option> <option value="HAMBRE_EXCESIVA">Hambre excesiva</option>
-                <option value="RETENCION_LIQUIDOS">Retención de líquidos</option> <option value="OTRO">Otro</option>
+                <option value="COLICOS">🌸 Cólicos</option>
+                <option value="MIGRAÑA">🌿 Migraña</option>
+                <option value="DOLOR_PELVICO">💜 Dolor pélvico</option>
+                <option value="ACNE">✨ Acné</option>
+                <option value="CAMBIO_ANIMO">🎭 Cambio de ánimo</option>
+                <option value="FATIGA">😴 Fatiga</option>
+                <option value="ANSIEDAD">🌬️ Ansiedad</option>
+                <option value="DEPRESION">☁️ Depresión</option>
+                <option value="NAUSEAS">🤢 Náuseas</option>
+                <option value="PECHOS_SENSIBLES">💖 Pechos sensibles</option>
+                <option value="INSOMNIO">🌙 Insomnio</option>
+                <option value="HAMBRE_EXCESIVA">🍫 Hambre excesiva</option>
+                <option value="RETENCION_LIQUIDOS">💧 Retención de líquidos</option>
+                <option value="OTRO">🔎 Otro</option>
               </select>
-              <input id="intensidad" class="swal2-input" placeholder="Intensidad (baja, media, alta)">
+              <input 
+                id="intensidad" 
+                class="swal2-input" 
+                placeholder="Intensidad (baja, media, alta)" 
+                style="padding: 10px; font-size: 14px; border-radius: 8px;"
+              >
             `,
+            confirmButtonText: 'Guardar',
+            confirmButtonColor: '#d63384',
+            focusConfirm: false,
             preConfirm: () => {
               const tipo = (document.getElementById('sintoma') as HTMLSelectElement).value;
-              const intensidad = (document.getElementById('intensidad') as HTMLInputElement).value;
-
+              const intensidad = (document.getElementById('intensidad') as HTMLInputElement).value.trim();
               const fecha = new Date().toISOString().split('T')[0];
 
-              if (!tipo || !intensidad) {
-                Swal.showValidationMessage('Todos los campos son obligatorios');
+              if (!tipo) {
+                Swal.showValidationMessage('Por favor, selecciona un síntoma');
+                return;
+              }
+              if (!intensidad) {
+                Swal.showValidationMessage('Por favor, indica la intensidad');
                 return;
               }
 
-              return this.cicloMenstrualService
-                .registrarSintoma({
-                  emailUsuario: email,
-                  tipo: tipo as SintomaTipo,
-                  intensidad,
-                  fecha,
-                })
-                .toPromise();
+              return this.cicloMenstrualService.registrarSintoma({
+                emailUsuario: email,
+                tipo: tipo as SintomaTipo,
+                intensidad,
+                fecha,
+              }).toPromise();
             },
           }).then((res) => {
-            if (res.isConfirmed)
-              Swal.fire('Guardado', 'Síntoma registrado', 'success');
+            if (res.isConfirmed) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Síntoma registrado',
+                confirmButtonColor: '#20c997'
+              });
+            }
           });
         });
 
-        /* ---------- Ver calendario ---------- */
+        
+  
+        // --- CALENDARIO ---
         btnCalendario?.addEventListener('click', () => {
           forkJoin([
             this.cicloMenstrualService.obtenerEventosPorUsuario(email),
@@ -795,59 +991,159 @@ export class ClientComponent implements OnInit {
             this.cicloMenstrualService.obtenerCiclosPorUsuario(email),
           ]).subscribe({
             next: ([eventos, sintomas, ciclos]) => {
-              console.log('Ciclos:', ciclos);
-              /* 1️⃣ Eventos de backend → FullCalendar */
               const fullEvents = [
-                /* eventos puntuales */
-                ...eventos.map((ev) => ({
+                ...eventos.map(ev => ({
                   title: this.prettyEvento(ev.tipo),
                   start: ev.fecha,
                   color: this.colorEvento(ev.tipo),
                   extendedProps: { obs: ev.observaciones ?? '' },
                 })),
-
-                /* síntomas */
-                ...sintomas.map((si) => ({
+                ...sintomas.map(si => ({
                   title: this.prettySintoma(si.tipo, si.intensidad),
                   start: si.fecha,
                   color: '#20c997',
                   extendedProps: { intensidad: si.intensidad },
                 })),
-
-                /* ciclos: marca Día 1, ovulación y próxima regla */
-                ...ciclos.flatMap((c) => [
-                  {
-                    title: '🩸 Día 1 (Inicio ciclo)',
-                    start: c.fechaInicio,
-                    color: '#e74c3c',
-                  },
-                  {
-                    title: '🌸 Ovulación',
-                    start: c.fechaOvulacion,
-                    color: '#3498db',
-                  },
-                  {
-                    title: '🔔 Próxima menstruación',
-                    start: c.fechaProximaMenstruacion,
-                    color: '#f39c12',
-                  },
-                ]),
+                ...ciclos.flatMap(c => {
+                  const fechaInicio = new Date(c.fechaInicio);
+                  const duracionCiclo = c.duracionCiclo;
+                  const duracionMenstruacion = c.duracionMenstruacion;
+  
+                  // Ovulación actual (rango 3 días: día 13, 14, 15 antes de la próxima menstruación)
+                  const ovulacionDias = [];
+                  const ovulacionInicio = new Date(fechaInicio);
+                  ovulacionInicio.setDate(ovulacionInicio.getDate() + duracionCiclo - 16); // 16 días antes de próximo ciclo (ajuste para 3 días ovulación)
+                  for (let i = 0; i < 3; i++) {
+                    const dia = new Date(ovulacionInicio);
+                    dia.setDate(dia.getDate() + i);
+                    ovulacionDias.push({
+                      title: '🌸 Ovulación',
+                      start: dia.toISOString().split('T')[0],
+                      color: '#3498db',
+                      allDay: true,
+                    });
+                  }
+  
+                  // Próxima menstruación (rango días completos igual a duración menstruación)
+                  const proximaMenstruacionDias = [];
+                  const proximaMenstruacionInicio = new Date(fechaInicio);
+                  proximaMenstruacionInicio.setDate(proximaMenstruacionInicio.getDate() + duracionCiclo);
+                  for (let i = 0; i < duracionMenstruacion; i++) {
+                    const dia = new Date(proximaMenstruacionInicio);
+                    dia.setDate(dia.getDate() + i);
+                    proximaMenstruacionDias.push({
+                      title: `🔔 Próxima menstruación (día ${i + 1})`,
+                      start: dia.toISOString().split('T')[0],
+                      color: '#ffc0cb',
+                      allDay: true,
+                    });
+                  }
+  
+                  // Próxima ovulación (rango 3 días)
+                  const proximaOvulacionDias = [];
+                  const proximaOvulacionInicio = new Date(proximaMenstruacionInicio);
+                  proximaOvulacionInicio.setDate(proximaOvulacionInicio.getDate() + duracionCiclo - 16);
+                  for (let i = 0; i < 3; i++) {
+                    const dia = new Date(proximaOvulacionInicio);
+                    dia.setDate(dia.getDate() + i);
+                    proximaOvulacionDias.push({
+                      title: '🔮 Próxima ovulación',
+                      start: dia.toISOString().split('T')[0],
+                      color: '#dab6fc',
+                      allDay: true,
+                    });
+                  }
+  
+                  // Menstruación actual (rango días ingresados por usuario, incluye fines de semana)
+                  const menstruacionDias = [];
+                  for (let i = 0; i < duracionMenstruacion; i++) {
+                    const dia = new Date(fechaInicio);
+                    dia.setDate(dia.getDate() + i);
+                    menstruacionDias.push({
+                      title: `🩸 Menstruación (día ${i + 1})`,
+                      start: dia.toISOString().split('T')[0],
+                      color: '#e74c3c',
+                      allDay: true,
+                    });
+                  }
+  
+                  return [
+                    ...menstruacionDias,
+                    ...ovulacionDias,
+                    ...proximaMenstruacionDias,
+                    ...proximaOvulacionDias,
+                  ];
+                }),
               ];
-
-              /* 2️⃣ Mostrar calendario */
+  
               Swal.fire({
                 title: 'Calendario Menstrual',
-                html: `<div id="calMenstrual" style="max-width:100%;margin:0 auto;"></div>`,
-                width: 800,
+                html: `
+                  <style>
+                    /* Estilos generales para botones del header */
+                    .fc-toolbar button {
+                      background-color: #7e57c2; /* púrpura suave */
+                      border: none;
+                      color: white;
+                      padding: 6px 14px;
+                      margin: 0 6px;
+                      font-weight: 600;
+                      font-size: 14px;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      box-shadow: 0 2px 6px rgba(126, 87, 194, 0.4);
+                      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+                    }
+              
+                    .fc-toolbar button:hover {
+                      background-color: #5e35b1;
+                      box-shadow: 0 4px 12px rgba(94, 53, 177, 0.6);
+                    }
+              
+                    /* Flechas personalizadas con Unicode */
+                    .fc-prev-button::before,
+                    .fc-next-button::before {
+                      font-family: 'Segoe UI Symbol', Arial, sans-serif;
+                      font-weight: bold;
+                      font-size: 18px;
+                      color: white;
+                    }
+              
+                    .fc-prev-button::before {
+                      content: '←';
+                    }
+              
+                    .fc-next-button::before {
+                      content: '→';
+                    }
+              
+                    /* Ocultamos texto predeterminado de las flechas */
+                    .fc-prev-button > span,
+                    .fc-next-button > span {
+                      display: none;
+                    }
+              
+                    /* Botón today con estilo igual pero más ancho */
+                    .fc-today-button {
+                      padding: 6px 20px;
+                    }
+                  </style>
+              
+                  <br><p style="text-align: center; font-size: 15px; color: #6f42c1; margin-bottom: 20px; font-weight: 500; line-height: 1.4;">
+                    Conoce las fases de tu ciclo de forma sencilla y visual. Este espacio te ayuda a anticipar tus días importantes y a manejar mejor tus síntomas. Mantente conectada contigo misma y toma el control de tu bienestar.
+                  </p><br>
+                  <div id="calMenstrual" style="max-width: 100%; margin: 0 auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"></div>
+                `,
+                width: 820,
                 showCloseButton: true,
                 showConfirmButton: false,
                 didOpen: () => {
                   const calEl = document.getElementById('calMenstrual')!;
-                  const calendar = new Calendar(calEl, {
+                  const calendarMenstrual = new Calendar(calEl, {
                     plugins: [dayGridPlugin],
                     locale: 'es',
                     initialView: 'dayGridMonth',
-                    height: 500,
+                    height: 530,
                     headerToolbar: {
                       left: 'prev,next today',
                       center: 'title',
@@ -859,32 +1155,45 @@ export class ClientComponent implements OnInit {
                         info.event.extendedProps['obs'] ??
                         info.event.extendedProps['intensidad'] ??
                         '';
-                      Swal.fire(
-                        info.event.title,
-                        extra ? `<small>${extra}</small>` : '',
-                        'info'
-                      );
+                      Swal.fire(info.event.title, extra ? `<small>${extra}</small>` : '', 'info');
                     },
                   });
-                  calendar.render();
+                  calendarMenstrual.render();
                 },
               });
+              
+              
             },
-            error: () =>
-              Swal.fire('Error', 'No se pudo cargar el calendario', 'error'),
+            error: () => {
+              Swal.fire('Error', 'No se pudieron cargar los datos del calendario', 'error');
+            },
           });
         });
       },
     });
   }
-
-  /* Helpers colorear y titular */
+  
+  // Helpers
   private prettyEvento(tipo: EventoTipo): string {
     switch (tipo) {
-      case 'INICIO_REGLA': return '🩸 Inicio Regla';
-      case 'FIN_REGLA': return '✅ Fin Regla';
-      case 'OVULACION': return '🌸 Ovulación';
-      default: return '⚠️ ' + tipo.replace(/_/g, ' ');
+      case 'INICIO_REGLA':
+        return '💧 Sangrado intermenstrual';
+      case 'FIN_REGLA':
+        return '❗ Relación sin protección';
+      case 'OVULACION':
+        return '👶 Prueba de embarazo positiva';
+      case 'SANGRADO_INTERMENSTRUAL':
+        return '🧪 Prueba de embarazo negativa';
+      case 'DOLOR_INTENSO':
+        return '🤰 Inicio embarazo confirmado';
+      case 'CAMBIO_ANIMO_BRUSCO':
+        return '🩺 Consulta ginecológica';
+      case 'FLUJO_ANORMAL':
+        return '💊 Inicio tratamiento hormonal';
+      case 'FIEBRE':
+        return '💔 Pérdida gestacional';
+      case 'OTRO':
+        return '🔎 Otro';
     }
   }
   private colorEvento(tipo: EventoTipo): string {
@@ -892,52 +1201,121 @@ export class ClientComponent implements OnInit {
     if (tipo === 'OVULACION') return '#3498db';
     return '#f39c12';
   }
-  private prettySintoma(tipo: SintomaTipo, int?: string) {
+  private prettySintoma(tipo: SintomaTipo, int?: string): string {
     const base = tipo.replace(/_/g, ' ').toLowerCase();
     return `🤒 ${base}${int ? ' (' + int + ')' : ''}`;
   }
 
-  abrirSwalRegistroEmbarazo(): void {
-    const email = this.userData.email;
-    if (!email) {
-      Swal.fire('Error', 'No se encontró el correo del usuario.', 'error');
-      return;
-    }
 
-    Swal.fire({
-      title: 'Registrar Embarazo',
-      html: `
-        <input type="date" id="fechaInicio" class="swal2-input" placeholder="Fecha de inicio">
-        <textarea id="sintomas" class="swal2-textarea" placeholder="Síntomas iniciales"></textarea>
-      `,
-      confirmButtonText: 'Registrar',
-      focusConfirm: false,
-      preConfirm: () => {
-        const fechaInicio = (document.getElementById('fechaInicio') as HTMLInputElement).value;
-        const sintomas = (document.getElementById('sintomas') as HTMLTextAreaElement).value;
 
-        if (!fechaInicio) {
-          Swal.showValidationMessage('La fecha de inicio es obligatoria');
-          return;
+
+  openWizard(): void {
+    const dialogRef = this.dialog.open(ChallengeWizardDialogComponent, {
+      minWidth: '60vw'
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result || !result.alimentacion?.id) return;
+
+      const reto: RetoAlimentacionDTO = {
+        descripcion: result.reto.description || result.reto.type,
+        completado: false,
+        fechaInicio: result.alimentacion.fechaInicio,
+        fechaFin: result.alimentacion.fechaFin
+      };
+
+      this.retoComidaService.asignarReto(result.alimentacion.id, reto).subscribe({
+        next: () => {
+          Swal.fire('Reto asignado', 'Tu reto fue asignado correctamente.', 'success');
+          this.loadUserData?.();
+        },
+        error: () => {
+          Swal.fire('Error', 'No se pudo asignar el reto.', 'error');
         }
-
-        const dto: EmbarazoRequestDTO = {
-          emailUsuario: email,
-          fechaInicio: fechaInicio,
-          sintomas: sintomas || ''
-        };
-
-        return this.embarazoService.registrarEmbarazo(dto).toPromise();
-      }
-    }).then((res) => {
-      if (res.isConfirmed) {
-        Swal.fire('¡Registrado!', 'El embarazo fue registrado correctamente.', 'success');
-      }
-    }).catch(err => {
-      console.error('Error al registrar embarazo:', err);
-      Swal.fire('Error', 'Ocurrió un error al registrar el embarazo.', 'error');
+      });
     });
   }
 
+  abrirSwalRegistrarEmbarazo(): void {
+  const email = sessionStorage.getItem('user');
+  if (!email) {
+    Swal.fire('Error', 'No se encontró el usuario autenticado.', 'error');
+    return;
+  }
+
+  let fechaSeleccionada = '';
+
+  Swal.fire({
+    title: 'Selecciona la fecha de inicio',
+    html: `
+      <div id="calendar-container" style="max-width:100%;margin:0 auto;"></div>
+      <label for="sintomasExtra" class="mt-3">Síntomas iniciales (opcional):</label>
+      <textarea id="sintomasExtra" class="swal2-textarea" placeholder="Náuseas, fatiga, antojos..."></textarea>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Registrar',
+    didOpen: () => {
+      const calendarEl = document.getElementById('calendar-container')!;
+      const calendar = new Calendar(calendarEl, {
+        plugins: [dayGridPlugin, interactionPlugin],
+        locale: esLocale,
+        initialView: 'dayGridMonth',
+        height: 400,
+        dateClick: (info: DateClickArg) => {
+          fechaSeleccionada = info.dateStr;
+          Swal.getConfirmButton()?.classList.remove('swal2-confirm-disabled');
+          Swal.getConfirmButton()!.innerText = `Registrar (${fechaSeleccionada})`;
+        },
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: ''
+        },
+      });
+      calendar.render();
+      Swal.getConfirmButton()?.classList.add('swal2-confirm-disabled');
+    },
+    preConfirm: () => {
+      const sintomas = (document.getElementById('sintomasExtra') as HTMLTextAreaElement).value;
+      if (!fechaSeleccionada) {
+        Swal.showValidationMessage('Debes seleccionar una fecha.');
+        return;
+      }
+
+      return {
+        emailUsuario: email,
+        fechaInicio: fechaSeleccionada,
+        sintomas: sintomas || '',
+      };
+    },
+  }).then((res) => {
+    if (!res.isConfirmed || !res.value) return;
+
+    this.embarazoService.registrarEmbarazo(res.value).subscribe({
+      next: () => {
+        Swal.fire('¡Registrado!', 'Embarazo registrado correctamente.', 'success');
+        this.cargarEmbarazo(email); // 🟢 Esto actualiza la vista del embarazo con semana y fecha
+      },
+      error: () => {
+        Swal.fire('Error', 'No se pudo registrar el embarazo.', 'error');
+      },
+    });
+  });
 }
 
+cargarEmbarazo(email: string): void {
+  this.embarazoService.obtenerUltimoEmbarazo(email).subscribe({
+    next: (data) => {
+      this.embarazo = {
+        fechaInicio: data.fechaInicio,
+        semanaActual: data.semanaActual,
+        fechaPartoEstimada: data.fechaPartoEstimada
+      };
+    },
+    error: () => {
+      this.embarazo = null;
+    }
+  });
+}
+
+}
