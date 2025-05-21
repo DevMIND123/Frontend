@@ -271,3 +271,26 @@
 :host ::ng-deep app-footer {
     margin-top: auto;
 }
+
+/* Contenedor del form de campaña */
+.campaign-form {
+    position: relative;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo del botón de cerrar dentro del form */
+.campaign-form .btn-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0.6;
+}
+
+.campaign-form .btn-close:hover {
+    opacity: 1;
+}

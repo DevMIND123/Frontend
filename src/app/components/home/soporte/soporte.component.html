@@ -140,20 +140,6 @@
                 </div>
             </div>
 
-            <!-- Validación de Empresa -->
-            <div class="card shadow-sm mb-4 validacion-card">
-                <div class="card-body">
-                    <h4 class="card-title">Validación de Empresa</h4>
-                    <p><strong>Estado:</strong> {{ estadoValidacion }}</p>
-                    <p><strong>Notificación enviada:</strong> {{ notificacionEnviada ? 'Sí' : 'No' }}</p>
-                    <ul class="list-group mt-3">
-                        <li class="list-group-item" *ngFor="let doc of documentosSubidos">
-                            {{ doc.tipoDocumento }} - <a href="#">{{ doc.nombreArchivo }}</a> ({{ doc.fechaSubida }})
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
             <!-- Reporte de Eficiencia -->
             <div class="card shadow-sm mb-4 reporte-card" *ngIf="reportesEficiencia">
                 <div class="card-body">
@@ -186,15 +172,26 @@
                 </div>
             </div>
 
-            <!-- Tabla de Tickets -->
+
+            <!-- =================== Tabla de Tickets General =================== -->
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="card-title">Tickets</h4>
-                        <button class="btn btn-primary" (click)="createTicket()">
-                            <i class="bi bi-plus-lg me-2"></i>Nuevo Ticket
-                        </button>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" style="max-width: 200px" [(ngModel)]="filtroEstado"
+                                (change)="aplicarFiltroPorEstado(filtroEstado)">
+                                <option value="Todos">Todos</option>
+                                <option value="Abierto">Abierto</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Cerrado">Cerrado</option>
+                            </select>
+                            <button class="btn btn-primary" (click)="createTicket()">
+                                <i class="bi bi-plus-lg me-2"></i>Nuevo Ticket
+                            </button>
+                        </div>
                     </div>
+
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -204,32 +201,36 @@
                                     <th>Asunto</th>
                                     <th>Estado</th>
                                     <th>Categoría</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let ticket of tickets">
+                                <tr *ngFor="let ticket of ticketsFiltrados">
                                     <td>{{ ticket.ticketId }}</td>
                                     <td>{{ ticket.usuarioId }}</td>
                                     <td>{{ ticket.asunto }}</td>
                                     <td>{{ ticket.estado }}</td>
-                                    <td>{{ ticket.categoria }}</td>
+                                    <td>{{ ticket.categoria || 'Sin categoría' }}</td>
+                                    <td>{{ ticket.fechaCreacion }}</td>
+                                    <td class="ticket-actions">
+                                        <button class="btn btn-sm btn-outline-info"
+                                            (click)="responderTicket(ticket.ticketId, 'Gracias por tu reporte')">
+                                            <i class="bi bi-reply-fill"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success"
+                                            (click)="cambiarEstado(ticket.ticketId, 'En proceso')">
+                                            <i class="bi bi-arrow-repeat"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-dark"
+                                            (click)="cambiarEstado(ticket.ticketId, 'Cerrado', 'Resuelto y cerrado')">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <!-- Preguntas Frecuentes -->
-            <div class="card shadow-sm mb-4 faq-card" *ngIf="faq.length > 0">
-                <div class="card-body">
-                    <h4 class="card-title">Preguntas Frecuentes</h4>
-                    <ul class="list-group">
-                        <li class="list-group-item" *ngFor="let item of faq">
-                            <strong>{{ item.pregunta }}</strong><br />
-                            <span>{{ item.respuesta }}</span>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>
