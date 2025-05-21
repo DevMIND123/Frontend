@@ -15,11 +15,13 @@ import { AlimentacionDTO } from '../../../dto/alimentacion.dto';
 import { RetoAlimentacionDTO } from '../../../dto/reto-alimentacion.dto';
 import { RegistroComidaDTO } from '../../../dto/registro-comida.dto';
 import { CicloMenstrualService } from '../../../services/ciclo-menstrual.service';
+import { EmbarazoService } from '../../../services/embarazo.service';
 import { EventoTipo } from '../../../dto/evento-menstrual.dto';
 import { SintomaTipo } from '../../../dto/sintoma-menstrual.dto';
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import esLocale from '@fullcalendar/core/locales/es';
+import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import { forkJoin } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
@@ -87,6 +89,12 @@ export class ClientComponent implements OnInit {
     especialidad: '',
   };
 
+  embarazo: {
+  fechaInicio: string;
+  semanaActual: number;
+  fechaPartoEstimada: string;
+} | null = null;
+
   /* ------------ preferencias ------------ */
   darkMode = false;
   notificationsEnabled = true;
@@ -115,7 +123,8 @@ mostrarInfoIMC = false;
     private habitoDineroService: HabitoDineroService,
     private dialog: MatDialog,
     private http: HttpClient,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private embarazoService: EmbarazoService
   ) {
     this.comidaForm = this.fb.group({
       nombre: ['', Validators.required],
@@ -262,6 +271,8 @@ mostrarInfoIMC = false;
       this.router.navigate(['/login']);
       return;
     }
+
+    this.cargarEmbarazo(email); //Carga la información de embarazo
 
     this.usuarioService.obtenerUsuario(email, rol).subscribe({
       next: (dto) => {
@@ -1037,5 +1048,86 @@ mostrarInfoIMC = false;
     });
   }
 
+  abrirSwalRegistrarEmbarazo(): void {
+  const email = sessionStorage.getItem('user');
+  if (!email) {
+    Swal.fire('Error', 'No se encontró el usuario autenticado.', 'error');
+    return;
+  }
+
+  let fechaSeleccionada = '';
+
+  Swal.fire({
+    title: 'Selecciona la fecha de inicio',
+    html: `
+      <div id="calendar-container" style="max-width:100%;margin:0 auto;"></div>
+      <label for="sintomasExtra" class="mt-3">Síntomas iniciales (opcional):</label>
+      <textarea id="sintomasExtra" class="swal2-textarea" placeholder="Náuseas, fatiga, antojos..."></textarea>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Registrar',
+    didOpen: () => {
+      const calendarEl = document.getElementById('calendar-container')!;
+      const calendar = new Calendar(calendarEl, {
+        plugins: [dayGridPlugin, interactionPlugin],
+        locale: esLocale,
+        initialView: 'dayGridMonth',
+        height: 400,
+        dateClick: (info: DateClickArg) => {
+          fechaSeleccionada = info.dateStr;
+          Swal.getConfirmButton()?.classList.remove('swal2-confirm-disabled');
+          Swal.getConfirmButton()!.innerText = `Registrar (${fechaSeleccionada})`;
+        },
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: ''
+        },
+      });
+      calendar.render();
+      Swal.getConfirmButton()?.classList.add('swal2-confirm-disabled');
+    },
+    preConfirm: () => {
+      const sintomas = (document.getElementById('sintomasExtra') as HTMLTextAreaElement).value;
+      if (!fechaSeleccionada) {
+        Swal.showValidationMessage('Debes seleccionar una fecha.');
+        return;
+      }
+
+      return {
+        emailUsuario: email,
+        fechaInicio: fechaSeleccionada,
+        sintomas: sintomas || '',
+      };
+    },
+  }).then((res) => {
+    if (!res.isConfirmed || !res.value) return;
+
+    this.embarazoService.registrarEmbarazo(res.value).subscribe({
+      next: () => {
+        Swal.fire('¡Registrado!', 'Embarazo registrado correctamente.', 'success');
+        this.cargarEmbarazo(email); // 🟢 Esto actualiza la vista del embarazo con semana y fecha
+      },
+      error: () => {
+        Swal.fire('Error', 'No se pudo registrar el embarazo.', 'error');
+      },
+    });
+  });
+}
+
+cargarEmbarazo(email: string): void {
+  this.embarazoService.obtenerUltimoEmbarazo(email).subscribe({
+    next: (data) => {
+      this.embarazo = {
+        fechaInicio: data.fechaInicio,
+        semanaActual: data.semanaActual,
+        fechaPartoEstimada: data.fechaPartoEstimada
+      };
+    },
+    error: () => {
+      this.embarazo = null;
+    }
+  });
+}
 
 }

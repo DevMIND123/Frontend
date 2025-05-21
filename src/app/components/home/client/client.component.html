@@ -437,6 +437,45 @@
         </div>
       </div>
 
+     <!-- Habit Card - Embarazo -->
+    <div class="col-md-4" *ngIf="userData.sexo === 'FEMENINO'">
+      <div class="habit-card" (click)="abrirSwalRegistrarEmbarazo()">
+        <div class="habit-icon bg-light text-success fs-3">
+          👶
+        </div>
+        <h5>Registrar Embarazo</h5>
+
+        <!-- Fecha de inicio -->
+        <div class="habit-progress" *ngIf="embarazo as emb">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>Inicio del embarazo</span>
+            <span class="text-success">
+              {{ emb.fechaInicio | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+
+          <div class="progress">
+            <div class="progress-bar bg-success text-white fw-semibold" role="progressbar"
+              [style.width.%]="(emb.semanaActual / 40) * 100">
+            Semana {{ emb.semanaActual }}
+          </div>
+          </div>
+        </div>
+
+        <div *ngIf="embarazo" class="mt-2">
+          <small class="text-muted">
+            Fecha de parto estimada: {{ embarazo.fechaPartoEstimada | date:'dd/MM/yyyy' }}
+          </small>
+        </div>
+
+        <div class="habit-streak">
+          <i class="bi bi-journal-medical me-2 text-success"></i>
+          <span>Registrar información</span>
+        </div>
+      </div>
+    </div>
+
+
       <!-- Hábito: Ejercicio o Deporte -->
       <div class="card shadow-sm mb-4" *ngIf="habitoEjercicio">
         <div class="card-body">
