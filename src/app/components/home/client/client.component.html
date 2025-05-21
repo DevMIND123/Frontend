@@ -4,7 +4,7 @@
 <div class="bg-success text-white py-4 mb-4">
   <div class="container">
     <h1 class="h3 mb-0">Mi Dashboard</h1>
-    <p routerLink="/home/empresa">Dashboard empresa</p>
+    <p routerLink="/home/empresa">Dashboard cliente</p>
     <p></p>
   </div>
 </div>
@@ -136,7 +136,7 @@
 
           <div class="row g-4" *ngIf="alimentaciones.length > 0; else noHayDatos">
             <div class="col-md-6" *ngFor="let item of alimentaciones">
-              <div class="challenge-card" (click)="abrirSwalRegistroComida(item)">
+              <div class="challenge-card">
 
                 <!-- ENCABEZADO -->
                 <div class="challenge-header d-flex justify-content-between align-items-center">
@@ -231,7 +231,7 @@
 
           <div class="mb-4">
             <div class="d-flex justify-content-between small mb-1 fw-medium">
-              <span>Consumido:
+              <span>Consumido hoy:
                 <strong>{{ alimentaciones[0]?.caloriasConsumidasHoy || 0 }} kcal</strong>
               </span>
               <span>Restante:
@@ -255,7 +255,24 @@
         </div>
 
         <h6 class="mb-3 fw-semibold fs-sm"><i class="bi bi-journal-plus me-2"
-            *ngIf="alimentaciones.length > 0; else noHayDatos"></i>Registrar Nueva Comida</h6>
+            *ngIf="alimentaciones.length > 0; else noHayDatos"></i>Registrar Nueva Comida
+          <!-- Contenedor que envuelve icono y tooltip -->
+          <span class="position-relative d-inline-block">
+            <i class="bi bi-question-circle-fill ms-2" style="cursor: pointer"
+              (click)="mostrarInfoRegistrarComida = !mostrarInfoRegistrarComida" title="info"></i>
+
+            <div *ngIf="mostrarInfoRegistrarComida" class="imc-panel-tooltip right">
+              <strong class="d-block mb-2">¿Como registrar una nueva comida?:</strong>
+              <div><span class="dot dot-underweight"></span>Digita en el campo izquierdo el nombre de la comida</div>
+              <div><span class="dot dot-healthy"></span>Digita en el campo derecho las calorías totales de la comida
+              </div>
+              <div><span class="dot dot-overweight"></span>Da click en el boton añadir</div>
+            </div>
+          </span>
+
+        </h6>
+
+
         <form [formGroup]="comidaForm" (ngSubmit)="registrarComida()"
           *ngIf="alimentaciones.length > 0; else noHayDatos">
           <div class="row g-3 align-items-end">
@@ -272,15 +289,16 @@
             </div>
             <div class="col-sm-2 d-grid">
               <button type="submit" class="btn btn-primary btn-sm"> <i class="bi bi-plus-lg"></i> <span
-                  class="d-none d-md-inline">Añadir</span> </button>
+                  class="d-none d-md-inline"> Añadir</span> </button>
             </div>
           </div>
         </form>
 
-        <h6 class="fw-semibold fs-sm mb-2">
+        <h6 class="fw-semibold fs-sm mt-4 mb-2">
           <i class="bi bi-list-task me-2"></i>
           Comidas Registradas Hoy ({{ comidasRegistradas.length }})
         </h6>
+
 
         <ul class="list-group list-group-flush mt-1">
           <li *ngFor="let comida of comidasRegistradas"
@@ -293,18 +311,11 @@
                 {{ comida.calorias }} kcal - {{ comida.fechaHoraRegistro | date:'shortTime' }}
               </span>
             </div>
-            <div class="food-item-actions">
-              <button type="button" class="btn btn-sm btn-outline-secondary me-1" title="Editar Comida">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar Comida">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
           </li>
         </ul>
 
-        <div class="row">
+        <div class="row mt-4">
+
           <!-- 🗓️ Calendario -->
           <div class="col-lg-6 mb-4">
             <h6 class="fw-semibold fs-sm mb-3">

@@ -93,7 +93,8 @@ export class ClientComponent implements OnInit {
   comidasRegistradas: RegistroComidaDTO[] = [];
   comidaForm!: FormGroup;
   calendario: DiaCalendario[][] = [];
-mostrarInfoIMC = false;
+  mostrarInfoIMC = false;
+  mostrarInfoRegistrarComida = false;
 
   /* ------------ password modal ------------ */
   /** formulario de cambio de contraseña */
@@ -145,7 +146,6 @@ mostrarInfoIMC = false;
         fechaHoraRegistro: new Date().toISOString()
       };
 
-      // Asegúrate de que haya al menos una alimentación activa
       if (!this.alimentaciones || this.alimentaciones.length === 0) {
         console.warn('No hay un reto de alimentación activo');
         return;
@@ -156,6 +156,12 @@ mostrarInfoIMC = false;
       this.retoComidaService.registrarComida(idAlimentacion, comida).subscribe({
         next: () => {
           console.log('Comida registrada exitosamente:', comida);
+
+          // ✅ Agrega la nueva comida a la lista actual
+          this.comidasRegistradas.push({
+            ...comida
+          });
+
           this.comidaForm.reset(); // Limpiar el formulario
         },
         error: () => {
@@ -168,17 +174,17 @@ mostrarInfoIMC = false;
   }
 
 
- generarCalendario(): void {
+  generarCalendario(): void {
     if (!this.alimentaciones?.length) return;
 
     const caloriasObjetivo = this.alimentaciones[0].caloriasObjetivoDiarias;
     if (!caloriasObjetivo) return;
 
-    const hoy  = new Date();
-    const año  = hoy.getFullYear();
-    const mes  = hoy.getMonth();            // 0-based
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const mes = hoy.getMonth();            // 0-based
     const dia0 = new Date(año, mes, 1);
-    const nDias= new Date(año, mes + 1, 0).getDate();
+    const nDias = new Date(año, mes + 1, 0).getDate();
     const primerCol = (dia0.getDay() || 7); // Lun=1 … Dom=7
 
     /* ---------- 1. agrupar calorías por día ---------- */
@@ -200,8 +206,8 @@ mostrarInfoIMC = false;
     // días del mes actual
     for (let d = 1; d <= nDias; d++) {
       const fecha = new Date(año, mes, d);
-      const k     = this.formatLocal(fecha);
-      const tot   = caloriasPorDia[k] ?? 0;
+      const k = this.formatLocal(fecha);
+      const tot = caloriasPorDia[k] ?? 0;
 
       let estado: EstadoDia = 'sinDato';
       if (k in caloriasPorDia)
@@ -227,12 +233,12 @@ mostrarInfoIMC = false;
   }
 
   getIMCClass(imc: number): string {
-  if (imc < 18.5) return 'imc-display-underweight';
-  if (imc < 25) return 'imc-display-healthy';
-  if (imc < 30) return 'imc-display-overweight';
-  if (imc < 35) return 'imc-display-obese';
-  return 'imc-display-extremely-obese';
-}
+    if (imc < 18.5) return 'imc-display-underweight';
+    if (imc < 25) return 'imc-display-healthy';
+    if (imc < 30) return 'imc-display-overweight';
+    if (imc < 35) return 'imc-display-obese';
+    return 'imc-display-extremely-obese';
+  }
 
 
   formatLocal(date: Date): string {
@@ -345,7 +351,7 @@ mostrarInfoIMC = false;
       next: (comidas) => {
         this.comidasRegistradas = comidas ?? [];
         console.log('Comidas registradas:', this.comidasRegistradas);
-                this.generarCalendario();
+        this.generarCalendario();
       },
       error: () => {
         this.comidasRegistradas = []; // Limpiar en caso de error
@@ -598,6 +604,8 @@ mostrarInfoIMC = false;
                     <p><strong>Calorías diarias recomendadas :D:</strong> ${res.caloriasObjetivoDiarias}</p>
                   `,
                   confirmButtonText: 'Aceptar',
+                }).then(() => {
+                  this.loadUserData(); // ✅ ← aquí debes actualizar
                 });
               } else {
                 Swal.fire({
@@ -605,6 +613,8 @@ mostrarInfoIMC = false;
                   title: 'Reto creado',
                   text: 'Se creó el reto, pero no se pudo obtener información detallada.',
                   confirmButtonText: 'Aceptar',
+                }).then(() => {
+                  this.loadUserData(); // ✅ ← también aquí
                 });
               }
             },
