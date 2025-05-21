@@ -1,4 +1,3 @@
-// (Todas tus importaciones actuales)
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +26,7 @@ import { safeLocalStorageGet, safeLocalStorageSet } from '../../../shared/utils/
   styleUrls: ['./soporte.component.css'],
 })
 export class SoporteHomeComponent implements OnInit {
+  // Perfil y estado UI
   isEditing = false;
   showPasswordForm = false;
   id = 0;
@@ -51,25 +51,14 @@ export class SoporteHomeComponent implements OnInit {
     notifications: true,
   };
 
-  empresaId = '';
-  documentosSubidos: any[] = [];
-  estadoValidacion = '';
-  notificacionEnviada = false;
-  historialSoporteUsuario: any[] = [];
-  reportesEficiencia: any;
-  faq: any[] = [];
-
+  // Datos del módulo de soporte
   tickets: any[] = [];
   ticketsFiltrados: any[] = [];
   filtroEstado: string = 'Todos';
+  historialSoporteUsuario: any[] = [];
+  reportesEficiencia: any;
 
-  usuariosDisponibles: string[] = [];
-  usuarioSeleccionado: string | null = null;
-  historialFiltrado: any[] = [];
-  filtroHistorialCategoria: string = '';
-  filtroHistorialEstado: string = '';
-  categoriasDisponibles: string[] = [];
-
+  // Estadísticas
   activeTickets = 0;
   inProgressTickets = 0;
   resolvedTickets = 0;
@@ -87,12 +76,12 @@ export class SoporteHomeComponent implements OnInit {
     this.cargarDatosDesdeMock();
   }
 
+  /** Carga datos de perfil del agente */
   private loadUserData(): void {
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
-
     if (!email || !rol) {
-      this.errorMessage = 'No se encontró la sesión de la empresa. Inicia sesión nuevamente.';
+      this.errorMessage = 'No se encontró la sesión. Inicia sesión nuevamente.';
       this.router.navigate(['/login']);
       return;
     }
@@ -101,108 +90,93 @@ export class SoporteHomeComponent implements OnInit {
       next: (dto) => {
         this.id = dto;
         this.usuarioService.obtenerUsuarioById(this.id, rol).subscribe({
-          next: (dto) => {
+          next: (u) => {
             this.userData = {
-              nombre: dto.nombre,
-              email: dto.email,
+              nombre: u.nombre,
+              email: u.email,
               departamento: 'Soporte Técnico',
               especialidad: 'Atención al Cliente',
             };
             this.errorMessage = null;
           },
-          error: () => this.errorMessage = 'Error al cargar los datos de la empresa.',
+          error: () => {
+            this.errorMessage = 'Error al cargar datos de perfil.';
+          },
         });
       },
-      error: () => this.errorMessage = 'Error al cargar los datos de la empresa.',
+      error: () => {
+        this.errorMessage = 'Error al cargar datos de perfil.';
+      },
     });
   }
 
+  /** Obtiene el mock desde CastleMock */
   private cargarDatosDesdeMock(): void {
     this.soporteService.obtenerModuloSoporte().subscribe({
       next: (data) => {
-        const soporte = data.moduloSoporte;
-        this.empresaId = data.empresaId;
-        this.documentosSubidos = soporte.validacionEmpresa.documentosSubidos;
-        this.estadoValidacion = soporte.validacionEmpresa.estadoValidacion;
-        this.notificacionEnviada = soporte.validacionEmpresa.notificacionEnviada;
-        this.historialSoporteUsuario = soporte.historialSoporteUsuario;
-        this.reportesEficiencia = soporte.reportesEficiencia;
-        this.faq = soporte.faq;
-        this.tickets = soporte.tickets;
-        this.ticketsFiltrados = soporte.tickets;
-        this.usuariosDisponibles = [...new Set(this.tickets.map((t: any) => t.usuarioId))];
-        this.categoriasDisponibles = data.categoriasDisponibles || [];
+        const m = data.moduloSoporte;
+        this.tickets = m.tickets;
+        this.ticketsFiltrados = [...this.tickets];
+        this.historialSoporteUsuario = m.historialSoporteUsuario;
+        this.reportesEficiencia = m.reportesEficiencia;
         this.calculateStats();
       },
       error: () => {
-        this.errorMessage = 'No se pudo obtener la información de soporte';
+        this.errorMessage = 'No se pudo obtener la información de soporte.';
       },
     });
   }
 
-createTicket(): void {
-  console.log('[Mock] Crear nuevo ticket (simulado)');
-}
-
-  
-  aplicarFiltroPorEstado(estado: string): void {
-    this.filtroEstado = estado;
-    this.ticketsFiltrados = estado === 'Todos'
-      ? this.tickets
-      : this.tickets.filter(t => t.estado === estado);
-  }
-
-  filtrarHistorialUsuario(): void {
-    if (!this.usuarioSeleccionado) {
-      this.historialFiltrado = [];
-      return;
-    }
-
-    const historial = this.tickets.filter(t => t.usuarioId === this.usuarioSeleccionado);
-
-    this.historialFiltrado = historial.filter(t =>
-      (this.filtroHistorialCategoria ? t.categoria === this.filtroHistorialCategoria : true) &&
-      (this.filtroHistorialEstado ? t.estado === this.filtroHistorialEstado : true)
-    );
-  }
-
-  responderTicket(ticketId: string, mensaje: string): void {
-    const ticket = this.tickets.find(t => t.ticketId === ticketId);
-    if (ticket) {
-      ticket.respuestas = ticket.respuestas || [];
-      ticket.respuestas.push({
-        fecha: new Date().toISOString().slice(0, 10),
-        mensaje
-      });
-      this.successMessage = 'Respuesta registrada correctamente.';
-    }
-  }
-
-  cambiarEstado(ticketId: string, nuevoEstado: string, nota?: string): void {
-    const ticket = this.tickets.find(t => t.ticketId === ticketId);
-    if (ticket) {
-      ticket.estado = nuevoEstado;
-      ticket.respuestas = ticket.respuestas || [];
-      if (nota) {
-        ticket.respuestas.push({
-          fecha: new Date().toISOString().slice(0, 10),
-          mensaje: `Nota de resolución: ${nota}`
-        });
-      }
-      this.successMessage = `Estado actualizado a ${nuevoEstado}`;
-      this.calculateStats();
-      this.aplicarFiltroPorEstado(this.filtroEstado);
-    }
-  }
-
+  /** Estadísticas generales */
   private calculateStats(): void {
     this.activeTickets = this.tickets.filter(t => t.estado === 'Abierto').length;
-    this.inProgressTickets = this.tickets.filter(t => t.estado === 'En Proceso').length;
+    this.inProgressTickets = this.tickets.filter(t => t.estado === 'En proceso').length;
     this.resolvedTickets = this.tickets.filter(t => t.estado === 'Cerrado').length;
   }
 
-  
+  /** Filtro de tickets */
+  aplicarFiltroPorEstado(estado: string): void {
+    this.filtroEstado = estado;
+    this.ticketsFiltrados = estado === 'Todos'
+      ? [...this.tickets]
+      : this.tickets.filter(t => t.estado === estado);
+  }
 
+  /** Simula creación de ticket */
+  createTicket(): void {
+    console.log('[Mock] Crear nuevo ticket (simulado)');
+  }
+
+  /** Agrega una respuesta al ticket */
+  responderTicket(ticketId: string, mensaje: string): void {
+    const ticket = this.tickets.find(t => t.ticketId === ticketId);
+    if (!ticket) return;
+    ticket.respuestas = ticket.respuestas || [];
+    ticket.respuestas.push({
+      fecha: new Date().toISOString().slice(0, 10),
+      mensaje,
+    });
+    this.successMessage = 'Respuesta registrada correctamente.';
+  }
+
+  /** Cambia el estado de un ticket y (opcional) añade nota de resolución */
+  cambiarEstado(ticketId: string, nuevoEstado: string, nota?: string): void {
+    const ticket = this.tickets.find(t => t.ticketId === ticketId);
+    if (!ticket) return;
+    ticket.estado = nuevoEstado;
+    ticket.respuestas = ticket.respuestas || [];
+    if (nota) {
+      ticket.respuestas.push({
+        fecha: new Date().toISOString().slice(0, 10),
+        mensaje: `Nota de resolución: ${nota}`,
+      });
+    }
+    this.successMessage = `Estado actualizado a ${nuevoEstado}.`;
+    this.calculateStats();
+    this.aplicarFiltroPorEstado(this.filtroEstado);
+  }
+
+  /** Toggle edición de perfil */
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) this.loadUserData();
@@ -210,76 +184,76 @@ createTicket(): void {
     this.errorMessage = '';
   }
 
+  /** Envía actualización de perfil */
   updateProfile(): void {
     const dto = {
       nombre: this.userData.nombre,
       email: this.userData.email,
     };
     const rol = this.authService.getRole();
-
     this.usuarioService.actualizarUsuarioPorId(this.id, dto, rol).subscribe({
       next: () => {
-        this.successMessage = 'Datos actualizados correctamente';
+        this.successMessage = 'Perfil actualizado correctamente.';
         this.isEditing = false;
         this.errorMessage = null;
       },
-      error: () => this.errorMessage = 'Error al actualizar los datos.',
+      error: () => {
+        this.errorMessage = 'Error al actualizar perfil.';
+      },
     });
   }
 
+  /** Toggle formulario de cambio de contraseña */
   togglePasswordForm(): void {
     this.showPasswordForm = !this.showPasswordForm;
-    this.passwordData = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    };
-    this.errorMessage = '';
+    this.passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
     this.successMessage = '';
+    this.errorMessage = '';
   }
 
+  /** Llama al servicio para cambiar contraseña */
   changePassword(): void {
+    if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
+      this.errorMessage = 'Las contraseñas no coinciden.';
+      return;
+    }
     const email = this.authService.getEmail();
     if (!email) return;
-
-    this.authService.changePasswordAdmin({
-      email,
-      nuevaPassword: this.passwordData.newPassword,
-    }).subscribe({
-      next: () => {
-        this.successMessage = 'Contraseña actualizada exitosamente';
-        this.togglePasswordForm();
-      },
-      error: () => {
-        this.errorMessage = 'Error al cambiar la contraseña';
-      },
-    });
+    this.authService
+      .changePasswordAdmin({ email, nuevaPassword: this.passwordData.newPassword })
+      .subscribe({
+        next: () => {
+          this.successMessage = 'Contraseña actualizada correctamente.';
+          this.togglePasswordForm();
+        },
+        error: () => {
+          this.errorMessage = 'Error al cambiar la contraseña.';
+        },
+      });
   }
 
+  /** Elimina la cuenta tras confirmación */
   deleteAccount(): void {
-    if (!confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.'))
-      return;
-
+    if (!confirm('¿Seguro que deseas eliminar tu cuenta?')) return;
     const email = this.authService.getEmail();
     const rol = this.authService.getRole();
     if (!email || !rol) return;
-
     this.usuarioService.obtenerUsuario(email, rol).subscribe({
-      next: (dto) => {
+      next: dto => {
         this.id = dto;
-
         this.usuarioService.eliminarUsuarioPorId(this.id, rol).subscribe({
           next: () => {
             this.authService.logout();
             this.router.navigate(['/login']);
           },
-          error: () => this.errorMessage = 'Error al eliminar la cuenta',
+          error: () => (this.errorMessage = 'Error al eliminar la cuenta.'),
         });
       },
-      error: () => this.errorMessage = 'Error al cargar los datos de la empresa.',
+      error: () => (this.errorMessage = 'Error al cargar datos de perfil.'),
     });
   }
 
+  /** Alterna modo oscuro */
   toggleTheme(): void {
     this.preferences.darkMode = !this.preferences.darkMode;
     safeLocalStorageSet('darkMode', String(this.preferences.darkMode));
@@ -295,4 +269,3 @@ createTicket(): void {
     document.body.classList.toggle('dark-mode', this.preferences.darkMode);
   }
 }
-
