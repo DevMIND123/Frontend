@@ -1,0 +1,49 @@
+name: Angular CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request: # ! Delete later 
+    branches: [main]
+
+jobs:
+  build:
+    name: Build Angular App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Angular build
+        run: npx ng build --configuration production
+
+  deploy:
+    name: Deploy to Production
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Copy .env to runner workspace
+        run: cp /home/arquitectura/Frontend/.env $GITHUB_WORKSPACE/
+
+      - name: Deploy Angular app
+        working-directory: ${{ github.workspace }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          npm install
+          npx ng build --configuration production
+          docker-compose down
+          docker-compose build --no-cache
+          docker-compose up -d
