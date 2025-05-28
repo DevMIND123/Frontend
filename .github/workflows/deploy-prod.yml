@@ -1,31 +1,49 @@
-name: Production Deploy
+name: Angular CI/CD
 
 on:
   push:
     branches: [main]
-  pull_request:
+  pull_request: # ! Delete later 
     branches: [main]
 
 jobs:
-  deploy:
+  build:
+    name: Build Angular App
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up SSH agent
-      uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_VM6 }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-    - name: Deploy Angular app to VM
-      run: |
-        ssh -o StrictHostKeyChecking=no your_user@your_server_ip << 'EOF'
-          cd /path/to/your/angular-app
-          git pull origin $(git rev-parse --abbrev-ref HEAD)
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Angular build
+        run: npx ng build --configuration production
+
+  deploy:
+    name: Deploy to Production
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Copy .env to runner workspace
+        run: cp /home/arquitectura/Frontend/.env $GITHUB_WORKSPACE/
+
+      - name: Deploy Angular app
+        working-directory: ${{ github.workspace }}
+        run: |
+          cd $GITHUB_WORKSPACE
           npm install
           npx ng build --configuration production
+          docker-compose down
           docker-compose build --no-cache
           docker-compose up -d
-        EOF
