@@ -7,8 +7,8 @@ services:
     ports:
       - "80:80"
     networks:
-      - devNetworkArq
+      - prodNetworkArq
 
 networks:
-  devNetworkArq:
+  prodNetworkArq:
     external: true
