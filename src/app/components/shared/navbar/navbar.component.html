@@ -1,0 +1,148 @@
+<nav
+  class="navbar navbar-expand-lg fixed-top"
+  [class.navbar-scrolled]="isScrolled"
+>
+  <div class="container">
+    <!-- Logo -->
+    <a class="navbar-brand" routerLink="/">
+      <img
+        src="assets/images/Logos/Horizontal.png"
+        alt="RetoChimba Logo"
+        class="navbar-logo"
+      />
+    </a>
+
+    <!-- Botón responsive -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Enlaces y botones -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            routerLink="/landing-page"
+            routerLinkActive="active"
+            >Inicio</a
+          >
+        </li>
+        <!-- <li class="nav-item">
+          <a class="nav-link" routerLink="/about" routerLinkActive="active">Acerca de</a>
+        </li> -->
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            *ngIf="isAuthenticated && esSuperAdmin"
+            routerLink="/home/faq-admin"
+            routerLinkActive="active"
+            >Preguntas Frecuentes</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            *ngIf="isAuthenticated && esClienteOEmpresa"
+            routerLink="/home/faq"
+            routerLinkActive="active"
+            >Preguntas Frecuentes</a
+          >
+        </li>
+      </ul>
+
+      <!-- Usuario autenticado -->
+      <div
+        *ngIf="isAuthenticated; else guestButtons"
+        class="d-flex align-items-center gap-3"
+      >
+        <!-- Notificaciones -->
+        <div class="dropdown" [class.show]="mostrarDropdown">
+          <button
+            class="btn btn-outline-primary position-relative dropdown-toggle"
+            type="button"
+            (click)="toggleDropdown()"
+            id="notificationDropdown"
+            aria-expanded="mostrarDropdown"
+          >
+            <i class="bi bi-bell"></i>
+            <span
+              *ngIf="unreadNotifications.length > 0"
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            >
+              {{ unreadNotifications.length }}
+            </span>
+          </button>
+          <ul
+            class="dropdown-menu dropdown-menu-end animate slideIn"
+            [class.show]="mostrarDropdown"
+            aria-labelledby="notificationDropdown"
+          >
+            <li *ngIf="unreadNotifications.length === 0">
+              <span class="dropdown-item">Sin notificaciones nuevas</span>
+            </li>
+            <li *ngFor="let notif of unreadNotifications">
+              <div
+                class="dropdown-item d-flex flex-column"
+                (click)="marcarComoLeida(notif)"
+              >
+                <span>{{ notif.mensaje }}</span>
+                <small class="text-muted">{{
+                  notif.fecha | date : "dd/MM/yyyy HH:mm"
+                }}</small>
+              </div>
+            </li>
+
+            <li>
+              <hr class="dropdown-divider" />
+            </li>
+            <li class="dropdown-header">Atendidas</li>
+            <li *ngFor="let notif of readNotifications">
+              <div class="dropdown-item d-flex flex-column text-muted">
+                <span>{{ notif.mensaje }}</span>
+                <small>{{ notif.fecha }}</small>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Selector de rol para superadmin -->
+        <select
+          *ngIf="esSuperAdmin"
+          [(ngModel)]="rolSeleccionado"
+          (change)="onSeleccionarRol($event)"
+        >
+          (change)="onSeleccionarRol($event)">
+          <option *ngFor="let rol of rolesDisponibles" [value]="rol">
+            {{ rol }}
+          </option>
+        </select>
+
+        <!-- Menú de perfil -->
+        <a class="btn btn-outline-primary" (click)="logout()">
+          <i class="bi bi-box-arrow-right me-2"></i> Cerrar sesión
+        </a>
+      </div>
+
+      <!-- Usuario no autenticado -->
+      <ng-template #guestButtons>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" (click)="goToLogin()">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+          </button>
+          <button class="btn btn-primary" (click)="goToRegister()">
+            <i class="bi bi-person-plus me-2"></i>Registrarse
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</nav>

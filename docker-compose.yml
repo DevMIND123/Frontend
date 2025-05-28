@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  frontend:
+    build: .
+    container_name: frontend-app
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - prodNetworkArq
+
+networks:
+  prodNetworkArq:
+    external: true

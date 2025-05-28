@@ -1,0 +1,270 @@
+/* EXISTENTE - se mantiene */
+
+:host {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding-top: 76px;
+}
+
+.container {
+    flex: 1;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* NUEVO: Listas Financieras (CastleMock) */
+.list-group {
+    padding-left: 0;
+    margin: 0;
+}
+
+.list-group-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 1rem;
+    background-color: #ffffff;
+}
+
+.alert-primary,
+.alert-success {
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.list-group-item strong {
+    color: #2d3748;
+}
+
+.mt-4,
+.mt-3 {
+    margin-top: 1.5rem !important;
+}
+
+/* NUEVO: Iconos financieros */
+.bi-cash-stack,
+.bi-cash,
+.bi-receipt,
+.bi-credit-card-2-front,
+.bi-calendar-check {
+    font-size: 1.2rem;
+}
+
+/* Form Controls */
+.form-control {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-group .btn {
+    padding: 0.5rem 0.75rem;
+}
+
+/* Table Styles */
+.table-container {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    background: white;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #4a5568;
+    padding: 1rem;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+}
+
+/* Search Input */
+.input-group {
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.input-group-text {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-right: none;
+    padding-left: 1rem;
+}
+
+.input-group .form-control {
+    border-left: none;
+    padding-left: 0;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Switch Styles */
+.form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #4299e1;
+    border-color: #4299e1;
+}
+
+.form-check-label {
+    cursor: pointer;
+    padding-left: 0.5rem;
+}
+
+/* Dark Mode Styles */
+:host-context(body.dark-mode) {
+    background-color: #1a202c;
+    color: #e2e8f0;
+}
+
+:host-context(body.dark-mode) .dashboard-card {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+:host-context(body.dark-mode) .form-control {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+:host-context(body.dark-mode) .table-container,
+:host-context(body.dark-mode) .list-group-item {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+:host-context(body.dark-mode) .input-group-text,
+:host-context(body.dark-mode) .form-check-label,
+:host-context(body.dark-mode) .form-label {
+    color: #e2e8f0;
+}
+
+:host-context(body.dark-mode) .alert {
+    background-color: #3c4a5d;
+    border-color: #4a5568;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboard-card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .dashboard-card {
+        margin-bottom: 1rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+    }
+}

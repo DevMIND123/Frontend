@@ -1,0 +1,381 @@
+/* Layout */
+:host {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding-top: 76px;
+}
+
+.container {
+    flex: 1 0 auto;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    background: none;
+    border: none;
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* Form Controls */
+.form-control {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-group .btn {
+    padding: 0.5rem 0.75rem;
+}
+
+/* Estadísticas */
+.stat-card {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card h5 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.stat-card h3 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Tabla de Tickets */
+.table-responsive {
+    border-radius: 1rem;
+    background: white;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom-width: 2px;
+    padding: 1rem;
+    text-align: left;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+    color: #2d3748;
+    font-size: 0.9rem;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* Switch Styles */
+.form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #4299e1;
+    border-color: #4299e1;
+}
+
+.form-check-label {
+    cursor: pointer;
+    padding-left: 0.5rem;
+}
+
+/* Password Form */
+.password-form {
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ================= Validación de Empresa ================= */
+.validacion-card .list-group-item {
+    border: none;
+    padding: 0.75rem 1rem;
+    background-color: #fefefe;
+    font-size: 0.9rem;
+    color: #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.validacion-card .list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* ================= Reporte de Eficiencia ================= */
+.reporte-card p {
+    margin: 0.4rem 0;
+    font-size: 0.95rem;
+    color: #2d3748;
+}
+
+/* ================= Historial de Soporte ================= */
+.card-body h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.card-body ul.list-group li {
+    background-color: #fff;
+    border: none;
+    border-bottom: 1px solid #edf2f7;
+    padding: 0.75rem 1rem;
+}
+
+.card-body ul.list-group li:last-child {
+    border-bottom: none;
+}
+
+/* ================= Preguntas Frecuentes ================= */
+.faq-card .list-group-item {
+    background-color: #f9fafb;
+    border: none;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem;
+}
+
+.faq-card .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.faq-card strong {
+    color: #2d3748;
+}
+
+.faq-card span {
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+/* Dark Mode Styles */
+:host-context(body.dark-mode) {
+    background-color: #1a202c;
+    color: #e2e8f0;
+}
+
+:host-context(body.dark-mode) .card {
+    background-color: #2d3748;
+}
+
+:host-context(body.dark-mode) .form-control {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+:host-context(body.dark-mode) .table-responsive {
+    background-color: #2d3748;
+}
+
+:host-context(body.dark-mode) .table {
+    color: #e2e8f0;
+}
+
+:host-context(body.dark-mode) .table tbody tr:hover {
+    background-color: #4a5568;
+}
+
+:host-context(body.dark-mode) .password-form {
+    background-color: #2d3748;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+
+    .table-responsive {
+        margin-top: 1rem;
+    }
+
+    .card-body ul.list-group li {
+        font-size: 0.85rem;
+    }
+
+    .validacion-card,
+    .reporte-card,
+    .faq-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Footer Layout */
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+app-footer {
+    flex-shrink: 0;
+    width: 100%;
+}
+
+/* ================= Filtros de Historial y Tickets ================= */
+.historial-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.historial-filtros select {
+    max-width: 200px;
+}
+
+/* ================= Mensaje sin historial ================= */
+.sin-historial {
+    font-style: italic;
+    color: #718096;
+    background-color: #fefefe;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px dashed #cbd5e0;
+    margin-top: 1rem;
+}
+
+/* ================= Ticket Actions ================= */
+.ticket-actions .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+}
+
+/* Responsive para historial */
+@media (max-width: 768px) {
+    .historial-filtros {
+        flex-direction: column;
+    }
+
+    .historial-filtros select {
+        width: 100%;
+        max-width: 100%;
+    }
+}
